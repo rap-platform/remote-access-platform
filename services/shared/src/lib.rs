@@ -2,6 +2,8 @@
 
 #![forbid(unsafe_code)]
 
+pub mod logging;
+
 /// Baseline service health status descriptor.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum HealthStatus {

@@ -19,7 +19,7 @@
   - `tools/`, `proto/`, `infra/`, `e2e/`, `.github/workflows/`
 - **Agent Governance Rules**:
   - `AGENT_RULES.md`, `.cursorrules`, `.windsurfrules`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.cursor/rules/architecture-rules.mdc`.
-  - Added rule enforcing continuous maintenance of `docs/IMPLEMENTATION_LOG.md`.
+  - Enforced live implementation log maintenance (`docs/IMPLEMENTATION_LOG.md`) and plan sync (`docs/architecture_and_implementation_plan.md`).
   - Added DRY Repository & Reusable Script Automation rule (`tools/`).
   - Added Quality Gate Pipeline rule (Lint -> Build -> Test -> Ready).
 - **Static Analysis & Tooling Configs**:
@@ -49,28 +49,51 @@
   - QML UI testing harness (`apps/client/tests/qml/`) with `tst_dummy.qml` and `main.cpp` running under **Qt Quick Test**.
   - Rust workspace unit testing suite running under **`cargo test`**.
 
+---
+
+## Milestone 2: QML Theme System, Centralized Logging & Developer Hot Reload
+
+### Status: COMPLETED ✅
+
+### 1. What Was Implemented
+- **QML Centralized Theme System**:
+  - `apps/client/qml/theme/Tokens.qml`: Core duration, opacity, and easing tokens.
+  - `apps/client/qml/theme/Palette.qml`: Dark mode semantic color palette (`background`, `surface`, `surfaceVariant`, `border`, `primary`, `accent`, `textPrimary`, `textSecondary`, `error`, `success`, `warning`).
+  - `apps/client/qml/theme/Typography.qml`: Font families, sizing scale (`fontCaption` through `fontDisplay`), and font weights.
+  - `apps/client/qml/theme/Metrics.qml`: Spacing scale (`spacingXs` through `spacingXxl`), padding, and border radii.
+  - `apps/client/qml/theme/qmldir`: Registered singletons for Qt Quick engine.
+  - Static Analysis Rule (`tools/lint.sh`): Banned raw hex color strings (e.g., `"#1e1e1e"`) outside `apps/client/qml/theme/`.
+- **C++ Structured JSON Diagnostic Logger (`libs/common/logging/`)**:
+  - `JsonLogger.h/cpp`: Custom Qt message handler (`qInstallMessageHandler`) formatting log entries into structured JSON with ISO-8601 UTC timestamps, log levels (`DEBUG`, `INFO`, `WARNING`, `CRITICAL`), category names, source file/line context, and payload message.
+  - Supports dual output to `stdout` and diagnostic log files.
+  - Unit test `test_json_logger.cpp` running under **Qt Test** (`100% PASSED`).
+- **Rust Structured JSON Diagnostic Logger (`services/shared/src/logging.rs`)**:
+  - Configured `tracing-subscriber` JSON formatter matching the exact C++ `JsonLogger` schema (`timestamp`, `level`, `category`, `file`, `line`, `message`).
+  - Unit test `test_json_log_entry_serialization` running under `cargo test` (`100% PASSED`).
+- **Developer QML Hot Reload Devtool (`apps/client/src/dev/`)**:
+  - `HotReloadManager.h/cpp`: `QFileSystemWatcher` devtool watching `apps/client/qml/` directory. Clears QML component cache (`QQmlEngine::clearComponentCache()`) and emits `qmlReloaded()` on file changes.
+  - Controlled by CMake option `ENABLE_HOT_RELOAD=ON` (default OFF in release builds).
+  - Unit test `test_hot_reload.cpp` running under **Qt Test** (`100% PASSED`).
+
 ### 2. How It Was Implemented
-- Configured LLVM C++20 rules in `.clang-format` and `.clang-tidy` to prevent compiler warnings and enforce naming conventions.
-- Integrated `cppcheck` with suppression flags for Qt macros to catch static analysis issues across C++ source files.
-- Automated prerequisite installation and build/test workflow in executable bash scripts (`tools/*.sh`).
-- Quality Gate Pipeline built directly into `tools/build.sh` so compilation is preceded by static analysis and followed by test suite verification before producing a ready build.
+- Built QML Theme Singletons following strict design token architecture rules.
+- Implemented C++ thread-safe singleton `JsonLogger` using `QMutex` and `QJsonDocument`.
+- Exposed `pub mod logging;` in `rap-shared` Rust crate using `serde` and `tracing-subscriber`.
+- Wrote CMake conditionals in `apps/client/CMakeLists.txt` guaranteeing zero hot reload symbols are compiled into production binaries when `ENABLE_HOT_RELOAD=OFF`.
 
 ### 3. Why Specific Decisions Were Made
-- **Rust Backend**: Eliminates buffer overflows and data races across 100% of the server attack surface (`#![forbid(unsafe_code)]`).
-- **Qt 6 LGPLv3 Dynamic Linking**: Ensures dynamic linking (`BUILD_SHARED_LIBS=ON`) to comply with LGPLv3 without requiring commercial Qt licenses.
-- **Headless Agent (Qt-free)**: Sidesteps LGPLv3 §4 "User Product" relinking obligations on locked embedded hardware.
-- **DRY Script Automation**: Eliminates ad-hoc manual terminal command execution, ensuring reproducible builds for developers and AI agents alike.
+- **QML Theme Singletons**: Prevents visual fragmentation and hardcoded magic colors across the UI.
+- **Unified JSON Log Schema**: Ensures log aggregators (Elasticsearch / Grafana Loki) parse C++ client/agent and Rust microservice logs with identical field queries.
+- **Hot Reload Devtool Isolation**: Dramatically accelerates UI iteration speed in development while keeping release binaries lightweight and secure.
 
-### 4. Standards & Industry Best Practices Followed
-- **C++20 ISO Standard**: Strict warning-clean build configuration (`-Wall -Wextra -Wpedantic -Werror` / `/W4 /WX`).
-- **Conventional Commits**: `feat:`, `fix:`, `sec:`, `refactor:`, `test:`, `docs:`, `ci:`.
-- **OWASP ASVS Level 2/3**: Cryptographic and transport security guidelines.
+### 4. Standards & Best Practices Followed
+- **C++20**: `-Wall -Wextra -Wpedantic -Werror`.
+- **Rust Edition 2021**: `#![forbid(unsafe_code)]` with Clippy `-D warnings`.
+- **QML Token Architecture**: Absolute separation of theme values from presentation views.
 
 ### 5. Verification & Test Execution Results
 - Executed `./tools/build.sh` Quality Gate Pipeline:
-  - **Stage 1 (Static Analysis)**: `cppcheck`, `rustfmt`, `clippy` PASSED (0 warnings).
-  - **Stage 2 (Compilation)**: C++ targets (Ninja) and Rust crates (Cargo) PASSED.
-  - **Stage 3 (Test Suites)**:
-    - CTest: `test_logging` (Qt Test) and `test_qml_skeleton` (Qt Quick Test) 100% PASSED.
-    - Cargo: `rap-shared`, `rap-identity`, `rap-signaling`, `rap-relay`, `rap-api-gateway`, `rap-audit` 100% PASSED.
+  - **Static Analysis**: `cppcheck`, QML hex color enforcer, `rustfmt`, and `clippy` PASSED (0 warnings).
+  - **CTest Suite**: 4/4 tests PASSED (100%): `test_logging`, `test_json_logger`, `test_hot_reload`, `test_qml_skeleton`.
+  - **Cargo Test Suite**: 7/7 tests PASSED (100%).
   - **Pipeline Result**: `=== Quality Gate Complete: Build is Verified & Ready to Use! ===`

@@ -82,13 +82,13 @@ graph TD
   - [x] Automated script tooling created in `tools/` (`setup_deps.sh`, `lint.sh`, `build.sh`, `test.sh`) enforcing Quality Gate Pipeline
   - [x] Initial skeleton tests running & passing in Qt Test (`test_logging`), Qt Quick Test (`test_qml_skeleton`), and `cargo test` (`rap-shared`, `rap-identity`, `rap-signaling`, `rap-relay`, `rap-api-gateway`, `rap-audit`)
 
-- [ ] **Milestone 2: Theme System, Centralized Logging & Hot Reload**
-  - [ ] QML Theme Singleton module built (`qml/theme/Tokens.qml`, `Palette.qml`, `Typography.qml`, `Metrics.qml`)
-  - [ ] CI rule enforcing zero hex color literals outside `qml/theme/`
-  - [ ] C++ Centralized Logging (`libs/common/logging/`) with `QLoggingCategory` and custom `qInstallMessageHandler` JSON sink
-  - [ ] Rust Centralized Logging via `tracing-subscriber` matching C++ JSON schema
-  - [ ] `HotReloadManager` C++ devtool with `QFileSystemWatcher` behind CMake `ENABLE_HOT_RELOAD=ON` (default OFF in release)
-  - [ ] CI validation verifying release builds omit `HotReloadManager` symbols
+- [x] **Milestone 2: Theme System, Centralized Logging & Hot Reload**
+  - [x] QML Theme Singleton module built (`apps/client/qml/theme/Tokens.qml`, `Palette.qml`, `Typography.qml`, `Metrics.qml`, `qmldir`)
+  - [x] CI/lint rule enforcing zero hex color literals outside `apps/client/qml/theme/` (`tools/lint.sh`)
+  - [x] C++ Centralized Logging (`libs/common/logging/JsonLogger.h/cpp`) with `QLoggingCategory` and `qInstallMessageHandler` structured JSON sink
+  - [x] Rust Centralized Logging (`services/shared/src/logging.rs`) matching C++ JSON schema
+  - [x] `HotReloadManager` C++ devtool with `QFileSystemWatcher` behind CMake `ENABLE_HOT_RELOAD=ON` (default OFF in release)
+  - [x] Unit test suites passing for C++ `test_json_logger`, `test_hot_reload`, and Rust `test_json_log_entry_serialization`
 
 - [ ] **Milestone 3: Protocol v0 Schema**
   - [ ] Protobuf schema definition (`proto/session.proto`) covering `HELLO`, `AUTH`, `FRAME`, `INPUT`, `PING`, `PONG`

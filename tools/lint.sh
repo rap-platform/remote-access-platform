@@ -29,6 +29,16 @@ else
     echo "[!] cppcheck not installed locally. Run ./tools/setup_deps.sh to install it (enforced in CI)."
 fi
 
+echo "[+] Checking QML Hex Color Enforcer (No hardcoded hex colors outside theme/)..."
+HEX_VIOLATIONS=$(find apps/client/qml/ -name '*.qml' ! -path '*/theme/*' -exec grep -Hn '#[0-9a-fA-F]\{3,8\}' {} + || true)
+if [ -n "${HEX_VIOLATIONS}" ]; then
+    echo "[!] QML Theme Violation: Hardcoded hex color literals found outside theme/:"
+    echo "${HEX_VIOLATIONS}"
+    exit 1
+else
+    echo "[+] QML Theme Check Passed: Zero hardcoded hex colors outside theme/."
+fi
+
 echo "[+] Checking Rust Formatting with rustfmt..."
 cargo fmt --check
 
