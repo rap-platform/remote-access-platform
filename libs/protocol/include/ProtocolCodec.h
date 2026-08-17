@@ -24,7 +24,10 @@ enum class PayloadType : uint16_t {
     FileChunkPayload = 9,
     FileTransferControl = 10,
     DirectoryListRequest = 11,
-    DirectoryListResponse = 12
+    DirectoryListResponse = 12,
+    AuthRequest = 13,
+    AuthResponse = 14,
+    SessionControl = 15
 };
 
 

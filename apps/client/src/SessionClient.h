@@ -42,7 +42,7 @@ public:
     QVariantList localDirectoryList() const { return localDirectoryList_; }
     QString currentLocalPath() const { return currentLocalPath_; }
 
-    Q_INVOKABLE void connectByP2PId(const QString &p2pId);
+    Q_INVOKABLE void connectByP2PId(const QString &p2pId, const QString &password = "");
     Q_INVOKABLE void sendInputEvent(uint16_t type, int32_t x, int32_t y, uint32_t button, int32_t delta, uint32_t keycode, uint32_t modifiers);
     Q_INVOKABLE void sendClipboardText(const QString &text);
     Q_INVOKABLE void sendChatMessage(const QString &message);
@@ -57,7 +57,7 @@ public:
     Q_INVOKABLE void cancelFileTransfer();
 
 public slots:
-    void connectToHost(const QString &host, uint16_t port);
+    void connectToHost(const QString &host, uint16_t port, const QString &password = "");
     void disconnectFromHost();
 
 signals:
@@ -92,6 +92,7 @@ private:
     QString statusText_{"Disconnected"};
     QString p2pId_{"482 915 307"};
     QString lastConnectedTarget_;
+    QString requestedPassword_;
     bool hostAgentRunning_{true};
     uint64_t receivedFrames_{0};
     uint64_t inputSequence_{0};

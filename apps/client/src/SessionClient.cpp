@@ -61,18 +61,20 @@ SessionClient::~SessionClient() {
     receiveBuffer_.clear();
 }
 
-void SessionClient::connectByP2PId(const QString &p2pIdInput) {
+void SessionClient::connectByP2PId(const QString &p2pIdInput, const QString &password) {
     QString cleanId = p2pIdInput;
     cleanId.remove(' ');
     qInfo() << "[Client] Connecting via P2P Desk ID:" << cleanId;
     lastConnectedTarget_ = "Desk ID: " + p2pIdInput;
-    connectToHost("127.0.0.1", 18443);
+    connectToHost("127.0.0.1", 18443, password);
 }
 
-void SessionClient::connectToHost(const QString &host, uint16_t port) {
+void SessionClient::connectToHost(const QString &host, uint16_t port, const QString &password) {
     if (socket_.state() != QAbstractSocket::UnconnectedState) {
         socket_.abort();
     }
+
+    requestedPassword_ = password;
 
     if (lastConnectedTarget_.isEmpty()) {
         lastConnectedTarget_ = host + ":" + QString::number(port);
@@ -129,7 +131,7 @@ void SessionClient::sendInputEvent(uint16_t type, int32_t x, int32_t y, uint32_t
 }
 
 void SessionClient::sendClipboardText(const QString &text) {
-    if (text.isEmpty() || !socket_.isOpen() || socket_.state() != QAbstractSocket::ConnectedState) {
+    if (!socket_.isOpen() || socket_.state() != QAbstractSocket::ConnectedState) {
         return;
     }
 
@@ -193,7 +195,32 @@ void SessionClient::onConnected() {
     receivedFrames_ = 0;
     inputSequence_ = 0;
     socket_.setSocketOption(QAbstractSocket::LowDelayOption, 1); // Disable Nagle's algorithm (TCP_NODELAY)
-    qInfo() << "[Client] TCP socket connected successfully!";
+    qInfo() << "[Client] TCP socket connected successfully! Transmitting Authentication Request...";
+
+    // Send AuthRequest to remote agent
+    const std::vector<uint8_t> sessionKey = {
+        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+        0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
+    };
+
+    QByteArray passBytes = requestedPassword_.toUtf8();
+    std::vector<uint8_t> plaintext(passBytes.constData(), passBytes.constData() + passBytes.size());
+    std::vector<uint8_t> nonce(12, 0);
+    uint64_t seq = ++inputSequence_;
+    std::memcpy(nonce.data(), &seq, sizeof(seq));
+
+    auto encryptedPayload = rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
+    auto encoded = rap::protocol::ProtocolCodec::encode(
+        rap::protocol::PayloadType::AuthRequest,
+        seq,
+        0,
+        encryptedPayload
+    );
+    socket_.write(QByteArray(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size())));
+    socket_.flush();
+
     setStatus("Connected to " + (lastConnectedTarget_.isEmpty() ? "Remote Desk" : lastConnectedTarget_));
     emit connectionStateChanged(true);
 }
@@ -307,6 +334,23 @@ void SessionClient::onReadyRead() {
                     }
                     emit clipboardTextReceived(text);
                     qInfo() << "[Client] Received bidirectional clipboard update from remote host (" << text.length() << "chars)";
+                }
+            }
+        } else if (packet.header.type == rap::protocol::PayloadType::AuthResponse && !packet.payload.empty()) {
+            std::vector<uint8_t> nonce(12, 0);
+            uint64_t seq = packet.header.sequenceNumber;
+            std::memcpy(nonce.data(), &seq, sizeof(seq));
+
+            auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
+            if (decryptedOpt.has_value() && !decryptedOpt->empty()) {
+                uint8_t authCode = decryptedOpt->at(0);
+                if (authCode == 0) {
+                    qInfo() << "[Client Auth] Remote Agent verified password credentials. Access Granted!";
+                    setStatus("Connected to " + (lastConnectedTarget_.isEmpty() ? "Remote Desk" : lastConnectedTarget_) + " — Session Verified");
+                } else {
+                    qWarning() << "[Client Auth] Remote Agent rejected password credentials. Access Denied!";
+                    setStatus("Authentication Failed: Invalid Remote Password");
+                    disconnectFromHost();
                 }
             }
         }

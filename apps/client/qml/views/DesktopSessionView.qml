@@ -649,7 +649,7 @@ Rectangle {
                 // Card 2: REMOTE DESK (Connect to Peer)
                 Rectangle {
                     Layout.preferredWidth: 360
-                    Layout.preferredHeight: 220
+                    Layout.preferredHeight: 260
                     color: themePalette.surface
                     radius: Metrics.radiusLg
                     border.color: themePalette.border
@@ -683,8 +683,24 @@ Rectangle {
                             }
                         }
 
+                        TextField {
+                            id: targetPasswordInput
+                            placeholderText: "Password / OTP (Default: admin123)"
+                            text: "admin123"
+                            echoMode: TextInput.Password
+                            Layout.fillWidth: true
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontBody
+                            color: themePalette.textPrimary
+                            background: Rectangle {
+                                color: themePalette.surfaceVariant
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
+                        }
+
                         Label {
-                            text: "Enter peer's 9-digit Desk ID (e.g. 115 604 669) or IP address to connect."
+                            text: "Enter peer's Desk ID and 6-digit OTP or unattended master password."
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontCaption
                             color: themePalette.textSecondary
@@ -702,6 +718,7 @@ Rectangle {
                             font.weight: Typography.weightBold
                             onClicked: {
                                 let rawTarget = targetIdInput.text.trim()
+                                let reqPassword = targetPasswordInput.text.trim()
                                 if (rawTarget.length === 0) return
 
                                 let cleanTarget = rawTarget.replace(/\s+/g, '')
@@ -731,9 +748,9 @@ Rectangle {
 
                                 if (rawTarget.indexOf(":") !== -1) {
                                     let parts = rawTarget.split(":")
-                                    sessionClient.connectToHost(parts[0], parseInt(parts[1]))
+                                    sessionClient.connectToHost(parts[0], parseInt(parts[1]), reqPassword)
                                 } else {
-                                    sessionClient.connectByP2PId(rawTarget)
+                                    sessionClient.connectByP2PId(rawTarget, reqPassword)
                                 }
                             }
                             contentItem: Text {
