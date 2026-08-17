@@ -1,8 +1,9 @@
 # Cursor Agent Rules - Remote Desktop Platform Workspace
 
-Always read and follow the mandatory architecture blueprint in `REMOTE-DESKTOP-ARCHITECTURE.md` and `AGENT_RULES.md`.
+Always read and follow the mandatory architecture blueprint in `docs/REMOTE-DESKTOP-ARCHITECTURE.md` and `AGENT_RULES.md`.
 
 Key Rules:
+0. **MANDATORY LIVE DOCUMENTATION LOG**: Continuously maintain `docs/IMPLEMENTATION_LOG.md` detailing what was implemented, how, why, standards followed, and test verification results.
 1. Backend is **Rust ONLY** (`services/`). `#![forbid(unsafe_code)]` at crate root.
 2. Desktop UI is **Qt 6 (LGPLv3 dynamic linking)** + QML. NEVER statically link Qt. Avoid GPL-only modules (`Qt Charts`, `Qt Data Visualization`).
 3. Core client/agent is **C++20**.

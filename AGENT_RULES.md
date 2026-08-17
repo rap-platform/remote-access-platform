@@ -1,7 +1,20 @@
 # AI Agent Instructions & Workspace Coding Rules
 
 > **Project:** Enterprise Cross-Platform Remote Access & Device Management Platform  
-> **Source of Truth:** [`REMOTE-DESKTOP-ARCHITECTURE.md`](./REMOTE-DESKTOP-ARCHITECTURE.md) (Version 4.0)
+> **Source of Truth:** [`REMOTE-DESKTOP-ARCHITECTURE.md`](./docs/REMOTE-DESKTOP-ARCHITECTURE.md) (Version 4.0)
+
+---
+
+## 0. Mandatory Rule: Live Technical Documentation Log
+
+- **Live Implementation Log (`docs/IMPLEMENTATION_LOG.md`)**:
+  Every milestone and feature implemented MUST be continuously updated and documented in `docs/IMPLEMENTATION_LOG.md`.
+  For every change, the log MUST record:
+  1. **What** was implemented (files created/modified, components built).
+  2. **How** it was implemented (architectural patterns, code structure, CMake/Cargo configuration).
+  3. **Why** specific decisions were made (rationale, trade-offs, security considerations).
+  4. **Standards & Best Practices** followed (C++20, LGPLv3 dynamic linking, Rust safety, OWASP ASVS, Conventional Commits).
+  5. **Verification & Test Results** (test execution outputs, static analysis results).
 
 ---
 

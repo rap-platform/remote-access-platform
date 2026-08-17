@@ -1,7 +1,8 @@
 # GitHub Copilot Custom Instructions
 
-Source of Truth: `REMOTE-DESKTOP-ARCHITECTURE.md` (v4.0) and `AGENT_RULES.md`.
+Source of Truth: `docs/REMOTE-DESKTOP-ARCHITECTURE.md` (v4.0) and `AGENT_RULES.md`.
 
+- Continuously maintain `docs/IMPLEMENTATION_LOG.md` detailing what was implemented, how, why, standards followed, and test verification results.
 - Backend code must be in Rust (`services/`) with `#![forbid(unsafe_code)]` at crate root.
 - Desktop UI code must use Qt 6 (LGPLv3 dynamic linking) + QML. Never statically link Qt. Avoid GPL-only modules (`Qt Charts`).
 - Host agent must be built in C++20 and remain strictly Qt-free.

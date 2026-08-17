@@ -1,0 +1,11 @@
+avoid-breaking-exported-api = true
+cognitive-complexity-threshold = 25
+too-many-arguments-threshold = 7
+too-many-lines-threshold = 100
+type-complexity-threshold = 250
+single-char-binding-names-threshold = 4
+enum-variant-size-threshold = 200
+disallowed-methods = [
+    { path = "std::option::Option::unwrap", reason = "Use explicit pattern matching or ? operator in service production code." },
+    { path = "std::result::Result::unwrap", reason = "Use explicit pattern matching or ? operator in service production code." }
+]
