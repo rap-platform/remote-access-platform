@@ -166,6 +166,14 @@ void SessionClient::sendClipboardText(const QString &text) {
     qInfo() << "[Client] Synchronized local clipboard text to remote host (" << text.length() << "chars)";
 }
 
+void SessionClient::sendChatMessage(const QString &message) {
+    if (message.trimmed().isEmpty()) return;
+    QString cleanMsg = message.trimmed();
+    QString timeStr = QTime::currentTime().toString("hh:mm A");
+    sendClipboardText("CHAT:" + cleanMsg);
+    emit chatMessageReceived("You", cleanMsg, timeStr);
+}
+
 void SessionClient::onClipboardChanged() {
     if (!isConnected_) {
         return;
@@ -287,13 +295,19 @@ void SessionClient::onReadyRead() {
             auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
             if (decryptedOpt.has_value() && !decryptedOpt->empty()) {
                 QString text = QString::fromUtf8(reinterpret_cast<const char *>(decryptedOpt->data()), static_cast<int>(decryptedOpt->size()));
-                lastClipboardText_ = text;
-                QClipboard *cb = QGuiApplication::clipboard();
-                if (cb) {
-                    cb->setText(text);
+                if (text.startsWith("CHAT:")) {
+                    QString chatContent = text.mid(5);
+                    QString timeStr = QTime::currentTime().toString("hh:mm A");
+                    emit chatMessageReceived("Remote Host", chatContent, timeStr);
+                } else {
+                    lastClipboardText_ = text;
+                    QClipboard *cb = QGuiApplication::clipboard();
+                    if (cb) {
+                        cb->setText(text);
+                    }
+                    emit clipboardTextReceived(text);
+                    qInfo() << "[Client] Received bidirectional clipboard update from remote host (" << text.length() << "chars)";
                 }
-                emit clipboardTextReceived(text);
-                qInfo() << "[Client] Received bidirectional clipboard update from remote host (" << text.length() << "chars)";
             }
         }
 

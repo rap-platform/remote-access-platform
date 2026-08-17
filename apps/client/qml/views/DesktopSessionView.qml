@@ -10,10 +10,16 @@ Rectangle {
     property int activeTabIndex: 0
     property int activeConnectedTabIndex: -1
     property bool isCurrentTabConnected: sessionClient.isConnected && (activeTabIndex === activeConnectedTabIndex)
+    property bool chatWindowOpen: false
+    property int unreadChatCount: 0
 
     ListModel {
         id: sessionTabsModel
         ListElement { title: "New Session"; targetHost: "115 604 669"; connected: false }
+    }
+
+    ListModel {
+        id: chatMessagesModel
     }
 
     Connections {
@@ -21,9 +27,33 @@ Rectangle {
         function onIsConnectedChanged() {
             if (!sessionClient.isConnected) {
                 desktopSessionView.activeConnectedTabIndex = -1
+                desktopSessionView.chatWindowOpen = false
+                desktopSessionView.unreadChatCount = 0
+                chatMessagesModel.clear()
                 for (let i = 0; i < sessionTabsModel.count; ++i) {
                     sessionTabsModel.setProperty(i, "connected", false)
                 }
+            } else {
+                chatMessagesModel.clear()
+                chatMessagesModel.append({
+                    sender: "System",
+                    text: "Encrypted session chat connected. Communication with remote host is active.",
+                    timestamp: "Now",
+                    isSelf: false
+                })
+            }
+        }
+
+        function onChatMessageReceived(sender, text, timestamp) {
+            chatMessagesModel.append({
+                sender: sender,
+                text: text,
+                timestamp: timestamp,
+                isSelf: (sender === "You")
+            })
+            chatListView.positionViewAtEnd()
+            if (!desktopSessionView.chatWindowOpen && sender !== "You") {
+                desktopSessionView.unreadChatCount += 1
             }
         }
     }
@@ -94,7 +124,7 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        // Multi-Tab Session Connection Bar (Hidden in Fullscreen mode if user prefers immersive view)
+        // Multi-Tab Session Connection Bar
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 38
@@ -272,7 +302,7 @@ Rectangle {
                     anchors.top: parent.top
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.topMargin: Metrics.spacingSm
-                    width: 460
+                    width: 530
                     height: 38
                     radius: Metrics.radiusSm
                     color: themePalette.surface
@@ -297,6 +327,25 @@ Rectangle {
                             color: themePalette.textPrimary
                             elide: Text.ElideRight
                             Layout.fillWidth: true
+                        }
+
+                        Button {
+                            text: desktopSessionView.unreadChatCount > 0 ? "💬 Chat (" + desktopSessionView.unreadChatCount + ")" : "💬 Chat"
+                            Layout.preferredHeight: 26
+                            font.family: Typography.fontFamily
+                            font.pixelSize: 11
+                            font.weight: Typography.weightBold
+                            onClicked: {
+                                desktopSessionView.chatWindowOpen = !desktopSessionView.chatWindowOpen
+                                if (desktopSessionView.chatWindowOpen) {
+                                    desktopSessionView.unreadChatCount = 0
+                                }
+                            }
+                            background: Rectangle {
+                                color: desktopSessionView.chatWindowOpen ? themePalette.primary : (desktopSessionView.unreadChatCount > 0 ? themePalette.warning : themePalette.surfaceVariant)
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
                         }
 
                         Button {
@@ -326,6 +375,147 @@ Rectangle {
                             background: Rectangle {
                                 color: themePalette.error
                                 radius: Metrics.radiusSm
+                            }
+                        }
+                    }
+                }
+
+                // UltraViewer-style Floating Live Chat Box Panel
+                Rectangle {
+                    id: chatPanel
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.margins: Metrics.spacingLg
+                    width: 320
+                    height: 380
+                    radius: Metrics.radiusLg
+                    color: themePalette.surface
+                    border.color: themePalette.primary
+                    border.width: 2
+                    visible: desktopSessionView.isCurrentTabConnected && desktopSessionView.chatWindowOpen
+                    z: 100
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: Metrics.spacingSm
+                        spacing: Metrics.spacingXs
+
+                        // Chat Header
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 32
+                            color: themePalette.surfaceVariant
+                            radius: Metrics.radiusSm
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: Metrics.spacingSm
+                                anchors.rightMargin: Metrics.spacingSm
+
+                                Label {
+                                    text: "💬 UltraViewer Session Chat"
+                                    font.family: Typography.fontFamily
+                                    font.pixelSize: Typography.fontCaption
+                                    font.weight: Typography.weightBold
+                                    color: themePalette.textPrimary
+                                    Layout.fillWidth: true
+                                }
+
+                                Text {
+                                    text: "✕"
+                                    font.pixelSize: 12
+                                    font.weight: Typography.weightBold
+                                    color: themePalette.textSecondary
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        anchors.margins: -4
+                                        onClicked: desktopSessionView.chatWindowOpen = false
+                                    }
+                                }
+                            }
+                        }
+
+                        // Chat Messages List
+                        ListView {
+                            id: chatListView
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            model: chatMessagesModel
+                            clip: true
+                            spacing: 8
+
+                            delegate: ColumnLayout {
+                                width: chatListView.width
+                                spacing: 2
+
+                                Label {
+                                    text: model.sender + " • " + model.timestamp
+                                    font.family: Typography.fontFamily
+                                    font.pixelSize: 10
+                                    color: themePalette.textSecondary
+                                    Layout.alignment: model.isSelf ? Qt.AlignRight : Qt.AlignLeft
+                                }
+
+                                Rectangle {
+                                    Layout.maximumWidth: chatListView.width * 0.8
+                                    Layout.alignment: model.isSelf ? Qt.AlignRight : Qt.AlignLeft
+                                    implicitWidth: messageText.implicitWidth + 20
+                                    implicitHeight: messageText.implicitHeight + 14
+                                    color: model.isSelf ? themePalette.primary : (model.sender === "System" ? themePalette.surfaceVariant : themePalette.surfaceVariant)
+                                    radius: Metrics.radiusSm
+                                    border.color: model.sender === "System" ? themePalette.border : "transparent"
+
+                                    Text {
+                                        id: messageText
+                                        anchors.centerIn: parent
+                                        width: Math.min(implicitWidth, chatListView.width * 0.75)
+                                        text: model.text
+                                        font.family: Typography.fontFamily
+                                        font.pixelSize: Typography.fontCaption
+                                        color: model.isSelf ? "#FFFFFF" : themePalette.textPrimary
+                                        wrapMode: Text.WordWrap
+                                    }
+                                }
+                            }
+                        }
+
+                        // Chat Input Bar
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: Metrics.spacingXs
+
+                            TextField {
+                                id: chatInput
+                                placeholderText: "Type a message..."
+                                Layout.fillWidth: true
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontCaption
+                                color: themePalette.textPrimary
+                                onAccepted: sendChatBtn.clicked()
+                                background: Rectangle {
+                                    color: themePalette.surfaceVariant
+                                    radius: Metrics.radiusSm
+                                    border.color: themePalette.border
+                                }
+                            }
+
+                            Button {
+                                id: sendChatBtn
+                                text: "Send"
+                                Layout.preferredHeight: 32
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontCaption
+                                font.weight: Typography.weightBold
+                                onClicked: {
+                                    if (chatInput.text.trim().length > 0) {
+                                        sessionClient.sendChatMessage(chatInput.text)
+                                        chatInput.text = ""
+                                    }
+                                }
+                                background: Rectangle {
+                                    color: themePalette.primary
+                                    radius: Metrics.radiusSm
+                                }
                             }
                         }
                     }
@@ -369,14 +559,14 @@ Rectangle {
                     }
 
                     Keys.onPressed: (event) => {
-                        if (sessionClient.isConnected && inputArea.containsMouse) {
+                        if (sessionClient.isConnected && inputArea.containsMouse && !chatInput.activeFocus) {
                             sessionClient.sendInputEvent(4, 0, 0, 0, 0, event.nativeScanCode, event.modifiers)
                             event.accepted = true
                         }
                     }
 
                     Keys.onReleased: (event) => {
-                        if (sessionClient.isConnected && inputArea.containsMouse) {
+                        if (sessionClient.isConnected && inputArea.containsMouse && !chatInput.activeFocus) {
                             sessionClient.sendInputEvent(5, 0, 0, 0, 0, event.nativeScanCode, event.modifiers)
                             event.accepted = true
                         }
