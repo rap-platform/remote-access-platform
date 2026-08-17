@@ -2,7 +2,8 @@
 
 > **Project:** Enterprise Cross-Platform Remote Access Platform  
 > **Source of Truth:** [`docs/REMOTE-DESKTOP-ARCHITECTURE.md`](./docs/REMOTE-DESKTOP-ARCHITECTURE.md)  
-> **Implementation Plan:** [`docs/architecture_and_implementation_plan.md`](./docs/architecture_and_implementation_plan.md)
+> **Implementation Plan:** [`docs/architecture_and_implementation_plan.md`](./docs/architecture_and_implementation_plan.md)  
+> **Testing & Verification Guide:** [`docs/TESTING_AND_VERIFICATION.md`](./docs/TESTING_AND_VERIFICATION.md)
 
 ---
 
@@ -19,7 +20,15 @@ For **EVERY** core feature, architectural decision, script creation, static anal
 ### 0.2 Implementation Plan Sync Rule (`docs/architecture_and_implementation_plan.md`)
 Whenever a milestone, new feature, component, script, or architectural decision is added or completed, the master implementation plan (`docs/architecture_and_implementation_plan.md`) MUST be updated alongside `docs/IMPLEMENTATION_LOG.md`.
 
-### 0.3 DRY Repository & Script Automation Standard
+### 0.3 Live Testing & Verification Documentation Standard (`docs/TESTING_AND_VERIFICATION.md`)
+For **EVERY** feature, network protocol modification, streaming pipeline addition, or security layer (e.g. End-to-End Encryption) introduced:
+- The agent **MUST** continuously maintain and update [`docs/TESTING_AND_VERIFICATION.md`](./docs/TESTING_AND_VERIFICATION.md).
+- The document **MUST** provide step-by-step procedures for:
+  1. **User Validation**: Functional startup, connection steps, status bar checks, and video rendering.
+  2. **Security & Cryptographic Audit**: Wireshark/`tcpdump` packet capture inspection, high-entropy payload verification, known-answer CTest vector execution, and active MITM bit-flip tamper rejection.
+  3. **Automated Pipeline Testing**: Quality Gate execution via `./tools/build.sh` and `./tools/test.sh`.
+
+### 0.4 DRY Repository & Script Automation Standard
 - **Zero Code/Script Duplication (DRY)**: Keep the codebase clean, modular, and DRY.
 - **Automated Tooling Scripts (`tools/`)**:
   - `tools/setup_deps.sh`: Installs system dependencies.
@@ -27,7 +36,7 @@ Whenever a milestone, new feature, component, script, or architectural decision 
   - `tools/test.sh`: Automated test runner (CTest + Cargo test).
   - `tools/build.sh`: Quality Gate pipeline (Lint -> Build -> Test -> Ready).
 
-### 0.4 Interactive User Terminal Standard
+### 0.5 Interactive User Terminal Standard
 - **No Internal Long-Running Commands**: Do not run long-running build scripts, server daemons, or GUI applications internally inside background execution tools.
 - **User Terminal Instructions**: Provide clear, step-by-step, copy-pasteable terminal commands so the user can run them directly in their own desktop terminal windows to view live output, scroll up/down, and inspect execution logs.
 

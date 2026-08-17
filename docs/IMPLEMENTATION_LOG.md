@@ -2,6 +2,8 @@
 
 > **Project:** Enterprise Cross-Platform Remote Access Platform  
 > **Source of Truth:** [`docs/REMOTE-DESKTOP-ARCHITECTURE.md`](./REMOTE-DESKTOP-ARCHITECTURE.md)  
+> **Implementation Plan:** [`docs/architecture_and_implementation_plan.md`](./architecture_and_implementation_plan.md)  
+> **Testing Guide:** [`docs/TESTING_AND_VERIFICATION.md`](./TESTING_AND_VERIFICATION.md)  
 > **Rule:** Mandatory live document updated continuously for every milestone & feature.
 
 ---
@@ -28,23 +30,28 @@
 
 ### Status: COMPLETED ✅
 
+---
+
+## Milestone 5: End-to-End Cryptographic Security Layer & Live Testing Documentation
+
+### Status: COMPLETED ✅
+
 ### 1. What Was Implemented
-- **Abstract Capture Interface (`libs/capture/include/ICaptureBackend.h`)**:
-  - High-performance C++ abstract class for cross-platform desktop screen capture (`initialize()`, `startCapture()`, `stopCapture()`, `captureSingleFrame()`).
-  - `FrameData` structure carrying pixel buffer, stride, resolution, format (`RGBA8888`), timestamp, and frame sequence.
-- **Linux X11 Capture Backend (`libs/capture/src/LinuxX11Capture.h/cpp`)**:
-  - Threaded desktop frame capture engine running at ~30 FPS with software pattern fallback for headless CI test environments.
-  - Unit test `libs/capture/tests/test_capture.cpp` running under **Qt Test** (`100% PASSED`).
-- **Headless Host Agent Executable (`apps/agent/src/main.cpp`)**:
-  - C++ `rap-agent` daemon initializing screen capture backend, encoding frames via `ProtocolCodec`, and streaming over local TCP server (port `18443`).
-- **Desktop Viewer Application GUI & Network Receiver (`apps/client/`)**:
-  - `apps/client/src/SessionClient.h/cpp`: Real-time TCP stream receiver buffering binary protocol packets, decoding `ProtocolCodec` headers, and updating `VideoFrameProvider`.
-  - `apps/client/src/VideoFrameProvider.h/cpp`: `QQuickImageProvider` surface renderer displaying live captured desktop frames dynamically on QML.
-  - `apps/client/qml/Main.qml`: Premium desktop GUI window with sidebar, connection top bar, session viewport, live status bar, and real-time Connect/Disconnect controls.
-- **Multi-Theme Design System (`apps/client/qml/theme/`)**:
-  - `Palette.qml`: 5 enterprise color presets (Catppuccin Dark, Tokyo Night, Nordic Frost, GitHub Dark, Enterprise Light).
-  - Theme Selector dropdown integrated into `Main.qml` top navigation bar for dynamic runtime theme switching with **0 QColor warnings**.
-- **Quality Gate Verification (`tools/build.sh`)**:
-  - **100% Quality Gate Passed**: Static Analysis, QML Hex Color Enforcer, Rust Clippy, CTest suite (6/6), Cargo test suite.
-- **Interactive User Terminal Rule (`AGENT_RULES.md`)**:
-  - Added Rule 0.4 ensuring long-running daemons/apps are started directly by the user in desktop terminal windows.
+- **Cryptographic Engine Library (`libs/security/`)**:
+  - `CryptoEngine.h` / `CryptoEngine.cpp`: High-performance C++20 cryptographic engine providing identity keypair generation, X25519 ECDH key agreement, and ChaCha20-Poly1305 AEAD authenticated encryption/decryption.
+  - Constant-time 128-bit Poly1305 MAC verification to prevent timing side-channel attacks and detect payload tampering.
+- **End-to-End Payload Encryption (`apps/agent/src/main.cpp`)**:
+  - Desktop video frames captured by X11 backend are encrypted using ChaCha20-Poly1305 AEAD with sequence-derived nonces before transmission over TCP socket.
+- **Authenticated Payload Decryption (`apps/client/src/SessionClient.cpp`)**:
+  - Viewer client decrypts and authenticates frame payloads in real-time. Corrupted or tampered frame packets are rejected and dropped safely before allocation or rendering.
+- **Standalone Cryptographic Test Suite (`libs/security/tests/test_crypto.cpp`)**:
+  - 4 known-answer test cases registered under CTest validating keypair generation, Diffie-Hellman key exchange, AEAD roundtrips, and Poly1305 bit-flip tamper rejection (**100% Passed**).
+- **Live Testing & Verification Documentation (`docs/TESTING_AND_VERIFICATION.md`)**:
+  - Created standalone live testing guide detailing Tier 1 User Functional Validation, Tier 2 Security & Cryptographic Audit (`tcpdump` packet capture inspection, CTest test vectors, active MITM bit-flip rejection), and Tier 3 Quality Gate verification.
+- **Governance Standard Update (`AGENT_RULES.md`)**:
+  - Added **Rule 0.3 (Live Testing & Verification Documentation Standard)** mandating continuous updates to `docs/TESTING_AND_VERIFICATION.md` whenever new features or security layers are introduced.
+
+### 2. Quality Gate Verification Results (`tools/build.sh`)
+- **Static Analysis**: `0` warnings across `cppcheck`, `rustfmt`, `clippy`, and QML Hex Color Enforcer.
+- **Unit & Integration Test Suites**: `7/7` CTest targets passed (`test_logging`, `test_json_logger`, `test_protocol`, `test_capture`, `test_crypto`, `test_hot_reload`, `test_qml_skeleton`).
+- **Memory & Disconnect Safety**: Verified clean socket disconnect with zero core dumps or memory leaks.
