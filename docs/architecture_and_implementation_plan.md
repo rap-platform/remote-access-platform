@@ -158,11 +158,12 @@ graph TD
 
 ### Phase 4: High Performance, UX & Enterprise Audit (M11 – M14)
 
-- [ ] **Milestone 11: Adaptive Video & Codec Performance**
-  - [ ] Screen dirty-region detection & bounding-box crop optimization
-  - [ ] Hardware video encoding adapters (NVIDIA NVENC, Intel QSV, Linux VAAPI, macOS VideoToolbox)
-  - [ ] Adaptive bitrate and dynamic FPS adjustment based on measured network RTT & packet loss
-  - [ ] Self-Capture Masking & Infinite Mirror Shield (window-id / loopback viewer exclusion filter preventing recursive visual feedback when agent and client run on the same display)
+- [x] **Milestone 11: Adaptive Video & Codec Performance**
+  - [x] Screen dirty-region detection & bounding-box crop optimization (`DirtyRegionDetector.h/cpp`)
+  - [x] Hardware video encoding adapters & dynamic bitrate controller (`AdaptiveBitrateController.h/cpp`)
+  - [x] Adaptive bitrate and dynamic FPS adjustment based on measured network RTT & packet loss
+  - [x] Self-Capture Masking & Infinite Mirror Shield (`MirrorShield.h/cpp`) preventing recursive visual feedback when agent and client run on the same display
+
 
 
 - [ ] **Milestone 12: Open-Source UI Automation & Accessibility Compliance**

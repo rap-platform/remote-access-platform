@@ -66,9 +66,18 @@
 
 ### Status: COMPLETED ✅
 
+---
+
+## Milestone 11: Adaptive Video & Codec Performance
+
+### Status: COMPLETED ✅
+
 ### 1. What Was Implemented
-- **Stateless Relay Core Engine (`services/relay/src/lib.rs`)**:
-  - `RelayServer` with atomic metrics (`packets_relayed`, `bytes_relayed`) and zero-allocation socket pairing.
-  - Zero-decryption packet routing architecture: Receives raw encrypted binary envelopes, extracts `session_id`, and forwards to destination peer endpoint (`SocketAddr`) without reading or modifying ciphertext.
-- **Relay High-Throughput Load Benchmark (`services/relay/tests/test_relay_benchmark.rs` & `tools/loadtest_relay.sh`)**:
-  - Validates 100,000 continuous packet relays (140.00 MB data volume) with zero payload corruption and sub-millisecond latency.
+- **Dirty-Region Bounding-Box Detector (`libs/capture/src/DirtyRegionDetector.cpp`)**:
+  - Sub-sampled scanning algorithm calculating minimal dirty rectangle bounding box (`DirtyRect`) across consecutive frame buffers.
+- **Infinite Mirror Shield Loopback Severing (`libs/capture/src/MirrorShield.cpp`)**:
+  - Overlays dark non-recursive pattern over viewer window coordinates when host agent and client viewer run on the same laptop display, breaking optical recursion at the 1st layer.
+- **Adaptive Bitrate & FPS Controller (`libs/capture/src/AdaptiveBitrateController.cpp`)**:
+  - Dynamic scaling of target FPS (60 → 30 → 15) and bitrate (8000 Kbps → 2000 Kbps) based on network RTT and packet loss telemetry.
+- **Performance Unit Test Suite (`libs/capture/tests/test_performance.cpp`)**:
+  - Validates dirty region calculation, mirror shield overlay, and adaptive bitrate telemetry updates.
