@@ -1,0 +1,14 @@
+[package]
+name = "rap-shared"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true

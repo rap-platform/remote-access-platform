@@ -1,0 +1,12 @@
+[package]
+name = "rap-signaling"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+rap-shared = { path = "../shared" }
+tracing.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
