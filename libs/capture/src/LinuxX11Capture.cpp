@@ -131,11 +131,14 @@ std::optional<FrameData> LinuxX11Capture::captureSingleFrame() {
             }
             XDestroyImage(ximage);
 
-            // 1. Apply Mirror Shield: Sever optical infinite feedback loop if client viewer is running on same desktop
-            WindowBounds clientBounds = findClientWindowBounds(display_, rootWindow_);
-            if (clientBounds.isActive) {
-                MirrorShield::applyMirrorShield(frame.pixelData.data(), width_, height_, clientBounds, 4);
+            // 1. Apply Mirror Shield: Refresh window search every 30 frames to eliminate XQueryTree per-frame lag
+            if (frameCounter_ % 30 == 1 || !cachedClientBounds_.isActive) {
+                cachedClientBounds_ = findClientWindowBounds(display_, rootWindow_);
             }
+            if (cachedClientBounds_.isActive) {
+                MirrorShield::applyMirrorShield(frame.pixelData.data(), width_, height_, cachedClientBounds_, 4);
+            }
+
 
             // 2. Dirty Region Detection: If frame is unchanged from previous frame, skip duplicate transmission
             if (!prevFrameData_.empty() && prevFrameData_.size() == frame.pixelData.size()) {

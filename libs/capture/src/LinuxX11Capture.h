@@ -3,6 +3,7 @@
 
 #include "ICaptureBackend.h"
 #include "AdaptiveBitrateController.h"
+#include "MirrorShield.h"
 #include <atomic>
 #include <thread>
 #include <X11/Xlib.h>
@@ -40,6 +41,7 @@ private:
     Window rootWindow_{0};
     std::vector<uint8_t> prevFrameData_;
     AdaptiveBitrateController bitrateController_{8000, 60};
+    WindowBounds cachedClientBounds_;
 };
 
 } // namespace rap::capture

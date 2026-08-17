@@ -19,10 +19,11 @@ ApplicationWindow {
     Connections {
         target: frameProvider
         function onFrameReady() {
-            mainWindow.frameCounter++
-            videoSurface.source = "image://frameprovider/current?" + mainWindow.frameCounter
+            videoSurface.source = ""
+            videoSurface.source = "image://frameprovider/current"
         }
     }
+
 
     ColumnLayout {
         anchors.fill: parent
