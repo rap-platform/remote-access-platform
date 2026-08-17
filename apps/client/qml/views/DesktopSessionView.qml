@@ -15,8 +15,8 @@ Rectangle {
 
     onActiveTabIndexChanged: {
         if (sessionClient && sessionClient.isConnected) {
-            bool isCurrent = (activeTabIndex === activeConnectedTabIndex)
-            sessionClient.setRenderGated(!isCurrent)
+            let isCurrent = (activeTabIndex === activeConnectedTabIndex);
+            sessionClient.setRenderGated(!isCurrent);
         }
     }
 
