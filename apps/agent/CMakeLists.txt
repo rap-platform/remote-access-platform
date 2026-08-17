@@ -8,4 +8,5 @@ target_link_libraries(rap-agent PRIVATE
     rap_common
     rap_protocol
     rap_capture
+    rap_security
 )

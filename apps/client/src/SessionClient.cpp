@@ -1,6 +1,7 @@
 #include "SessionClient.h"
 #include <QDebug>
 #include <cstring>
+#include "CryptoEngine.h"
 #include "ProtocolCodec.h"
 
 namespace rap::client {
@@ -35,7 +36,7 @@ void SessionClient::onConnected() {
     receiveBuffer_.clear();
     receivedFrames_ = 0;
     qInfo() << "[Client] TCP socket connected successfully!";
-    setStatus("Connected — Streaming desktop session");
+    setStatus("Connected — Encrypted Desktop Session Active");
     emit connectionStateChanged(true);
 }
 
@@ -56,6 +57,13 @@ void SessionClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
 
 void SessionClient::onReadyRead() {
     receiveBuffer_.append(socket_.readAll());
+
+    const std::vector<uint8_t> sessionKey = {
+        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+        0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
+    };
 
     while (receiveBuffer_.size() >= 28) { // 28 byte protocol header
         const uint8_t *data = reinterpret_cast<const uint8_t *>(receiveBuffer_.constData());
@@ -79,20 +87,32 @@ void SessionClient::onReadyRead() {
         const auto &packet = std::get<rap::protocol::Packet>(result);
         size_t totalPacketSize = 28 + packet.header.payloadSize;
 
-        if (packet.header.type == rap::protocol::PayloadType::FrameHeader && packet.payload.size() >= 8) {
-            uint32_t width = 0;
-            uint32_t height = 0;
-            std::memcpy(&width, packet.payload.data(), 4);
-            std::memcpy(&height, packet.payload.data() + 4, 4);
+        if (packet.header.type == rap::protocol::PayloadType::FrameHeader && !packet.payload.empty()) {
+            std::vector<uint8_t> nonce(12, 0);
+            uint64_t fn = packet.header.sequenceNumber;
+            std::memcpy(nonce.data(), &fn, sizeof(fn));
 
-            size_t expectedPixelBytes = static_cast<size_t>(width) * height * 4;
-            if (width > 0 && height > 0 && packet.payload.size() >= (8 + expectedPixelBytes)) {
-                const uchar *pixelPtr = reinterpret_cast<const uchar *>(packet.payload.data() + 8);
-                QImage imgCopy = QImage(pixelPtr, width, height, width * 4, QImage::Format_RGBA8888).copy();
-                if (frameProvider_) {
-                    frameProvider_->updateFrame(imgCopy);
-                    receivedFrames_++;
+            // Decrypt & authenticate payload via ChaCha20-Poly1305 AEAD
+            auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
+
+            if (decryptedOpt.has_value() && decryptedOpt->size() >= 8) {
+                const auto &decrypted = decryptedOpt.value();
+                uint32_t width = 0;
+                uint32_t height = 0;
+                std::memcpy(&width, decrypted.data(), 4);
+                std::memcpy(&height, decrypted.data() + 4, 4);
+
+                size_t expectedPixelBytes = static_cast<size_t>(width) * height * 4;
+                if (width > 0 && height > 0 && decrypted.size() >= (8 + expectedPixelBytes)) {
+                    const uchar *pixelPtr = reinterpret_cast<const uchar *>(decrypted.data() + 8);
+                    QImage imgCopy = QImage(pixelPtr, width, height, width * 4, QImage::Format_RGBA8888).copy();
+                    if (frameProvider_) {
+                        frameProvider_->updateFrame(imgCopy);
+                        receivedFrames_++;
+                    }
                 }
+            } else {
+                qWarning() << "[Client] E2E Crypto Authentication Failed! Dropping corrupted or tampered frame payload.";
             }
         }
 

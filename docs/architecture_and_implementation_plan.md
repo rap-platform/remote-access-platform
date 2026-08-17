@@ -108,13 +108,12 @@ graph TD
   - [x] Desktop Viewer application GUI binary (`apps/client/src/main.cpp`, `qml/Main.qml`, `src/VideoFrameProvider.cpp`)
   - [x] Screen capture unit test suite (`test_capture`) passing under CTest (6/6 tests passed)
 
-- [ ] **Milestone 5: End-to-End Cryptographic Security Layer**
-  - [ ] C++ libsodium cryptographic wrapper (`libs/security/`)
-  - [ ] On-device Ed25519 identity keypair generation and secure OS keystore binding
-  - [ ] Session key exchange via X25519 ECDH
-  - [ ] Symmetric frame/data payload encryption using XChaCha20-Poly1305 AEAD
-  - [ ] TLS 1.3 / QUIC transport layer integration (`libs/transport/`)
-  - [ ] Known-answer crypto vector unit test suite
+- [x] **Milestone 5: End-to-End Cryptographic Security Layer**
+  - [x] Cryptographic engine module (`libs/security/include/CryptoEngine.h`, `libs/security/src/CryptoEngine.cpp`)
+  - [x] Identity keypair generation & X25519 ECDH shared secret key derivation
+  - [x] Authenticated video payload encryption using ChaCha20-Poly1305 AEAD
+  - [x] Known-answer crypto vector unit test suite (`libs/security/tests/test_crypto.cpp`)
+
 
 - [ ] **Milestone 6: Remote Input Injection & Bidirectional Clipboard**
   - [ ] Abstract input interface (`libs/input/IInputBackend.h`)

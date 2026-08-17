@@ -53,6 +53,7 @@ target_link_libraries(rap-client PRIVATE
     Qt6::Network
     rap_common
     rap_protocol
+    rap_security
 )
 
 if(ENABLE_HOT_RELOAD)
