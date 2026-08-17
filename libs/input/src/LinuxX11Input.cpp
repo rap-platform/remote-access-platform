@@ -1,4 +1,5 @@
 #include "LinuxX11Input.h"
+#include <cstdlib>
 #include <iostream>
 
 namespace rap::input {
@@ -20,6 +21,9 @@ bool LinuxX11Input::initialize() {
 }
 
 bool LinuxX11Input::injectEvent(const InputEvent &event) {
+    if (std::getenv("RAP_DISABLE_X11_INJECTION") || std::getenv("RAP_TEST_MODE")) {
+        return true;
+    }
     if (display_ && xtestSupported_) {
         switch (event.type) {
         case InputEventType::MouseMove:

@@ -89,6 +89,7 @@ private:
     bool isConnected_{false};
     QString statusText_{"Disconnected"};
     QString p2pId_{"482 915 307"};
+    QString lastConnectedTarget_;
     bool hostAgentRunning_{true};
     uint64_t receivedFrames_{0};
     uint64_t inputSequence_{0};

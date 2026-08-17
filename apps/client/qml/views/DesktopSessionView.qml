@@ -28,6 +28,68 @@ Rectangle {
         }
     }
 
+    // Modal Popup Notification for Duplicate Connections
+    Popup {
+        id: duplicateNoticePopup
+        anchors.centerIn: parent
+        width: 440
+        height: 200
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+        property string messageText: ""
+
+        background: Rectangle {
+            color: themePalette.surface
+            radius: Metrics.radiusLg
+            border.color: themePalette.primary
+            border.width: 2
+        }
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: Metrics.spacingLg
+            spacing: Metrics.spacingMd
+
+            RowLayout {
+                spacing: Metrics.spacingSm
+                Label { text: "⚠️"; font.pixelSize: 22 }
+                Label {
+                    text: "Connection Already Active"
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontSubtitle
+                    font.weight: Typography.weightBold
+                    color: themePalette.textPrimary
+                }
+            }
+
+            Label {
+                text: duplicateNoticePopup.messageText
+                font.family: Typography.fontFamily
+                font.pixelSize: Typography.fontBody
+                color: themePalette.textSecondary
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+
+            Item { Layout.fillHeight: true }
+
+            Button {
+                text: "Switch to Active Session Tab"
+                Layout.alignment: Qt.AlignRight
+                font.family: Typography.fontFamily
+                font.pixelSize: Typography.fontCaption
+                font.weight: Typography.weightBold
+                onClicked: duplicateNoticePopup.close()
+                background: Rectangle {
+                    color: themePalette.primary
+                    radius: Metrics.radiusSm
+                }
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -175,6 +237,7 @@ Rectangle {
 
                     Connections {
                         target: frameProvider
+                        enabled: desktopSessionView.isCurrentTabConnected && (mainWindow.currentViewIndex === 0)
                         function onFrameReady() {
                             videoSurface.source = ""
                             videoSurface.source = "image://frameprovider/current"
@@ -195,7 +258,7 @@ Rectangle {
                     anchors.top: parent.top
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.topMargin: Metrics.spacingSm
-                    width: 340
+                    width: 360
                     height: 36
                     radius: Metrics.radiusSm
                     color: themePalette.surface
@@ -390,7 +453,7 @@ Rectangle {
                         TextField {
                             id: targetIdInput
                             placeholderText: "Enter Remote P2P ID or IP:Port"
-                            text: "127.0.0.1:18443"
+                            text: "115 604 669"
                             Layout.fillWidth: true
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontBody
@@ -403,7 +466,7 @@ Rectangle {
                         }
 
                         Label {
-                            text: "Enter peer's 9-digit Desk ID (e.g. 482 915 307) or IP address to connect."
+                            text: "Enter peer's 9-digit Desk ID (e.g. 115 604 669) or IP address to connect."
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontCaption
                             color: themePalette.textSecondary
@@ -420,34 +483,39 @@ Rectangle {
                             font.pixelSize: Typography.fontBody
                             font.weight: Typography.weightBold
                             onClicked: {
-                                let target = targetIdInput.text.trim()
+                                let rawTarget = targetIdInput.text.trim()
+                                if (rawTarget.length === 0) return
 
-                                // Check for existing active connection to the same target ID
+                                let cleanTarget = rawTarget.replace(/\s+/g, '')
+
+                                // Check for existing active connection to the same target ID across open tabs
                                 let existingTab = -1
                                 for (let i = 0; i < sessionTabsModel.count; ++i) {
                                     let tabObj = sessionTabsModel.get(i)
-                                    if (i !== desktopSessionView.activeTabIndex && tabObj.connected && tabObj.targetHost === target) {
+                                    let tabTargetClean = tabObj.targetHost ? tabObj.targetHost.replace(/\s+/g, '') : ""
+                                    if (i !== desktopSessionView.activeTabIndex && tabObj.connected && (tabTargetClean === cleanTarget)) {
                                         existingTab = i
                                         break
                                     }
                                 }
 
                                 if (existingTab !== -1) {
-                                    sessionClient.setStatus("Already connected to " + target + " in Tab " + (existingTab + 1))
+                                    duplicateNoticePopup.messageText = "Target device (" + rawTarget + ") is already connected in Session Tab " + (existingTab + 1) + ".\n\nSwitching view to your active connected session..."
+                                    duplicateNoticePopup.open()
                                     desktopSessionView.activeTabIndex = existingTab
                                     return
                                 }
 
                                 desktopSessionView.activeConnectedTabIndex = desktopSessionView.activeTabIndex
-                                sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "title", target.length > 0 ? target : "Desk Session")
-                                sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "targetHost", target)
+                                sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "title", rawTarget)
+                                sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "targetHost", rawTarget)
                                 sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "connected", true)
 
-                                if (target.indexOf(":") !== -1) {
-                                    let parts = target.split(":")
+                                if (rawTarget.indexOf(":") !== -1) {
+                                    let parts = rawTarget.split(":")
                                     sessionClient.connectToHost(parts[0], parseInt(parts[1]))
                                 } else {
-                                    sessionClient.connectByP2PId(target)
+                                    sessionClient.connectByP2PId(rawTarget)
                                 }
                             }
                             contentItem: Text {

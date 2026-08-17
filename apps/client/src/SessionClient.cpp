@@ -65,6 +65,7 @@ void SessionClient::connectByP2PId(const QString &p2pIdInput) {
     QString cleanId = p2pIdInput;
     cleanId.remove(' ');
     qInfo() << "[Client] Connecting via P2P Desk ID:" << cleanId;
+    lastConnectedTarget_ = "Desk ID: " + p2pIdInput;
     connectToHost("127.0.0.1", 18443);
 }
 
@@ -73,8 +74,12 @@ void SessionClient::connectToHost(const QString &host, uint16_t port) {
         socket_.abort();
     }
 
+    if (lastConnectedTarget_.isEmpty()) {
+        lastConnectedTarget_ = host + ":" + QString::number(port);
+    }
+
     qInfo() << "[Client] Connecting TCP socket to host:" << host << "port:" << port;
-    setStatus("Connecting to " + host + ":" + QString::number(port) + "...");
+    setStatus("Connecting to " + lastConnectedTarget_ + "...");
     socket_.connectToHost(host, port);
 }
 
@@ -181,13 +186,14 @@ void SessionClient::onConnected() {
     inputSequence_ = 0;
     socket_.setSocketOption(QAbstractSocket::LowDelayOption, 1); // Disable Nagle's algorithm (TCP_NODELAY)
     qInfo() << "[Client] TCP socket connected successfully!";
-    setStatus("Connected — Encrypted Desktop Session Active");
+    setStatus("Connected to " + (lastConnectedTarget_.isEmpty() ? "Remote Desk" : lastConnectedTarget_));
     emit connectionStateChanged(true);
 }
 
 void SessionClient::onDisconnected() {
     isConnected_ = false;
     receiveBuffer_.clear();
+    lastConnectedTarget_ = "";
     qInfo() << "[Client] TCP socket disconnected.";
     setStatus("Disconnected");
     emit connectionStateChanged(false);
