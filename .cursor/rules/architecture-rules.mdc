@@ -1,0 +1,17 @@
+---
+description: Remote Desktop Architecture & Coding Standards Rules
+globs: **/*
+---
+
+# Remote Access Platform - Agent Rules
+
+Refer to `REMOTE-DESKTOP-ARCHITECTURE.md` (v4.0) and `AGENT_RULES.md`.
+
+- **Backend**: Rust ONLY (`services/`). `#![forbid(unsafe_code)]` mandatory.
+- **Client UI**: Qt 6 (LGPLv3 dynamic linking) + QML (`apps/client/`).
+- **Core**: C++20 (`apps/client/src/core/`, `apps/agent/`).
+- **Agent**: Qt-free headless service.
+- **Cross-Platform**: Windows, Linux, macOS. OS code isolated in `platform/<os>/`.
+- **QML Standards**: `id` first, relative sizing, `Palette.*` colors, zero business logic.
+- **Logging**: `QLoggingCategory` (C++) and `tracing` (Rust). No secrets in logs.
+- **Commits**: Conventional Commits standard.
