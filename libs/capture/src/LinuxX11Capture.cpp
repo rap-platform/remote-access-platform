@@ -140,10 +140,12 @@ bool LinuxX11Capture::startCapture(FrameCallback callback) {
             auto frameOpt = captureSingleFrame();
             if (frameOpt.has_value() && callback) {
                 callback(frameOpt.value());
+            }
             uint32_t targetFps = bitrateController_.getSettings().targetFps;
             uint32_t sleepMs = (targetFps > 0) ? (1000 / targetFps) : 33;
             std::this_thread::sleep_for(std::chrono::milliseconds(sleepMs));
         }
+
 
         isCapturing_.store(false);
     });
