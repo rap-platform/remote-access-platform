@@ -34,6 +34,7 @@ public:
     QString statusText() const { return statusText_; }
     QString p2pId() const { return p2pId_; }
     bool isHostAgentRunning() const { return hostAgentRunning_; }
+    bool isRenderGated() const { return renderGated_; }
     double transferProgress() const { return transferProgress_; }
     QString transferStatus() const { return transferStatus_; }
     QString transferSpeed() const { return transferSpeed_; }
@@ -41,6 +42,8 @@ public:
     QString currentRemotePath() const { return currentRemotePath_; }
     QVariantList localDirectoryList() const { return localDirectoryList_; }
     QString currentLocalPath() const { return currentLocalPath_; }
+
+    Q_INVOKABLE void setRenderGated(bool gated);
 
     Q_INVOKABLE void connectByP2PId(const QString &p2pId, const QString &password = "");
     Q_INVOKABLE void sendInputEvent(uint16_t type, int32_t x, int32_t y, uint32_t button, int32_t delta, uint32_t keycode, uint32_t modifiers);
@@ -90,6 +93,7 @@ private:
     VideoFrameProvider *frameProvider_{nullptr};
     QByteArray receiveBuffer_;
     bool isConnected_{false};
+    bool renderGated_{false};
     QString statusText_{"Disconnected"};
     QString p2pId_{"482 915 307"};
     QString lastConnectedTarget_;

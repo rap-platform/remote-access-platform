@@ -13,6 +13,13 @@ Rectangle {
     property bool chatWindowOpen: false
     property int unreadChatCount: 0
 
+    onActiveTabIndexChanged: {
+        if (sessionClient && sessionClient.isConnected) {
+            bool isCurrent = (activeTabIndex === activeConnectedTabIndex)
+            sessionClient.setRenderGated(!isCurrent)
+        }
+    }
+
     ListModel {
         id: sessionTabsModel
         ListElement { title: "New Session"; targetHost: "115 604 669"; connected: false }

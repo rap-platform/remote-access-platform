@@ -275,6 +275,11 @@ void SessionClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     emit connectionStateChanged(false);
 }
 
+void SessionClient::setRenderGated(bool gated) {
+    renderGated_ = gated;
+    qInfo() << "[SessionClient Optimization] Background render gating set to:" << (gated ? "ENABLED (Paused)" : "DISABLED (Active)");
+}
+
 void SessionClient::onReadyRead() {
     receiveBuffer_.append(socket_.readAll());
 
@@ -306,6 +311,12 @@ void SessionClient::onReadyRead() {
         size_t totalPacketSize = 28 + packet.header.payloadSize;
 
         if (packet.header.type == rap::protocol::PayloadType::FrameHeader && !packet.payload.empty()) {
+            if (renderGated_) {
+                // Multi-session optimization: skip frame decompression and UI copy for background tabs
+                receiveBuffer_.remove(0, static_cast<qsizetype>(totalPacketSize));
+                continue;
+            }
+
             std::vector<uint8_t> nonce(12, 0);
             uint64_t fn = packet.header.sequenceNumber;
             std::memcpy(nonce.data(), &fn, sizeof(fn));
