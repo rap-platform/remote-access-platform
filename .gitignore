@@ -1,0 +1,43 @@
+# Build directories
+build/
+build-*/
+cmake-build-*/
+out/
+target/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.user
+*.user.*
+*.swp
+*~
+.DS_Store
+
+# Qt / QML build artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# Rust target directory
+/**/target/
+Cargo.lock.3rdparty
+
+# Logs & Temp files
+*.log
+*.tmp
+.env
+.env.local

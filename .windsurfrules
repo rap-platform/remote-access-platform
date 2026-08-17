@@ -1,0 +1,17 @@
+# Windsurf Agent Rules - Remote Desktop Platform Workspace
+
+Always read and follow the mandatory architecture blueprint in `REMOTE-DESKTOP-ARCHITECTURE.md` and `AGENT_RULES.md`.
+
+Key Rules:
+1. Backend is **Rust ONLY** (`services/`). `#![forbid(unsafe_code)]` at crate root.
+2. Desktop UI is **Qt 6 (LGPLv3 dynamic linking)** + QML. NEVER statically link Qt. Avoid GPL-only modules (`Qt Charts`, `Qt Data Visualization`).
+3. Core client/agent is **C++20**.
+4. Agent MUST be Qt-free.
+5. No `#ifdef _WIN32` / `#ifdef __linux__` / `#ifdef __APPLE__` outside `platform/<os>/` subdirectories.
+6. QML:
+   - Mandatory `id` property declared first.
+   - Relative sizing only (using `Metrics.spacing*`, `anchors`, `Layout.*`). No hardcoded pixel sizes.
+   - No hex color strings outside `qml/theme/`. Use `Palette.*`.
+   - Zero business logic in QML.
+7. Logging: Use `QLoggingCategory` (C++) and `tracing` (Rust). Never log credentials, session keys, clipboard data, or raw frame content.
+8. Git Commits: Conventional Commits (`feat:`, `fix:`, `sec:`, `refactor:`, `test:`).
