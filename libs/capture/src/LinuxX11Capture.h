@@ -1,9 +1,11 @@
 #ifndef RAP_CAPTURE_LINUX_X11_CAPTURE_H
 #define RAP_CAPTURE_LINUX_X11_CAPTURE_H
 
-#include "../include/ICaptureBackend.h"
+#include "ICaptureBackend.h"
 #include <atomic>
 #include <thread>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 namespace rap::capture {
 
@@ -19,15 +21,21 @@ public:
     std::optional<FrameData> captureSingleFrame() override;
     std::string backendName() const override { return "Linux X11 Capture Backend"; }
 
+    uint32_t width() const { return width_; }
+    uint32_t height() const { return height_; }
+
 private:
     void stopCaptureInternal();
 
+    uint32_t width_{1920};
+    uint32_t height_{1080};
+    uint64_t frameCounter_{0};
     std::atomic<bool> isCapturing_{false};
     std::atomic<bool> stopRequested_{false};
     std::thread captureThread_;
-    uint64_t frameCounter_{0};
-    uint32_t width_{1920};
-    uint32_t height_{1080};
+
+    Display *display_{nullptr};
+    Window rootWindow_{0};
 };
 
 } // namespace rap::capture

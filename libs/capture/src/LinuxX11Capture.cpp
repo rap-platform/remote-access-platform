@@ -1,16 +1,29 @@
 #include "LinuxX11Capture.h"
 #include <chrono>
 #include <cstring>
+#include <iostream>
 
 namespace rap::capture {
 
 LinuxX11Capture::~LinuxX11Capture() {
     stopCaptureInternal();
+    if (display_) {
+        XCloseDisplay(display_);
+        display_ = nullptr;
+    }
 }
 
 bool LinuxX11Capture::initialize() {
-    width_ = 1920;
-    height_ = 1080;
+    display_ = XOpenDisplay(nullptr);
+    if (display_) {
+        int screen = DefaultScreen(display_);
+        rootWindow_ = RootWindow(display_, screen);
+        width_ = static_cast<uint32_t>(DisplayWidth(display_, screen));
+        height_ = static_cast<uint32_t>(DisplayHeight(display_, screen));
+    } else {
+        width_ = 1920;
+        height_ = 1080;
+    }
     frameCounter_ = 0;
     return true;
 }
@@ -29,9 +42,34 @@ std::optional<FrameData> LinuxX11Capture::captureSingleFrame() {
     size_t bufferSize = frame.stride * frame.height;
     frame.pixelData.resize(bufferSize);
 
-    // Populate frame buffer with pattern for software fallback/CI test environment
+    if (display_) {
+        XImage *ximage = XGetImage(display_, rootWindow_, 0, 0, width_, height_, AllPlanes, ZPixmap);
+        if (ximage) {
+            uint8_t *dst = frame.pixelData.data();
+            const uint8_t *src = reinterpret_cast<const uint8_t *>(ximage->data);
+            int bpp = ximage->bits_per_pixel / 8;
+
+            for (uint32_t y = 0; y < height_; ++y) {
+                const uint8_t *srcRow = src + (y * ximage->bytes_per_line);
+                uint8_t *dstRow = dst + (y * width_ * 4);
+                for (uint32_t x = 0; x < width_; ++x) {
+                    uint8_t b = srcRow[x * bpp + 0];
+                    uint8_t g = srcRow[x * bpp + 1];
+                    uint8_t r = srcRow[x * bpp + 2];
+                    dstRow[x * 4 + 0] = r;
+                    dstRow[x * 4 + 1] = g;
+                    dstRow[x * 4 + 2] = b;
+                    dstRow[x * 4 + 3] = 0xFF;
+                }
+            }
+            XDestroyImage(ximage);
+            return frame;
+        }
+    }
+
+    // Software test pattern for headless CI environments
     uint32_t *pixels = reinterpret_cast<uint32_t *>(frame.pixelData.data());
-    uint32_t color = 0xFF1E1E2E; // Dark theme color pattern
+    uint32_t color = 0xFF1E1E2E;
     std::fill(pixels, pixels + (width_ * height_), color);
 
     return frame;
