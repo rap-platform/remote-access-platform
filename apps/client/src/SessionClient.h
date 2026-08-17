@@ -17,7 +17,7 @@ class SessionClient : public QObject {
 
 public:
     explicit SessionClient(VideoFrameProvider *frameProvider, QObject *parent = nullptr);
-    ~SessionClient() override = default;
+    ~SessionClient() override;
 
     bool isConnected() const { return isConnected_; }
     QString statusText() const { return statusText_; }

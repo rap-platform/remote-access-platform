@@ -158,6 +158,8 @@ graph TD
   - [ ] Screen dirty-region detection & bounding-box crop optimization
   - [ ] Hardware video encoding adapters (NVIDIA NVENC, Intel QSV, Linux VAAPI, macOS VideoToolbox)
   - [ ] Adaptive bitrate and dynamic FPS adjustment based on measured network RTT & packet loss
+  - [ ] Self-Capture Masking & Infinite Mirror Shield (window-id / loopback viewer exclusion filter preventing recursive visual feedback when agent and client run on the same display)
+
 
 - [ ] **Milestone 12: Open-Source UI Automation & Accessibility Compliance**
   - [ ] Component accessibility tagging (`Accessible.role`, `Accessible.name`, `Accessible.description` on all controls)

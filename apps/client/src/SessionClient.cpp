@@ -14,6 +14,15 @@ SessionClient::SessionClient(VideoFrameProvider *frameProvider, QObject *parent)
     connect(&socket_, &QTcpSocket::errorOccurred, this, &SessionClient::onErrorOccurred);
 }
 
+SessionClient::~SessionClient() {
+    socket_.blockSignals(true);
+    if (socket_.isOpen()) {
+        socket_.abort();
+        socket_.close();
+    }
+    receiveBuffer_.clear();
+}
+
 void SessionClient::connectToHost(const QString &host, uint16_t port) {
     if (socket_.state() != QAbstractSocket::UnconnectedState) {
         socket_.abort();
@@ -81,6 +90,7 @@ void SessionClient::onConnected() {
 
 void SessionClient::onDisconnected() {
     isConnected_ = false;
+    receiveBuffer_.clear();
     qInfo() << "[Client] TCP socket disconnected.";
     setStatus("Disconnected");
     emit connectionStateChanged(false);
@@ -89,6 +99,7 @@ void SessionClient::onDisconnected() {
 void SessionClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     Q_UNUSED(socketError);
     isConnected_ = false;
+    receiveBuffer_.clear();
     qWarning() << "[Client] Socket Error:" << socket_.errorString();
     setStatus("Socket Error: " + socket_.errorString());
     emit connectionStateChanged(false);
