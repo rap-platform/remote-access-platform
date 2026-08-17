@@ -30,17 +30,20 @@ DirtyRect DirtyRegionDetector::detectDirtyRegion(const uint8_t *prevFrame,
 
     const int stride = width * bytesPerPixel;
 
-    for (int y = 0; y < height; y += 2) { // Sub-sampled 2-line scan for sub-ms execution
+    for (int y = 0; y < height; ++y) {
         const uint8_t *prevRow = prevFrame + (y * stride);
         const uint8_t *currRow = currFrame + (y * stride);
 
-        for (int x = 0; x < width; x += 4) { // Sub-sampled 4-pixel step
-            const int offset = x * bytesPerPixel;
-            if (std::memcmp(prevRow + offset, currRow + offset, bytesPerPixel) != 0) {
-                minX = std::min(minX, x);
-                maxX = std::max(maxX, x + 4);
-                minY = std::min(minY, y);
-                maxY = std::max(maxY, y + 2);
+        if (std::memcmp(prevRow, currRow, stride) != 0) {
+            minY = std::min(minY, y);
+            maxY = std::max(maxY, y + 1);
+
+            for (int x = 0; x < width; ++x) {
+                const int offset = x * bytesPerPixel;
+                if (std::memcmp(prevRow + offset, currRow + offset, bytesPerPixel) != 0) {
+                    minX = std::min(minX, x);
+                    maxX = std::max(maxX, x + 1);
+                }
             }
         }
     }
