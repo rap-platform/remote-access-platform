@@ -95,7 +95,11 @@ int main(int argc, char *argv[]) {
                             std::memcpy(&event.keycode, decrypted.data() + 20, 4);
 
                             if (inputBackend) {
-                                inputBackend->injectEvent(event);
+                                QHostAddress peerAddr = clientSocket->peerAddress();
+                                bool isLoopback = (peerAddr == QHostAddress::LocalHost || peerAddr == QHostAddress::LocalHostIPv6 || peerAddr.toString().contains("127.0.0.1"));
+                                if (!isLoopback) {
+                                    inputBackend->injectEvent(event);
+                                }
                             }
                         }
                     } else if (packet.header.type == rap::protocol::PayloadType::ClipboardData && !packet.payload.empty()) {
