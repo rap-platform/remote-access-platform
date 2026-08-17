@@ -59,7 +59,12 @@ int main(int argc, char *argv[]) {
             QTcpSocket *clientSocket = server.nextPendingConnection();
             clientSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1); // Disable Nagle's algorithm (TCP_NODELAY)
             clients.append(clientSocket);
-            qInfo() << "[Agent] New client connected from:" << clientSocket->peerAddress().toString();
+            QString peerStr = clientSocket->peerAddress().toString();
+            bool isLoopback = clientSocket->peerAddress().isLoopback() || peerStr.contains("127.") || peerStr.contains("::1") || peerStr.contains("localhost") || peerStr.isEmpty();
+            clientSocket->setProperty("isLoopback", isLoopback);
+            if (isLoopback) {
+                qInfo() << "[Agent Input Guard] Client is local loopback (" << peerStr << "). Bypassing X11 local input injection to prevent terminal feedback.";
+            }
 
             // Handle incoming remote input events and clipboard sync over encrypted socket
             QObject::connect(clientSocket, &QTcpSocket::readyRead, [clientSocket, &inputBackend, sessionKey]() {
@@ -95,9 +100,8 @@ int main(int argc, char *argv[]) {
                             std::memcpy(&event.keycode, decrypted.data() + 20, 4);
 
                             if (inputBackend) {
-                                QHostAddress peerAddr = clientSocket->peerAddress();
-                                bool isLoopback = peerAddr.isLoopback() || peerAddr.toString().contains("127.0.0.1") || peerAddr.toString().contains("::1") || peerAddr.toString().contains("::ffff:127.0.0.1");
-                                if (!isLoopback) {
+                                bool isLoopbackClient = clientSocket->property("isLoopback").toBool();
+                                if (!isLoopbackClient) {
                                     inputBackend->injectEvent(event);
                                 }
                             }

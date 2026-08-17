@@ -117,6 +117,23 @@ Rectangle {
                 }
 
                 Button {
+                    text: "🔌 Disconnect Session"
+                    Layout.preferredHeight: 30
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightBold
+                    visible: desktopSessionView.isCurrentTabConnected
+                    onClicked: {
+                        sessionClient.disconnectFromHost()
+                        desktopSessionView.activeConnectedTabIndex = -1
+                    }
+                    background: Rectangle {
+                        color: themePalette.error
+                        radius: Metrics.radiusSm
+                    }
+                }
+
+                Button {
                     text: "+ New Tab"
                     Layout.preferredHeight: 30
                     font.family: Typography.fontFamily
@@ -178,7 +195,7 @@ Rectangle {
                     anchors.top: parent.top
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.topMargin: Metrics.spacingSm
-                    width: 320
+                    width: 340
                     height: 36
                     radius: Metrics.radiusSm
                     color: themePalette.surface
@@ -403,10 +420,29 @@ Rectangle {
                             font.pixelSize: Typography.fontBody
                             font.weight: Typography.weightBold
                             onClicked: {
-                                let target = targetIdInput.text
+                                let target = targetIdInput.text.trim()
+
+                                // Check for existing active connection to the same target ID
+                                let existingTab = -1
+                                for (let i = 0; i < sessionTabsModel.count; ++i) {
+                                    let tabObj = sessionTabsModel.get(i)
+                                    if (i !== desktopSessionView.activeTabIndex && tabObj.connected && tabObj.targetHost === target) {
+                                        existingTab = i
+                                        break
+                                    }
+                                }
+
+                                if (existingTab !== -1) {
+                                    sessionClient.setStatus("Already connected to " + target + " in Tab " + (existingTab + 1))
+                                    desktopSessionView.activeTabIndex = existingTab
+                                    return
+                                }
+
                                 desktopSessionView.activeConnectedTabIndex = desktopSessionView.activeTabIndex
                                 sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "title", target.length > 0 ? target : "Desk Session")
+                                sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "targetHost", target)
                                 sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "connected", true)
+
                                 if (target.indexOf(":") !== -1) {
                                     let parts = target.split(":")
                                     sessionClient.connectToHost(parts[0], parseInt(parts[1]))
