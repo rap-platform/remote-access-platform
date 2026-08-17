@@ -11,7 +11,22 @@ ApplicationWindow {
     minimumWidth: 900
     minimumHeight: 600
     title: "Remote Access Platform — Enterprise Desktop Viewer"
-    color: Palette.background
+
+    // Design System Instantiated Component Objects
+    Palette { id: palette }
+    Typography { id: typography }
+    Metrics { id: metrics }
+
+    color: palette.background
+    property int frameCounter: 0
+
+    Connections {
+        target: frameProvider
+        function onFrameReady() {
+            mainWindow.frameCounter++
+            videoSurface.source = "image://frameprovider/current?" + mainWindow.frameCounter
+        }
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -21,79 +36,119 @@ ApplicationWindow {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 60
-            color: Palette.surface
-            border.color: Palette.border
+            color: palette.surface
+            border.color: palette.border
             border.width: 1
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: Metrics.spacingLg
-                anchors.rightMargin: Metrics.spacingLg
-                spacing: Metrics.spacingMd
+                anchors.leftMargin: metrics.spacingLg
+                anchors.rightMargin: metrics.spacingLg
+                spacing: metrics.spacingMd
 
                 Label {
                     text: "Remote Access Platform"
-                    font.family: Typography.fontFamily
-                    font.pixelSize: Typography.fontSubtitle
-                    font.weight: Typography.weightBold
-                    color: Palette.textPrimary
+                    font.family: typography.fontFamily
+                    font.pixelSize: typography.fontSubtitle
+                    font.weight: typography.weightBold
+                    color: palette.textPrimary
                 }
 
                 Rectangle {
                     Layout.preferredWidth: 1
                     Layout.fillHeight: true
-                    Layout.topMargin: Metrics.spacingSm
-                    Layout.bottomMargin: Metrics.spacingSm
-                    color: Palette.border
+                    Layout.topMargin: metrics.spacingSm
+                    Layout.bottomMargin: metrics.spacingSm
+                    color: palette.border
                 }
 
                 TextField {
                     id: remoteIdInput
                     Layout.preferredWidth: 280
-                    placeholderText: "Enter Remote Device ID (e.g. 192.168.1.50:18443)"
-                    font.family: Typography.fontFamily
-                    font.pixelSize: Typography.fontBody
-                    color: Palette.textPrimary
+                    text: "127.0.0.1:18443"
+                    placeholderText: "127.0.0.1:18443"
+                    font.family: typography.fontFamily
+                    font.pixelSize: typography.fontBody
+                    color: palette.textPrimary
                     background: Rectangle {
-                        color: Palette.surfaceVariant
-                        radius: Metrics.radiusSm
-                        border.color: Palette.border
+                        color: palette.surfaceVariant
+                        radius: metrics.radiusSm
+                        border.color: palette.border
                     }
                 }
 
                 Button {
                     id: connectButton
-                    text: "Connect Session"
-                    font.family: Typography.fontFamily
-                    font.pixelSize: Typography.fontBody
-                    font.weight: Typography.weightMedium
+                    text: sessionClient.isConnected ? "Disconnect" : "Connect Session"
+                    font.family: typography.fontFamily
+                    font.pixelSize: typography.fontBody
+                    font.weight: typography.weightMedium
+                    onClicked: {
+                        if (sessionClient.isConnected) {
+                            sessionClient.disconnectFromHost()
+                        } else {
+                            sessionClient.connectToHost("127.0.0.1", 18443)
+                        }
+                    }
                     contentItem: Text {
                         text: connectButton.text
                         font: connectButton.font
-                        color: Palette.textPrimary
+                        color: palette.textPrimary
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: Palette.primary
-                        radius: Metrics.radiusSm
+                        color: sessionClient.isConnected ? palette.error : palette.primary
+                        radius: metrics.radiusSm
                     }
                 }
 
                 Item { Layout.fillWidth: true }
 
+                // Theme Switcher Selector
+                Label {
+                    text: "Theme:"
+                    font.family: typography.fontFamily
+                    font.pixelSize: typography.fontCaption
+                    font.weight: typography.weightMedium
+                    color: palette.textSecondary
+                }
+
+                ComboBox {
+                    id: themeSelector
+                    model: ["Catppuccin Dark", "Tokyo Night", "Nordic Frost", "GitHub Dark", "Enterprise Light"]
+                    currentIndex: palette.currentTheme
+                    font.family: typography.fontFamily
+                    font.pixelSize: typography.fontCaption
+                    onCurrentIndexChanged: {
+                        palette.setTheme(currentIndex)
+                    }
+                    contentItem: Text {
+                        text: themeSelector.displayText
+                        font: themeSelector.font
+                        color: palette.textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        leftPadding: metrics.spacingSm
+                    }
+                    background: Rectangle {
+                        color: palette.surfaceVariant
+                        radius: metrics.radiusSm
+                        border.color: palette.border
+                    }
+                }
+
                 Rectangle {
                     Layout.preferredWidth: 12
                     Layout.preferredHeight: 12
-                    radius: Metrics.radiusFull
-                    color: Palette.success
+                    radius: metrics.radiusFull
+                    color: sessionClient.isConnected ? palette.success : palette.warning
                 }
 
                 Label {
-                    text: "Agent Online"
-                    font.family: Typography.fontFamily
-                    font.pixelSize: Typography.fontCaption
-                    color: Palette.textSecondary
+                    text: sessionClient.isConnected ? "Session Active" : "Agent Ready"
+                    font.family: typography.fontFamily
+                    font.pixelSize: typography.fontCaption
+                    color: palette.textSecondary
                 }
             }
         }
@@ -108,39 +163,39 @@ ApplicationWindow {
             Rectangle {
                 Layout.preferredWidth: 220
                 Layout.fillHeight: true
-                color: Palette.surface
-                border.color: Palette.border
+                color: palette.surface
+                border.color: palette.border
                 border.width: 1
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: Metrics.spacingMd
-                    spacing: Metrics.spacingSm
+                    anchors.margins: metrics.spacingMd
+                    spacing: metrics.spacingSm
 
                     Label {
                         text: "NAVIGATION"
-                        font.family: Typography.fontFamily
-                        font.pixelSize: Typography.fontCaption
-                        font.weight: Typography.weightBold
-                        color: Palette.textSecondary
+                        font.family: typography.fontFamily
+                        font.pixelSize: typography.fontCaption
+                        font.weight: typography.weightBold
+                        color: palette.textSecondary
                     }
 
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
-                        radius: Metrics.radiusSm
-                        color: Palette.surfaceVariant
+                        radius: metrics.radiusSm
+                        color: palette.surfaceVariant
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: Metrics.spacingSm
+                            anchors.leftMargin: metrics.spacingSm
 
                             Label {
                                 text: "Desktop Session"
-                                font.family: Typography.fontFamily
-                                font.pixelSize: Typography.fontBody
-                                font.weight: Typography.weightMedium
-                                color: Palette.primary
+                                font.family: typography.fontFamily
+                                font.pixelSize: typography.fontBody
+                                font.weight: typography.weightMedium
+                                color: palette.primary
                             }
                         }
                     }
@@ -148,18 +203,18 @@ ApplicationWindow {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
-                        radius: Metrics.radiusSm
-                        color: Palette.surface
+                        radius: metrics.radiusSm
+                        color: palette.surface
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: Metrics.spacingSm
+                            anchors.leftMargin: metrics.spacingSm
 
                             Label {
                                 text: "Saved Devices"
-                                font.family: Typography.fontFamily
-                                font.pixelSize: Typography.fontBody
-                                color: Palette.textSecondary
+                                font.family: typography.fontFamily
+                                font.pixelSize: typography.fontBody
+                                color: palette.textSecondary
                             }
                         }
                     }
@@ -167,18 +222,18 @@ ApplicationWindow {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
-                        radius: Metrics.radiusSm
-                        color: Palette.surface
+                        radius: metrics.radiusSm
+                        color: palette.surface
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: Metrics.spacingSm
+                            anchors.leftMargin: metrics.spacingSm
 
                             Label {
                                 text: "Security & Keys"
-                                font.family: Typography.fontFamily
-                                font.pixelSize: Typography.fontBody
-                                color: Palette.textSecondary
+                                font.family: typography.fontFamily
+                                font.pixelSize: typography.fontBody
+                                color: palette.textSecondary
                             }
                         }
                     }
@@ -191,43 +246,43 @@ ApplicationWindow {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: Palette.background
+                color: palette.background
 
                 Image {
                     id: videoSurface
                     anchors.fill: parent
-                    anchors.margins: Metrics.spacingMd
+                    anchors.margins: metrics.spacingMd
                     fillMode: Image.PreserveAspectFit
                     source: "image://frameprovider/current"
                     cache: false
 
                     Rectangle {
                         anchors.fill: parent
-                        border.color: Palette.border
+                        border.color: palette.border
                         border.width: 1
-                        color: Palette.transparent
+                        color: palette.transparent
                     }
 
                     Column {
                         anchors.centerIn: parent
-                        spacing: Metrics.spacingMd
-                        visible: videoSurface.status !== Image.Ready
+                        spacing: metrics.spacingMd
+                        visible: !sessionClient.isConnected
 
                         Label {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "No Active Remote Stream"
-                            font.family: Typography.fontFamily
-                            font.pixelSize: Typography.fontTitle
-                            font.weight: Typography.weightBold
-                            color: Palette.textPrimary
+                            font.family: typography.fontFamily
+                            font.pixelSize: typography.fontTitle
+                            font.weight: typography.weightBold
+                            color: palette.textPrimary
                         }
 
                         Label {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: "Enter host agent address and click 'Connect Session'"
-                            font.family: Typography.fontFamily
-                            font.pixelSize: Typography.fontBody
-                            color: Palette.textSecondary
+                            text: "Click 'Connect Session' above to start real-time desktop streaming"
+                            font.family: typography.fontFamily
+                            font.pixelSize: typography.fontBody
+                            color: palette.textSecondary
                         }
                     }
                 }
@@ -238,29 +293,29 @@ ApplicationWindow {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 32
-            color: Palette.surface
-            border.color: Palette.border
+            color: palette.surface
+            border.color: palette.border
             border.width: 1
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: Metrics.spacingMd
-                anchors.rightMargin: Metrics.spacingMd
+                anchors.leftMargin: metrics.spacingMd
+                anchors.rightMargin: metrics.spacingMd
 
                 Label {
-                    text: "Transport: TCP Local MVP | Codec: RAW RGBA8888 | Latency: <1ms"
-                    font.family: Typography.fontFamily
-                    font.pixelSize: Typography.fontCaption
-                    color: Palette.textSecondary
+                    text: "Status: " + sessionClient.statusText + " | Active Theme: " + palette.currentThemeName
+                    font.family: typography.fontFamily
+                    font.pixelSize: typography.fontCaption
+                    color: palette.textSecondary
                 }
 
                 Item { Layout.fillWidth: true }
 
                 Label {
                     text: "v0.1.0-dev (Milestone 4)"
-                    font.family: Typography.fontFamily
-                    font.pixelSize: Typography.fontCaption
-                    color: Palette.textSecondary
+                    font.family: typography.fontFamily
+                    font.pixelSize: typography.fontCaption
+                    color: palette.textSecondary
                 }
             }
         }

@@ -1,7 +1,10 @@
+#include <QDir>
+#include <QFileInfo>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QUrl>
+#include "SessionClient.h"
 #include "VideoFrameProvider.h"
 #include "logging/JsonLogger.h"
 
@@ -21,20 +24,46 @@ int main(int argc, char *argv[]) {
 
     auto frameProvider = new rap::client::VideoFrameProvider();
     engine.addImageProvider("frameprovider", frameProvider);
+    engine.rootContext()->setContextProperty("frameProvider", frameProvider);
+
+    auto sessionClient = new rap::client::SessionClient(frameProvider, &app);
+    engine.rootContext()->setContextProperty("sessionClient", sessionClient);
+
+    // Resolve QML Main.qml location robustly
+    QString appDir = app.applicationDirPath();
+    QStringList candidates = {
+        appDir + "/qml/Main.qml",
+        appDir + "/../../apps/client/qml/Main.qml",
+        QDir::currentPath() + "/apps/client/qml/Main.qml",
+        QDir::currentPath() + "/qml/Main.qml"
+    };
+
+    QString resolvedPath;
+    for (const QString &path : candidates) {
+        if (QFileInfo::exists(path)) {
+            resolvedPath = QFileInfo(path).absoluteFilePath();
+            break;
+        }
+    }
+
+    if (resolvedPath.isEmpty()) {
+        qCritical() << "[Client] Could not find Main.qml in candidates:" << candidates;
+        return -1;
+    }
+
+    qInfo() << "[Client] Loading QML Main Interface from:" << resolvedPath;
+
+    QString qmlDir = QFileInfo(resolvedPath).absolutePath();
+    engine.addImportPath(qmlDir);
+    engine.addImportPath(qmlDir + "/theme");
 
 #ifdef ENABLE_HOT_RELOAD
     qInfo() << "[Client] Initializing QML Hot Reload Manager devtool...";
     auto hotReload = new rap::client::dev::HotReloadManager(&engine, &app);
-    hotReload->watchDirectory(app.applicationDirPath() + "/../qml");
+    hotReload->watchDirectory(qmlDir);
 #endif
 
-    const QUrl url(QStringLiteral("qrc:/qml/Main.qml"));
-    engine.load(QUrl::fromLocalFile(app.applicationDirPath() + "/../../apps/client/qml/Main.qml"));
-
-    if (engine.rootObjects().isEmpty()) {
-        qWarning() << "[Client] Falling back to QRC resource path for Main.qml";
-        engine.load(url);
-    }
+    engine.load(QUrl::fromLocalFile(resolvedPath));
 
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "[Client] Failed to load QML interface!";

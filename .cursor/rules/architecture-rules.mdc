@@ -1,19 +1,14 @@
 ---
-description: Remote Desktop Architecture & Coding Standards Rules
+description: Remote Access Platform Architecture and Governance Rules
 globs: **/*
 ---
 
-# Remote Access Platform - Agent Rules
+# Architecture and Governance Rules
 
-Refer to `docs/REMOTE-DESKTOP-ARCHITECTURE.md` (v4.0) and `AGENT_RULES.md`.
-
-- **MANDATORY LIVE DOCUMENTATION LOG & PLAN SYNC**: Maintain `docs/IMPLEMENTATION_LOG.md` and sync `docs/architecture_and_implementation_plan.md` whenever milestones, features, or scripts are completed or added.
-- **QUALITY GATE & SCRIPT AUTOMATION (`tools/`)**: Run static analysis (`cppcheck`, `clang-tidy`, `clippy`, `rustfmt`), compile, and run tests (`ctest`, `cargo test`) before any build artifact is ready (`tools/build.sh`).
-- **Backend**: Rust ONLY (`services/`). `#![forbid(unsafe_code)]` mandatory.
-- **Client UI**: Qt 6 (LGPLv3 dynamic linking) + QML (`apps/client/`).
-- **Core**: C++20 (`apps/client/src/core/`, `apps/agent/`).
-- **Agent**: Qt-free headless service.
-- **Cross-Platform**: Windows, Linux, macOS. OS code isolated in `platform/<os>/`.
-- **QML Standards**: `id` first, relative sizing, `Palette.*` colors, zero business logic.
-- **Logging**: `QLoggingCategory` (C++) and `tracing` (Rust). No secrets in logs.
-- **Commits**: Conventional Commits standard.
+1. **Live Implementation Log**: Maintain `docs/IMPLEMENTATION_LOG.md` for all changes.
+2. **Implementation Plan Sync**: Sync completed items in `docs/architecture_and_implementation_plan.md`.
+3. **Quality Gate Pipeline**: All changes must pass `./tools/build.sh` (Static Analysis + Compilation + Unit Tests).
+4. **QML Design Tokens**: No raw hex color strings outside `apps/client/qml/theme/`.
+5. **Rust Safety**: `#![forbid(unsafe_code)]` in service code, zero disallowed `.unwrap()` / `.expect()`.
+6. **C++ Standard**: C++20 with `-Wall -Wextra -Wpedantic -Werror`.
+7. **Interactive User Terminal Rule**: Do not run long-running build scripts or daemons inside background execution tools. Always provide copy-pasteable terminal commands for the user to execute directly in their own terminal windows.

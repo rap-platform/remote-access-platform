@@ -1,4 +1,3 @@
-pragma Singleton
 import QtQuick
 
 QtObject {
@@ -20,5 +19,6 @@ QtObject {
     readonly property real radiusSm: 4.0
     readonly property real radiusMd: 8.0
     readonly property real radiusLg: 12.0
+    readonly property real radiusFull: 999.0
     readonly property real radiusPill: 999.0
 }

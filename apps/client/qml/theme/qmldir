@@ -1,5 +1,4 @@
-module RemoteDesktop.Theme
-singleton Tokens 1.0 Tokens.qml
-singleton Palette 1.0 Palette.qml
-singleton Typography 1.0 Typography.qml
-singleton Metrics 1.0 Metrics.qml
+Tokens 1.0 Tokens.qml
+Palette 1.0 Palette.qml
+Typography 1.0 Typography.qml
+Metrics 1.0 Metrics.qml

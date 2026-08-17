@@ -24,7 +24,18 @@ add_executable(rap-client
     src/main.cpp
     src/VideoFrameProvider.cpp
     src/VideoFrameProvider.h
+    src/SessionClient.cpp
+    src/SessionClient.h
 )
+
+# Copy QML directory to output build folder for standalone execution
+add_custom_target(copy_qml_files ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml
+        $<TARGET_FILE_DIR:rap-client>/qml
+    COMMENT "Copying QML files to binary directory"
+)
+add_dependencies(rap-client copy_qml_files)
 
 target_include_directories(rap-client PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src

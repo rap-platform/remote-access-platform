@@ -32,9 +32,9 @@ void HotReloadManager::watchDirectory(const QString &dirPath) {
 }
 
 void HotReloadManager::onFileOrDirectoryChanged(const QString &path) {
-    qDebug() << "[HotReload] File/Directory modified:" << path << "- Clearing QML cache";
+    qDebug() << "[HotReload] File/Directory modified:" << path;
     if (engine_) {
-        engine_->clearComponentCache();
+        engine_->trimComponentCache();
         emit qmlReloaded();
     }
 }
