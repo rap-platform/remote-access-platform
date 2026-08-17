@@ -148,10 +148,11 @@ graph TD
   - [x] Automated end-to-end P2P connection scenario test (`tests/test_p2p_nat_traversal.rs`)
 
 
-- [ ] **Milestone 10: High-Throughput Stateless Relay Service (Rust)**
-  - [ ] Horizontally scalable UDP/QUIC Relay microservice (`services/relay/`)
-  - [ ] Zero-decryption packet forwarding architecture
-  - [ ] Relay load-testing suite (`k6` / `locust`) validating target throughput & latency under load
+- [x] **Milestone 10: High-Throughput Stateless Relay Service (Rust)**
+  - [x] Horizontally scalable UDP/QUIC Relay microservice (`services/relay/`)
+  - [x] Zero-decryption packet forwarding architecture preserving E2E encryption
+  - [x] Relay load-testing suite (`tools/loadtest_relay.sh`, `test_relay_benchmark`) validating 100,000 packet throughput & sub-ms latency under load
+
 
 ---
 

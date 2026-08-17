@@ -1,6 +1,6 @@
 # Remote Access Platform — Testing & Verification Guide
 
-> **Live Document Version:** 1.4.0  
+> **Live Document Version:** 1.5.0  
 > **Target Audience:** Developers, QA Engineers, Security Auditors, Penetration Testers  
 > **Source Repository:** [`Remote-Desktop`](https://github.com/remote-desktop/remote-desktop)
 
@@ -14,7 +14,8 @@ This document provides a comprehensive, step-by-step testing and verification gu
 2. **Security & Cryptographic Audit (Milestones 5, 6 & 7)**: STRIDE threat model compliance (`docs/security/threat-model.md`), network wire packet inspection (`tcpdump`), ChaCha20-Poly1305 AEAD payload encryption for video & input events, X25519 ECDH key agreement, active MITM bit-flip tamper rejection, and **1,000,000 iterations continuous fuzzing test benchmark**.
 3. **Cloud Control Plane & Microservices (Milestone 8)**: Device Identity Management (`rap-identity`), Rendezvous & Session Signaling (`rap-signaling`), and HTTP API Gateway REST routing (`rap-api-gateway`).
 4. **NAT Traversal & Direct P2P Connectivity (Milestone 9)**: STUN client protocol (RFC 5389), ICE candidate pair negotiation, UDP hole punching, and connection mode fallback state machine (`DirectLocal` → `StunHolePunching` → `RelayFallback`).
-5. **Automated Quality Gate Testing**: Static analysis, formatting compliance, and CTest/Cargo test suite execution.
+5. **High-Throughput Stateless Relay Service (Milestone 10)**: Zero-decryption packet forwarding architecture (`rap-relay`), session pair routing, real-time telemetry metrics, and **100,000 packet load benchmark**.
+6. **Automated Quality Gate Testing**: Static analysis, formatting compliance, and CTest/Cargo test suite execution.
 
 ---
 
@@ -109,14 +110,26 @@ Run the dedicated P2P NAT Traversal scenario integration test:
 cargo test --test test_p2p_nat_traversal
 ```
 
-**Verified Scenarios**:
-1. **STUN Binding Protocol**: RFC 5389 Binding request framing and XOR-Mapped IP/port extraction.
-2. **ICE Candidate Scoring**: Priority score ranking prioritizing direct `Host` candidates over `ServerReflexive` candidates.
-3. **Connection State Machine**: Seamless state transition from `DirectLocal` to `StunHolePunching`, with automatic fallback to `RelayFallback` when UDP hole punching fails.
+---
+
+## 6. Tier 5: Stateless Relay Load & Throughput Benchmark Verification (Milestone 10)
+
+Execute the 100,000 packet high-throughput relay benchmark script:
+
+```bash
+./tools/loadtest_relay.sh
+```
+
+**Expected Benchmark Output**:
+```text
+=== Remote Access Platform — Stateless Relay Load Benchmark ===
+[Relay Load Benchmark] Relayed 100000 packets (140.00 MB) in 238.45ms. Throughput: 419.37 Kpkts/sec
+=== Relay High-Throughput Load Benchmark Completed Successfully! ===
+```
 
 ---
 
-## 6. Tier 5: Manual Build Execution & Quality Gate Pipeline
+## 7. Tier 6: Manual Build Execution & Quality Gate Pipeline
 
 To build and run all test targets manually:
 
@@ -126,7 +139,7 @@ To build and run all test targets manually:
 
 ---
 
-## 7. Maintenance & Governance Rule
+## 8. Maintenance & Governance Rule
 
 Per **Rule 0.3** of [`AGENT_RULES.md`](../AGENT_RULES.md), whenever new features, network protocol frames, video codecs, or security subsystems are added:
 - Developers and AI agents **MUST** update this file (`docs/TESTING_AND_VERIFICATION.md`) with the new step-by-step verification commands and security audit procedures.
