@@ -2,7 +2,8 @@
 #define RAP_CAPTURE_DIRTY_REGION_DETECTOR_H
 
 #include <cstdint>
-#include <csize_t>
+#include <cstddef>
+
 
 namespace rap::capture {
 
