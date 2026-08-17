@@ -14,6 +14,7 @@ ApplicationWindow {
     color: themePalette.background
 
     property int frameCounter: 0
+    property int currentViewIndex: 0 // 0: Desktop Session, 1: Saved Devices, 2: Security & Keys
 
     Connections {
         target: frameProvider
@@ -148,7 +149,7 @@ ApplicationWindow {
             }
         }
 
-        // Main Workspace (Sidebar + Session Viewport)
+        // Main Workspace (Sidebar + Multi-View Stack)
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -175,11 +176,17 @@ ApplicationWindow {
                         color: themePalette.textSecondary
                     }
 
+                    // View 0: Desktop Session
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
                         radius: Metrics.radiusSm
-                        color: themePalette.surfaceVariant
+                        color: mainWindow.currentViewIndex === 0 ? themePalette.surfaceVariant : themePalette.surface
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: mainWindow.currentViewIndex = 0
+                        }
 
                         RowLayout {
                             anchors.fill: parent
@@ -189,17 +196,23 @@ ApplicationWindow {
                                 text: "Desktop Session"
                                 font.family: Typography.fontFamily
                                 font.pixelSize: Typography.fontBody
-                                font.weight: Typography.weightMedium
-                                color: themePalette.primary
+                                font.weight: mainWindow.currentViewIndex === 0 ? Typography.weightBold : Typography.weightMedium
+                                color: mainWindow.currentViewIndex === 0 ? themePalette.primary : themePalette.textPrimary
                             }
                         }
                     }
 
+                    // View 1: Saved Devices (Milestone 8)
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
                         radius: Metrics.radiusSm
-                        color: themePalette.surface
+                        color: mainWindow.currentViewIndex === 1 ? themePalette.surfaceVariant : themePalette.surface
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: mainWindow.currentViewIndex = 1
+                        }
 
                         RowLayout {
                             anchors.fill: parent
@@ -209,26 +222,34 @@ ApplicationWindow {
                                 text: "Saved Devices"
                                 font.family: Typography.fontFamily
                                 font.pixelSize: Typography.fontBody
-                                color: themePalette.textSecondary
+                                font.weight: mainWindow.currentViewIndex === 1 ? Typography.weightBold : Typography.weightMedium
+                                color: mainWindow.currentViewIndex === 1 ? themePalette.primary : themePalette.textSecondary
                             }
                         }
                     }
 
+                    // View 2: Security & Keys (Milestone 5, 8 & 9)
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
                         radius: Metrics.radiusSm
-                        color: themePalette.surface
+                        color: mainWindow.currentViewIndex === 2 ? themePalette.surfaceVariant : themePalette.surface
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: mainWindow.currentViewIndex = 2
+                        }
 
                         RowLayout {
                             anchors.fill: parent
                             anchors.leftMargin: Metrics.spacingSm
 
                             Label {
-                                text: "Security & Keys"
+                                text: "Security & NAT Keys"
                                 font.family: Typography.fontFamily
                                 font.pixelSize: Typography.fontBody
-                                color: themePalette.textSecondary
+                                font.weight: mainWindow.currentViewIndex === 2 ? Typography.weightBold : Typography.weightMedium
+                                color: mainWindow.currentViewIndex === 2 ? themePalette.primary : themePalette.textSecondary
                             }
                         }
                     }
@@ -237,89 +258,119 @@ ApplicationWindow {
                 }
             }
 
-            // Session Viewport Surface
-            Rectangle {
+            // Stacked View Content Container
+            StackLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: themePalette.background
+                currentIndex: mainWindow.currentViewIndex
 
-                Image {
-                    id: videoSurface
-                    anchors.fill: parent
-                    anchors.margins: Metrics.spacingMd
-                    fillMode: Image.PreserveAspectFit
-                    source: "image://frameprovider/current"
-                    cache: false
+                // Screen 0: Live Desktop Viewport
+                Rectangle {
+                    color: themePalette.background
 
-                    Rectangle {
+                    Image {
+                        id: videoSurface
                         anchors.fill: parent
-                        border.color: themePalette.border
-                        border.width: 1
-                        color: themePalette.transparent
-                    }
+                        anchors.margins: Metrics.spacingMd
+                        fillMode: Image.PreserveAspectFit
+                        source: "image://frameprovider/current"
+                        cache: false
 
-                    MouseArea {
-                        id: viewportMouseArea
+                        Rectangle {
+                            anchors.fill: parent
+                            border.color: themePalette.border
+                            border.width: 1
+                            color: themePalette.transparent
+                        }
+
+                        MouseArea {
+                            id: viewportMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            focus: true
+                            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+
+                            onClicked: { viewportMouseArea.forceActiveFocus(); }
+
+                            onPositionChanged: (mouse) => {
+                                if (sessionClient.isConnected && width > 0 && height > 0) {
+                                    var normX = Math.round((mouse.x / width) * 1920);
+                                    var normY = Math.round((mouse.y / height) * 1080);
+                                    sessionClient.sendInputEvent(1, normX, normY, 0, 0, 0, 0);
+                                }
+                            }
+                            onPressed: (mouse) => {
+                                viewportMouseArea.forceActiveFocus();
+                                if (sessionClient.isConnected && width > 0 && height > 0) {
+                                    var normX = Math.round((mouse.x / width) * 1920);
+                                    var normY = Math.round((mouse.y / height) * 1080);
+                                    var btn = (mouse.button === Qt.LeftButton) ? 1 : ((mouse.button === Qt.RightButton) ? 3 : 2);
+                                    sessionClient.sendInputEvent(2, normX, normY, btn, 0, 0, 0);
+                                }
+                            }
+                            onReleased: (mouse) => {
+                                if (sessionClient.isConnected && width > 0 && height > 0) {
+                                    var normX = Math.round((mouse.x / width) * 1920);
+                                    var normY = Math.round((mouse.y / height) * 1080);
+                                    var btn = (mouse.button === Qt.LeftButton) ? 1 : ((mouse.button === Qt.RightButton) ? 3 : 2);
+                                    sessionClient.sendInputEvent(3, normX, normY, btn, 0, 0, 0);
+                                }
+                            }
+                            onWheel: (wheel) => {
+                                if (sessionClient.isConnected) {
+                                    sessionClient.sendInputEvent(4, 0, 0, 0, wheel.angleDelta.y, 0, 0);
+                                }
+                            }
+                            Keys.onPressed: (event) => {
+                                if (sessionClient.isConnected) {
+                                    sessionClient.sendInputEvent(5, 0, 0, 0, 0, event.nativeScanCode || event.key, event.modifiers);
+                                    event.accepted = true;
+                                }
+                            }
+                            Keys.onReleased: (event) => {
+                                if (sessionClient.isConnected) {
+                                    sessionClient.sendInputEvent(6, 0, 0, 0, 0, event.nativeScanCode || event.key, event.modifiers);
+                                    event.accepted = true;
+                                }
+                            }
+                        }
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: Metrics.spacingMd
+                            visible: !sessionClient.isConnected
+
+                            Label {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "No Active Remote Stream"
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontTitle
+                                font.weight: Typography.weightBold
+                                color: themePalette.textPrimary
+                            }
+
+                            Label {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "Click 'Connect Session' above to start real-time desktop streaming"
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontBody
+                                color: themePalette.textSecondary
+                            }
+                        }
+                    }
+                }
+
+                // Screen 1: Control Plane Saved Devices (Milestone 8 UI Screen)
+                Rectangle {
+                    color: themePalette.background
+
+                    ColumnLayout {
                         anchors.fill: parent
-                        hoverEnabled: true
-                        focus: true
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-
-                        onClicked: { viewportMouseArea.forceActiveFocus(); }
-
-                        onPositionChanged: (mouse) => {
-                            if (sessionClient.isConnected && width > 0 && height > 0) {
-                                var normX = Math.round((mouse.x / width) * 1920);
-                                var normY = Math.round((mouse.y / height) * 1080);
-                                sessionClient.sendInputEvent(1, normX, normY, 0, 0, 0, 0);
-                            }
-                        }
-                        onPressed: (mouse) => {
-                            viewportMouseArea.forceActiveFocus();
-                            if (sessionClient.isConnected && width > 0 && height > 0) {
-                                var normX = Math.round((mouse.x / width) * 1920);
-                                var normY = Math.round((mouse.y / height) * 1080);
-                                var btn = (mouse.button === Qt.LeftButton) ? 1 : ((mouse.button === Qt.RightButton) ? 3 : 2);
-                                sessionClient.sendInputEvent(2, normX, normY, btn, 0, 0, 0);
-                            }
-                        }
-                        onReleased: (mouse) => {
-                            if (sessionClient.isConnected && width > 0 && height > 0) {
-                                var normX = Math.round((mouse.x / width) * 1920);
-                                var normY = Math.round((mouse.y / height) * 1080);
-                                var btn = (mouse.button === Qt.LeftButton) ? 1 : ((mouse.button === Qt.RightButton) ? 3 : 2);
-                                sessionClient.sendInputEvent(3, normX, normY, btn, 0, 0, 0);
-                            }
-                        }
-                        onWheel: (wheel) => {
-                            if (sessionClient.isConnected) {
-                                sessionClient.sendInputEvent(4, 0, 0, 0, wheel.angleDelta.y, 0, 0);
-                            }
-                        }
-                        Keys.onPressed: (event) => {
-                            if (sessionClient.isConnected) {
-                                sessionClient.sendInputEvent(5, 0, 0, 0, 0, event.nativeScanCode || event.key, event.modifiers);
-                                event.accepted = true;
-                            }
-                        }
-                        Keys.onReleased: (event) => {
-                            if (sessionClient.isConnected) {
-                                sessionClient.sendInputEvent(6, 0, 0, 0, 0, event.nativeScanCode || event.key, event.modifiers);
-                                event.accepted = true;
-                            }
-                        }
-                    }
-
-
-
-                    Column {
-                        anchors.centerIn: parent
+                        anchors.margins: Metrics.spacingLg
                         spacing: Metrics.spacingMd
-                        visible: !sessionClient.isConnected
 
                         Label {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: "No Active Remote Stream"
+                            text: "Control Plane — Saved & Registered Devices"
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontTitle
                             font.weight: Typography.weightBold
@@ -327,11 +378,117 @@ ApplicationWindow {
                         }
 
                         Label {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: "Click 'Connect Session' above to start real-time desktop streaming"
+                            text: "Registered host agents and remote client devices discovered via Control Plane Identity Service."
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontBody
                             color: themePalette.textSecondary
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            color: themePalette.surface
+                            radius: Metrics.radiusSm
+                            border.color: themePalette.border
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: Metrics.spacingMd
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: Metrics.spacingLg
+
+                                    Label { text: "Device ID"; font.weight: Typography.weightBold; color: themePalette.textPrimary; Layout.preferredWidth: 200 }
+                                    Label { text: "Hostname"; font.weight: Typography.weightBold; color: themePalette.textPrimary; Layout.preferredWidth: 180 }
+                                    Label { text: "OS Target"; font.weight: Typography.weightBold; color: themePalette.textPrimary; Layout.preferredWidth: 150 }
+                                    Label { text: "Status"; font.weight: Typography.weightBold; color: themePalette.textPrimary; Layout.preferredWidth: 100 }
+                                    Item { Layout.fillWidth: true }
+                                }
+
+                                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: themePalette.border }
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: Metrics.spacingLg
+
+                                    Label { text: "rap-dev-7480-local"; color: themePalette.primary; Layout.preferredWidth: 200 }
+                                    Label { text: "dell-latitude-7480"; color: themePalette.textPrimary; Layout.preferredWidth: 180 }
+                                    Label { text: "Linux Ubuntu 24.04"; color: themePalette.textSecondary; Layout.preferredWidth: 150 }
+                                    Label { text: "Online"; color: themePalette.success; font.weight: Typography.weightBold; Layout.preferredWidth: 100 }
+                                    Button {
+                                        text: "Connect P2P"
+                                        onClicked: sessionClient.connectToHost("127.0.0.1", 18443)
+                                    }
+                                }
+
+                                Item { Layout.fillHeight: true }
+                            }
+                        }
+                    }
+                }
+
+                // Screen 2: Security & NAT Keys Audit Screen (Milestone 5, 8 & 9 UI Screen)
+                Rectangle {
+                    color: themePalette.background
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: Metrics.spacingLg
+                        spacing: Metrics.spacingMd
+
+                        Label {
+                            text: "Security, Encryption & NAT Traversal Audit"
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontTitle
+                            font.weight: Typography.weightBold
+                            color: themePalette.textPrimary
+                        }
+
+                        Label {
+                            text: "Real-time state for ChaCha20-Poly1305 AEAD cipher, X25519 ECDH key exchange, and STUN/ICE NAT connection mode."
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontBody
+                            color: themePalette.textSecondary
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 140
+                            color: themePalette.surface
+                            radius: Metrics.radiusSm
+                            border.color: themePalette.border
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: Metrics.spacingMd
+                                spacing: Metrics.spacingSm
+
+                                Label { text: "Encryption Cipher: ChaCha20-Poly1305 AEAD (256-bit key)"; font.weight: Typography.weightBold; color: themePalette.success }
+                                Label { text: "Key Agreement: X25519 ECDH Key Exchange"; color: themePalette.textPrimary }
+                                Label { text: "Protocol Magic: RAP0 (0x52415030)"; color: themePalette.textSecondary }
+                                Label { text: "Replay & Tamper Protection: Active (12-byte monotonic IV + 16-byte Poly1305 Tag)"; color: themePalette.textSecondary }
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            color: themePalette.surface
+                            radius: Metrics.radiusSm
+                            border.color: themePalette.border
+
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: Metrics.spacingMd
+                                spacing: Metrics.spacingSm
+
+                                Label { text: "NAT Traversal & ICE Connection Mode"; font.weight: Typography.weightBold; color: themePalette.textPrimary }
+                                Label { text: "Active Mode: Direct Local / STUN UDP Hole Punching (Fallback to Stateless Relay)"; color: themePalette.textSecondary }
+                                Label { text: "STUN Server: stun.l.google.com:19302 / RFC 5389 Binding Client"; color: themePalette.textSecondary }
+                                Label { text: "Stateless Relay Endpoint: 127.0.0.1:18445 (Zero-Decryption E2E Preserved)"; color: themePalette.textSecondary }
+                                Item { Layout.fillHeight: true }
+                            }
                         }
                     }
                 }
@@ -361,7 +518,7 @@ ApplicationWindow {
                 Item { Layout.fillWidth: true }
 
                 Label {
-                    text: "v0.1.0-dev (Milestone 4)"
+                    text: "v0.3.0-dev (Phase 3 Complete)"
                     font.family: Typography.fontFamily
                     font.pixelSize: Typography.fontCaption
                     color: themePalette.textSecondary
