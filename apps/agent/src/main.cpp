@@ -1,4 +1,3 @@
-#include <QClipboard>
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QDebug>
@@ -8,6 +7,7 @@
 #include <QDateTime>
 #include <QRandomGenerator>
 #include <cstring>
+#include "AgentPacketHandler.h"
 #include "CryptoEngine.h"
 #include "ICaptureBackend.h"
 #include "IInputBackend.h"
@@ -45,7 +45,6 @@ int main(int argc, char *argv[]) {
 
     qInfo() << "[Agent] Screen capture initialized:" << QString::fromStdString(captureBackend->backendName());
 
-    // Generate session encryption key (Milestone 5 E2E Crypto Layer)
     const std::vector<uint8_t> sessionKey = {
         0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
         0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
@@ -67,7 +66,7 @@ int main(int argc, char *argv[]) {
     QObject::connect(&server, &QTcpServer::newConnection, [&server, &clients, &inputBackend, sessionKey, dynamicOtp]() {
         while (server.hasPendingConnections()) {
             QTcpSocket *clientSocket = server.nextPendingConnection();
-            clientSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1); // Disable Nagle's algorithm (TCP_NODELAY)
+            clientSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
             clientSocket->setProperty("authenticated", false);
 
             clients.append(clientSocket);
@@ -76,11 +75,9 @@ int main(int argc, char *argv[]) {
             clientSocket->setProperty("isLoopback", isLoopback);
             if (isLoopback) {
                 qInfo() << "[Agent Input Guard] Client is local loopback (" << peerStr << "). Bypassing X11 local input injection to prevent terminal feedback.";
-                // Auto-authenticate loopback viewer for seamless local sessions
                 clientSocket->setProperty("authenticated", true);
             }
 
-            // Handle incoming authentication, remote input events, and clipboard sync
             QObject::connect(clientSocket, &QTcpSocket::readyRead, [clientSocket, &inputBackend, sessionKey, dynamicOtp]() {
                 QByteArray buffer = clientSocket->readAll();
                 while (buffer.size() >= 28) {
@@ -95,105 +92,7 @@ int main(int argc, char *argv[]) {
                     const auto &packet = std::get<rap::protocol::Packet>(result);
                     size_t totalPacketSize = 28 + packet.header.payloadSize;
 
-                    if (packet.header.type == rap::protocol::PayloadType::AuthRequest && !packet.payload.empty()) {
-                        std::vector<uint8_t> nonce(12, 0);
-                        uint64_t seq = packet.header.sequenceNumber;
-                        std::memcpy(nonce.data(), &seq, sizeof(seq));
-
-                        auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
-                        if (decryptedOpt.has_value() && !decryptedOpt->empty()) {
-                            QString reqPassword = QString::fromUtf8(reinterpret_cast<const char *>(decryptedOpt->data()), static_cast<int>(decryptedOpt->size())).trimmed();
-                            reqPassword.remove(' ');
-                            QString cleanOtp = dynamicOtp;
-                            cleanOtp.remove(' ');
-
-                            bool authSuccess = (reqPassword == cleanOtp) || (reqPassword == "admin123") || reqPassword.isEmpty();
-                            clientSocket->setProperty("authenticated", authSuccess);
-
-                            qInfo() << "[Agent Auth Handshake] Client password verification:" << (authSuccess ? "SUCCESS (Granted)" : "FAILED (Denied)");
-
-                            // Send AuthResponse back to client
-                            uint8_t authCode = authSuccess ? 0 : 1;
-                            std::vector<uint8_t> respPayload = { authCode };
-                            auto encryptedResp = rap::security::CryptoEngine::encryptPayload(respPayload, sessionKey, nonce);
-                            auto respEncoded = rap::protocol::ProtocolCodec::encode(
-                                rap::protocol::PayloadType::AuthResponse,
-                                seq,
-                                0,
-                                encryptedResp
-                            );
-                            clientSocket->write(QByteArray(reinterpret_cast<const char *>(respEncoded.data()), static_cast<int>(respEncoded.size())));
-                            clientSocket->flush();
-
-                            if (!authSuccess) {
-                                clientSocket->disconnectFromHost();
-                            }
-                        }
-                    } else if (packet.header.type == rap::protocol::PayloadType::InputEvent && !packet.payload.empty()) {
-                        if (clientSocket->property("authenticated").toBool()) {
-                            std::vector<uint8_t> nonce(12, 0);
-                            uint64_t seq = packet.header.sequenceNumber;
-                            std::memcpy(nonce.data(), &seq, sizeof(seq));
-
-                            auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
-                            if (decryptedOpt.has_value() && decryptedOpt->size() >= 24) {
-                                const auto &decrypted = decryptedOpt.value();
-                                rap::input::InputEvent event;
-                                uint16_t typeVal = 0;
-                                std::memcpy(&typeVal, decrypted.data() + 0, 2);
-                                event.type = static_cast<rap::input::InputEventType>(typeVal);
-                                std::memcpy(&event.x, decrypted.data() + 4, 4);
-                                std::memcpy(&event.y, decrypted.data() + 8, 4);
-                                std::memcpy(&event.button, decrypted.data() + 12, 4);
-                                std::memcpy(&event.delta, decrypted.data() + 16, 4);
-                                std::memcpy(&event.keycode, decrypted.data() + 20, 4);
-
-                                if (inputBackend) {
-                                    bool isLoopbackClient = clientSocket->property("isLoopback").toBool();
-                                    if (!isLoopbackClient) {
-                                        inputBackend->injectEvent(event);
-                                    }
-                                }
-                            }
-                        }
-                    } else if (packet.header.type == rap::protocol::PayloadType::ClipboardData && !packet.payload.empty()) {
-                        if (clientSocket->property("authenticated").toBool()) {
-                            std::vector<uint8_t> nonce(12, 0);
-                            uint64_t seq = packet.header.sequenceNumber;
-                            std::memcpy(nonce.data(), &seq, sizeof(seq));
-
-                            auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
-                            if (decryptedOpt.has_value() && !decryptedOpt->empty()) {
-                                QString text = QString::fromUtf8(reinterpret_cast<const char *>(decryptedOpt->data()), static_cast<int>(decryptedOpt->size()));
-                                QClipboard *cb = QGuiApplication::clipboard();
-                                if (cb) {
-                                    cb->setText(text);
-                                }
-                                qInfo() << "[Agent] Applied remote clipboard text update to host system (" << text.length() << "chars)";
-                            }
-                        }
-                    } else if (packet.header.type == rap::protocol::PayloadType::SessionControl && !packet.payload.empty()) {
-                        if (clientSocket->property("authenticated").toBool()) {
-                            std::vector<uint8_t> nonce(12, 0);
-                            uint64_t seq = packet.header.sequenceNumber;
-                            std::memcpy(nonce.data(), &seq, sizeof(seq));
-
-                            auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
-                            if (decryptedOpt.has_value() && decryptedOpt->size() >= 4) {
-                                uint32_t actionId = 0;
-                                std::memcpy(&actionId, decryptedOpt->data(), 4);
-                                qInfo() << "[Agent Session Control] Executing Action ID:" << actionId;
-                                if (actionId == 1) {
-                                    qInfo() << "[Agent Session Control] Dispatching Ctrl+Alt+Del signal to host OS...";
-                                } else if (actionId == 2) {
-                                    qInfo() << "[Agent Session Control] Invoking Lock Workstation command...";
-                                    [[maybe_unused]] int ret = ::system("loginctl lock-session 2>/dev/null || xdg-screensaver lock 2>/dev/null &");
-                                } else if (actionId == 3) {
-                                    qInfo() << "[Agent Session Control] Remote Privacy Screen Mode Toggled.";
-                                }
-                            }
-                        }
-                    }
+                    rap::agent::handleClientPacket(clientSocket, packet, inputBackend, sessionKey, dynamicOtp);
 
                     buffer.remove(0, static_cast<qsizetype>(totalPacketSize));
                 }
@@ -207,38 +106,27 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    // Thread-safe encrypted frame delivery from capture worker thread to main TCP socket thread
     captureBackend->startCapture([&app, &clients, sessionKey](const rap::capture::FrameData &frame) {
-        if (clients.isEmpty()) {
-            return;
-        }
+        if (clients.isEmpty()) return;
 
         qint64 t0 = QDateTime::currentMSecsSinceEpoch();
-
-        uint32_t w = frame.width;
-        uint32_t h = frame.height;
-
+        uint32_t w = frame.width, h = frame.height;
         QByteArray rawPixels(reinterpret_cast<const char *>(frame.pixelData.data()), static_cast<qsizetype>(frame.pixelData.size()));
-        QByteArray compressedPixels = qCompress(rawPixels, 1); // Fast Level 1 zlib compression
-
+        QByteArray compressedPixels = qCompress(rawPixels, 1);
         uint32_t rawSize = static_cast<uint32_t>(rawPixels.size());
         uint32_t compSize = static_cast<uint32_t>(compressedPixels.size());
 
-        std::vector<uint8_t> plaintext;
-        plaintext.resize(12 + compSize);
+        std::vector<uint8_t> plaintext(12 + compSize);
         std::memcpy(plaintext.data() + 0, &w, 4);
         std::memcpy(plaintext.data() + 4, &h, 4);
         std::memcpy(plaintext.data() + 8, &rawSize, 4);
         std::memcpy(plaintext.data() + 12, compressedPixels.constData(), compSize);
 
-        // 12-byte deterministic nonce derived from frame number
         std::vector<uint8_t> nonce(12, 0);
         uint64_t fn = frame.frameNumber;
         std::memcpy(nonce.data(), &fn, sizeof(fn));
 
-        // Authenticated payload encryption (ChaCha20-Poly1305 AEAD)
         auto encryptedPayload = rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
-
         auto encoded = rap::protocol::ProtocolCodec::encode(
             rap::protocol::PayloadType::FrameHeader,
             frame.frameNumber,
@@ -246,13 +134,9 @@ int main(int argc, char *argv[]) {
             encryptedPayload);
 
         QByteArray bytes(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size()));
-
         qint64 t1 = QDateTime::currentMSecsSinceEpoch();
         qInfo().noquote() << QString("[Agent Latency Audit] Frame #%1 | Encrypt & Auth (%2 KB -> %3 KB): %4 ms")
-            .arg(frame.frameNumber)
-            .arg(rawSize / 1024)
-            .arg(compSize / 1024)
-            .arg(t1 - t0);
+            .arg(frame.frameNumber).arg(rawSize / 1024).arg(compSize / 1024).arg(t1 - t0);
 
         QMetaObject::invokeMethod(&app, [&clients, bytes]() {
             for (QTcpSocket *client : clients) {

@@ -506,7 +506,7 @@ Rectangle {
                                         text: model.text
                                         font.family: Typography.fontFamily
                                         font.pixelSize: Typography.fontCaption
-                                        color: model.isSelf ? "#FFFFFF" : themePalette.textPrimary
+                                        color: model.isSelf ? themePalette.surface : themePalette.textPrimary
                                         wrapMode: Text.WordWrap
                                     }
                                 }
