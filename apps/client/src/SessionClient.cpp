@@ -1,5 +1,6 @@
 #include "SessionClient.h"
 #include <QDebug>
+#include <cstring>
 #include "ProtocolCodec.h"
 
 namespace rap::client {
@@ -78,30 +79,20 @@ void SessionClient::onReadyRead() {
         const auto &packet = std::get<rap::protocol::Packet>(result);
         size_t totalPacketSize = 28 + packet.header.payloadSize;
 
-        if (packet.header.type == rap::protocol::PayloadType::FrameHeader && !packet.payload.empty()) {
-            size_t totalBytes = packet.payload.size();
-            uint32_t width = 1920;
-            uint32_t height = 1080;
+        if (packet.header.type == rap::protocol::PayloadType::FrameHeader && packet.payload.size() >= 8) {
+            uint32_t width = 0;
+            uint32_t height = 0;
+            std::memcpy(&width, packet.payload.data(), 4);
+            std::memcpy(&height, packet.payload.data() + 4, 4);
 
-            if (totalBytes > 0 && totalBytes % 4 == 0) {
-                uint32_t totalPixels = static_cast<uint32_t>(totalBytes / 4);
-                if (totalPixels == 1920 * 1080) {
-                    width = 1920; height = 1080;
-                } else if (totalPixels == 1366 * 768) {
-                    width = 1366; height = 768;
-                } else if (totalPixels == 1280 * 720) {
-                    width = 1280; height = 720;
-                } else if (totalPixels == 2560 * 1440) {
-                    width = 2560; height = 1440;
-                } else if (totalPixels % 1920 == 0) {
-                    width = 1920; height = totalPixels / 1920;
+            size_t expectedPixelBytes = static_cast<size_t>(width) * height * 4;
+            if (width > 0 && height > 0 && packet.payload.size() >= (8 + expectedPixelBytes)) {
+                const uchar *pixelPtr = reinterpret_cast<const uchar *>(packet.payload.data() + 8);
+                QImage imgCopy = QImage(pixelPtr, width, height, width * 4, QImage::Format_RGBA8888).copy();
+                if (frameProvider_) {
+                    frameProvider_->updateFrame(imgCopy);
+                    receivedFrames_++;
                 }
-            }
-
-            QImage imgCopy = QImage(reinterpret_cast<const uchar *>(packet.payload.data()), width, height, width * 4, QImage::Format_RGBA8888).copy();
-            if (frameProvider_) {
-                frameProvider_->updateFrame(imgCopy);
-                receivedFrames_++;
             }
         }
 

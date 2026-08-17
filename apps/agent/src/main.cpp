@@ -3,6 +3,7 @@
 #include <QMetaObject>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <cstring>
 #include "ICaptureBackend.h"
 #include "ProtocolCodec.h"
 #include "logging/JsonLogger.h"
@@ -53,11 +54,19 @@ int main(int argc, char *argv[]) {
             return;
         }
 
+        uint32_t w = frame.width;
+        uint32_t h = frame.height;
+        std::vector<uint8_t> payload;
+        payload.resize(8 + frame.pixelData.size());
+        std::memcpy(payload.data(), &w, 4);
+        std::memcpy(payload.data() + 4, &h, 4);
+        std::memcpy(payload.data() + 8, frame.pixelData.data(), frame.pixelData.size());
+
         auto encoded = rap::protocol::ProtocolCodec::encode(
             rap::protocol::PayloadType::FrameHeader,
             frame.frameNumber,
             frame.timestampUs / 1000,
-            frame.pixelData);
+            payload);
 
         QByteArray bytes(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size()));
 
