@@ -3,7 +3,7 @@
 Source of Truth: `docs/REMOTE-DESKTOP-ARCHITECTURE.md` (v4.0) and `AGENT_RULES.md`.
 
 ## Core Constraints
-- **Live Implementation Log**: Maintain `docs/IMPLEMENTATION_LOG.md` detailing what, how, why, standards followed, and test results for all implementations.
+- **Live Implementation Log & Plan Sync**: Maintain `docs/IMPLEMENTATION_LOG.md` detailing what, how, why, standards followed, and test results. Update `docs/architecture_and_implementation_plan.md` as milestones/features/scripts are added or completed.
 - **Quality Gate Pipeline**: Run static analysis (`cppcheck`, `clang-tidy`, `clippy`, `rustfmt`), compile, and execute unit/integration tests before any build is marked ready.
 - **Automated Tools**: Utilize `tools/build.sh`, `tools/test.sh`, `tools/lint.sh`, `tools/setup_deps.sh`.
 - **Backend**: Rust ONLY (`services/`). `#![forbid(unsafe_code)]` at crate root.

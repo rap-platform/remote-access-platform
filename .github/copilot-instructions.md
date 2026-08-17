@@ -2,7 +2,7 @@
 
 Source of Truth: `docs/REMOTE-DESKTOP-ARCHITECTURE.md` (v4.0) and `AGENT_RULES.md`.
 
-- Continuously maintain `docs/IMPLEMENTATION_LOG.md` detailing what was implemented, how, why, standards followed, and test verification results.
+- Continuously maintain `docs/IMPLEMENTATION_LOG.md` and sync `docs/architecture_and_implementation_plan.md` whenever features or milestones are completed or updated.
 - Enforce the Quality Gate Pipeline: run static analysis (`cppcheck`, `clang-tidy`, `clippy`, `rustfmt`), compile, and run tests via `tools/build.sh`.
 - Backend code must be in Rust (`services/`) with `#![forbid(unsafe_code)]` at crate root.
 - Desktop UI code must use Qt 6 (LGPLv3 dynamic linking) + QML. Never statically link Qt. Avoid GPL-only modules (`Qt Charts`).

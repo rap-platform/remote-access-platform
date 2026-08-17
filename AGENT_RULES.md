@@ -16,7 +16,10 @@ For every change, the log MUST record:
 4. **Standards & Best Practices** followed (C++20, LGPLv3 dynamic linking, Rust safety, OWASP ASVS, Conventional Commits).
 5. **Verification & Test Results** (test execution outputs, static analysis results).
 
-### 0.2 DRY Repository & Script Automation Standard
+### 0.2 Implementation Plan Sync Rule (`docs/architecture_and_implementation_plan.md`)
+Whenever a milestone, new feature, component, script, or architectural decision is added or completed, the master implementation plan (`docs/architecture_and_implementation_plan.md`) MUST be updated alongside `docs/IMPLEMENTATION_LOG.md`.
+
+### 0.3 DRY Repository & Script Automation Standard
 - **Zero Code/Script Duplication (DRY)**: Keep the codebase clean, modular, and DRY.
 - **Automated Reusable Scripts (`tools/`)**: All environment bootstrap, dependency installation, building, testing, linting, formatting, and deployment MUST be driven by standardized scripts in `tools/`:
   - `tools/setup_deps.sh` — Prerequisites setup & dependency installer (includes `cppcheck`, `clang-tidy`, `clippy`)
@@ -25,7 +28,7 @@ For every change, the log MUST record:
   - `tools/lint.sh` — Unified Clang-format, Clang-tidy, Cppcheck, Rustfmt, Clippy, and Qmllint check wrapper
 - **Reutilization over Ad-Hoc Execution**: Human developers and AI agents MUST utilize and re-use the centralized scripts in `tools/` rather than typing manual ad-hoc terminal commands.
 
-### 0.3 Mandatory Quality Gate Rule (Lint -> Build -> Test -> Ready)
+### 0.4 Mandatory Quality Gate Rule (Lint -> Build -> Test -> Ready)
 - **Strict Quality Pipeline Order**: No build artifact is considered ready or releaseable until:
   1. **Static Analysis & Linting Pass**: Code must pass `cppcheck`, `clang-tidy`, `clippy`, `rustfmt`, and `qmllint` with zero warnings (`./tools/lint.sh`).
   2. **Compilation**: Clean build under C++20 `-Werror` and Rust `#![forbid(unsafe_code)]`.

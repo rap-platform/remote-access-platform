@@ -71,15 +71,16 @@ graph TD
 
 ### Phase 1: Core Foundation & Infrastructure (M1 – M3)
 
-- [ ] **Milestone 1: Repository, CI, and Testing Skeleton**
-  - [x] Monorepo directory structure established (`apps/`, `libs/`, `services/`, `proto/`, `docs/`)
-  - [x] Workspace rules (`AGENT_RULES.md`, `.cursorrules`, `.windsurfrules`) and `.gitignore` committed
-  - [x] Git repository initialized locally with root commit
-  - [ ] Clang-format (`.clang-format`) and Clang-tidy (`.clang-tidy`) configurations added
-  - [ ] Rustfmt (`rustfmt.toml`) and Clippy (`clippy.toml`) configs added
-  - [ ] `qmllint` and `qmlformat` configurations added
-  - [ ] Multi-platform CI Matrix workflow (`.github/workflows/ci.yml`) set up for Windows, Linux, macOS
-  - [ ] Initial skeleton tests running & passing in Qt Test, Qt Quick Test, and `cargo test`
+- [x] **Milestone 1: Repository, CI, Testing Skeleton & Script Automation**
+  - [x] Monorepo directory structure established (`apps/`, `libs/`, `services/`, `proto/`, `tools/`, `docs/`)
+  - [x] Workspace rules (`AGENT_RULES.md`, `.cursorrules`, `.windsurfrules`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.cursor/rules/architecture-rules.mdc`) and `.gitignore` committed
+  - [x] Git repository initialized locally with Conventional Commit history
+  - [x] Clang-format (`.clang-format`), Clang-tidy (`.clang-tidy`), and Cppcheck (`cppcheck`) configurations added
+  - [x] Rustfmt (`rustfmt.toml`) and Clippy (`clippy.toml`) configs added
+  - [x] `qmllint` configuration (`qmllint.ini`) added
+  - [x] Multi-platform CI Matrix workflow (`.github/workflows/ci.yml`) set up for Windows, Linux, macOS
+  - [x] Automated script tooling created in `tools/` (`setup_deps.sh`, `lint.sh`, `build.sh`, `test.sh`) enforcing Quality Gate Pipeline
+  - [x] Initial skeleton tests running & passing in Qt Test (`test_logging`), Qt Quick Test (`test_qml_skeleton`), and `cargo test` (`rap-shared`, `rap-identity`, `rap-signaling`, `rap-relay`, `rap-api-gateway`, `rap-audit`)
 
 - [ ] **Milestone 2: Theme System, Centralized Logging & Hot Reload**
   - [ ] QML Theme Singleton module built (`qml/theme/Tokens.qml`, `Palette.qml`, `Typography.qml`, `Metrics.qml`)
