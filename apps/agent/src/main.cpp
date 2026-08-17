@@ -5,6 +5,7 @@
 #include <QMetaObject>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QDateTime>
 #include <cstring>
 #include "CryptoEngine.h"
 #include "ICaptureBackend.h"
@@ -56,6 +57,7 @@ int main(int argc, char *argv[]) {
     QObject::connect(&server, &QTcpServer::newConnection, [&server, &clients, &inputBackend, sessionKey]() {
         while (server.hasPendingConnections()) {
             QTcpSocket *clientSocket = server.nextPendingConnection();
+            clientSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1); // Disable Nagle's algorithm (TCP_NODELAY)
             clients.append(clientSocket);
             qInfo() << "[Agent] New client connected from:" << clientSocket->peerAddress().toString();
 
@@ -130,13 +132,23 @@ int main(int argc, char *argv[]) {
             return;
         }
 
+        qint64 t0 = QDateTime::currentMSecsSinceEpoch();
+
         uint32_t w = frame.width;
         uint32_t h = frame.height;
+
+        QByteArray rawPixels(reinterpret_cast<const char *>(frame.pixelData.data()), static_cast<qsizetype>(frame.pixelData.size()));
+        QByteArray compressedPixels = qCompress(rawPixels, 1); // Fast Level 1 zlib compression (reduces 8.3 MB to ~300 KB)
+
+        uint32_t rawSize = static_cast<uint32_t>(rawPixels.size());
+        uint32_t compSize = static_cast<uint32_t>(compressedPixels.size());
+
         std::vector<uint8_t> plaintext;
-        plaintext.resize(8 + frame.pixelData.size());
-        std::memcpy(plaintext.data(), &w, 4);
+        plaintext.resize(12 + compSize);
+        std::memcpy(plaintext.data() + 0, &w, 4);
         std::memcpy(plaintext.data() + 4, &h, 4);
-        std::memcpy(plaintext.data() + 8, frame.pixelData.data(), frame.pixelData.size());
+        std::memcpy(plaintext.data() + 8, &rawSize, 4);
+        std::memcpy(plaintext.data() + 12, compressedPixels.constData(), compSize);
 
         // 12-byte deterministic nonce derived from frame number
         std::vector<uint8_t> nonce(12, 0);
@@ -153,6 +165,13 @@ int main(int argc, char *argv[]) {
             encryptedPayload);
 
         QByteArray bytes(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size()));
+
+        qint64 t1 = QDateTime::currentMSecsSinceEpoch();
+        qInfo().noquote() << QString("[Agent Latency Audit] Frame #%1 | Compression & Crypto Encrypt (%2 KB -> %3 KB): %4 ms")
+            .arg(frame.frameNumber)
+            .arg(rawSize / 1024)
+            .arg(compSize / 1024)
+            .arg(t1 - t0);
 
         QMetaObject::invokeMethod(&app, [&clients, bytes]() {
             for (QTcpSocket *client : clients) {

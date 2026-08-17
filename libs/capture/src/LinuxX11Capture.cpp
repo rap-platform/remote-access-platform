@@ -31,35 +31,67 @@ bool LinuxX11Capture::initialize() {
     return true;
 }
 
-// Helper to find client window bounds for Mirror Shield loopback severing
-static WindowBounds findClientWindowBounds(Display *display, Window rootWindow) {
-    WindowBounds bounds;
-    if (!display || !rootWindow) return bounds;
+// Fetch window title reliably across standard X11 and Extended Window Manager Hints (_NET_WM_NAME)
+static std::string getWindowTitle(Display *display, Window window) {
+    if (!display || !window) return "";
+    char *name = nullptr;
+    if (XFetchName(display, window, &name) && name) {
+        std::string title(name);
+        XFree(name);
+        return title;
+    }
+    Atom netWmName = XInternAtom(display, "_NET_WM_NAME", True);
+    if (netWmName != None) {
+        Atom actualType;
+        int actualFormat;
+        unsigned long nItems, bytesAfter;
+        unsigned char *prop = nullptr;
+        if (XGetWindowProperty(display, window, netWmName, 0, 1024, False, AnyPropertyType,
+                               &actualType, &actualFormat, &nItems, &bytesAfter, &prop) == Success && prop) {
+            std::string title(reinterpret_cast<char *>(prop));
+            XFree(prop);
+            return title;
+        }
+    }
+    return "";
+}
+
+// Recursive window tree search finding client viewer window and translating local coordinates to root desktop screen space
+static bool searchClientWindow(Display *display, Window rootWindow, Window currentWindow, WindowBounds &outBounds) {
+    std::string title = getWindowTitle(display, currentWindow);
+    if (!title.empty() && title.find("Remote Access Platform") != std::string::npos) {
+        XWindowAttributes attr;
+        if (XGetWindowAttributes(display, currentWindow, &attr) && attr.width > 100 && attr.height > 100) {
+            int rootX = 0, rootY = 0;
+            Window childReturn;
+            XTranslateCoordinates(display, currentWindow, rootWindow, 0, 0, &rootX, &rootY, &childReturn);
+            outBounds.x = rootX;
+            outBounds.y = rootY;
+            outBounds.width = attr.width;
+            outBounds.height = attr.height;
+            outBounds.isActive = true;
+            return true;
+        }
+    }
 
     Window rootReturn, parentReturn, *children = nullptr;
     unsigned int numChildren = 0;
-
-    if (XQueryTree(display, rootWindow, &rootReturn, &parentReturn, &children, &numChildren) && children) {
+    if (XQueryTree(display, currentWindow, &rootReturn, &parentReturn, &children, &numChildren) && children) {
         for (unsigned int i = 0; i < numChildren; ++i) {
-            char *windowName = nullptr;
-            if (XFetchName(display, children[i], &windowName) && windowName) {
-                std::string title(windowName);
-                XFree(windowName);
-                if (title.find("Remote Access Platform") != std::string::npos) {
-                    XWindowAttributes attr;
-                    if (XGetWindowAttributes(display, children[i], &attr)) {
-                        bounds.x = attr.x;
-                        bounds.y = attr.y;
-                        bounds.width = attr.width;
-                        bounds.height = attr.height;
-                        bounds.isActive = true;
-                        break;
-                    }
-                }
+            if (searchClientWindow(display, rootWindow, children[i], outBounds)) {
+                XFree(children);
+                return true;
             }
         }
         XFree(children);
     }
+    return false;
+}
+
+static WindowBounds findClientWindowBounds(Display *display, Window rootWindow) {
+    WindowBounds bounds;
+    if (!display || !rootWindow) return bounds;
+    searchClientWindow(display, rootWindow, rootWindow, bounds);
     return bounds;
 }
 
@@ -145,8 +177,6 @@ bool LinuxX11Capture::startCapture(FrameCallback callback) {
             uint32_t sleepMs = (targetFps > 0) ? (1000 / targetFps) : 33;
             std::this_thread::sleep_for(std::chrono::milliseconds(sleepMs));
         }
-
-
         isCapturing_.store(false);
     });
 

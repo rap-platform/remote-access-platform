@@ -1,5 +1,6 @@
 #include "SessionClient.h"
 #include <QDebug>
+#include <QDateTime>
 #include <cstring>
 #include "CryptoEngine.h"
 #include "ProtocolCodec.h"
@@ -138,6 +139,7 @@ void SessionClient::onConnected() {
     receiveBuffer_.clear();
     receivedFrames_ = 0;
     inputSequence_ = 0;
+    socket_.setSocketOption(QAbstractSocket::LowDelayOption, 1); // Disable Nagle's algorithm (TCP_NODELAY)
     qInfo() << "[Client] TCP socket connected successfully!";
     setStatus("Connected — Encrypted Desktop Session Active");
     emit connectionStateChanged(true);
@@ -197,20 +199,35 @@ void SessionClient::onReadyRead() {
 
             auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
 
-            if (decryptedOpt.has_value() && decryptedOpt->size() >= 8) {
+            if (decryptedOpt.has_value() && decryptedOpt->size() >= 12) {
                 const auto &decrypted = decryptedOpt.value();
                 uint32_t width = 0;
                 uint32_t height = 0;
-                std::memcpy(&width, decrypted.data(), 4);
+                uint32_t rawSize = 0;
+                std::memcpy(&width, decrypted.data() + 0, 4);
                 std::memcpy(&height, decrypted.data() + 4, 4);
+                std::memcpy(&rawSize, decrypted.data() + 8, 4);
 
-                size_t expectedPixelBytes = static_cast<size_t>(width) * height * 4;
-                if (width > 0 && height > 0 && decrypted.size() >= (8 + expectedPixelBytes)) {
-                    const uchar *pixelPtr = reinterpret_cast<const uchar *>(decrypted.data() + 8);
-                    QImage imgCopy = QImage(pixelPtr, width, height, width * 4, QImage::Format_RGBA8888).copy();
+                QByteArray compressedData(reinterpret_cast<const char *>(decrypted.data() + 12), static_cast<qsizetype>(decrypted.size() - 12));
+                QByteArray uncompressedPixels = qUncompress(compressedData);
+
+                if (uncompressedPixels.isEmpty() && decrypted.size() >= (8 + static_cast<size_t>(width) * height * 4)) {
+                    // Fallback uncompressed raw buffer handling
+                    uncompressedPixels = QByteArray(reinterpret_cast<const char *>(decrypted.data() + 8), static_cast<qsizetype>(width * height * 4));
+                }
+
+                if (width > 0 && height > 0 && !uncompressedPixels.isEmpty()) {
+                    QImage imgCopy = QImage(reinterpret_cast<const uchar *>(uncompressedPixels.constData()), width, height, width * 4, QImage::Format_RGBA8888).copy();
                     if (frameProvider_) {
                         frameProvider_->updateFrame(imgCopy);
                         receivedFrames_++;
+
+                        qint64 tNow = QDateTime::currentMSecsSinceEpoch();
+                        qint64 e2eLatencyMs = tNow - static_cast<qint64>(packet.header.timestampMs);
+                        qInfo().noquote() << QString("[Client Latency Audit] Frame #%1 | E2E Latency: %2 ms | Received Payload: %3 KB")
+                            .arg(packet.header.sequenceNumber)
+                            .arg(e2eLatencyMs)
+                            .arg(packet.payload.size() / 1024);
                     }
                 }
             } else {
