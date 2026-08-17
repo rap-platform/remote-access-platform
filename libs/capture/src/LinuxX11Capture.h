@@ -36,7 +36,9 @@ private:
 
     Display *display_{nullptr};
     Window rootWindow_{0};
+    std::vector<uint8_t> prevFrameData_;
 };
+
 
 } // namespace rap::capture
 

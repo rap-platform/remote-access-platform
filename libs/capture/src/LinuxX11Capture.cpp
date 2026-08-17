@@ -1,4 +1,6 @@
 #include "LinuxX11Capture.h"
+#include "MirrorShield.h"
+#include "DirtyRegionDetector.h"
 #include <chrono>
 #include <cstring>
 #include <iostream>
@@ -25,7 +27,40 @@ bool LinuxX11Capture::initialize() {
         height_ = 1080;
     }
     frameCounter_ = 0;
+    prevFrameData_.clear();
     return true;
+}
+
+// Helper to find client window bounds for Mirror Shield loopback severing
+static WindowBounds findClientWindowBounds(Display *display, Window rootWindow) {
+    WindowBounds bounds;
+    if (!display || !rootWindow) return bounds;
+
+    Window rootReturn, parentReturn, *children = nullptr;
+    unsigned int numChildren = 0;
+
+    if (XQueryTree(display, rootWindow, &rootReturn, &parentReturn, &children, &numChildren) && children) {
+        for (unsigned int i = 0; i < numChildren; ++i) {
+            char *windowName = nullptr;
+            if (XFetchName(display, children[i], &windowName) && windowName) {
+                std::string title(windowName);
+                XFree(windowName);
+                if (title.find("Remote Access Platform") != std::string::npos) {
+                    XWindowAttributes attr;
+                    if (XGetWindowAttributes(display, children[i], &attr)) {
+                        bounds.x = attr.x;
+                        bounds.y = attr.y;
+                        bounds.width = attr.width;
+                        bounds.height = attr.height;
+                        bounds.isActive = true;
+                        break;
+                    }
+                }
+            }
+        }
+        XFree(children);
+    }
+    return bounds;
 }
 
 std::optional<FrameData> LinuxX11Capture::captureSingleFrame() {
@@ -63,6 +98,23 @@ std::optional<FrameData> LinuxX11Capture::captureSingleFrame() {
                 }
             }
             XDestroyImage(ximage);
+
+            // 1. Apply Mirror Shield: Sever optical infinite feedback loop if client viewer is running on same desktop
+            WindowBounds clientBounds = findClientWindowBounds(display_, rootWindow_);
+            if (clientBounds.isActive) {
+                MirrorShield::applyMirrorShield(frame.pixelData.data(), width_, height_, clientBounds, 4);
+            }
+
+            // 2. Dirty Region Detection: If frame is unchanged from previous frame, skip duplicate transmission
+            if (!prevFrameData_.empty() && prevFrameData_.size() == frame.pixelData.size()) {
+                DirtyRect dirty = DirtyRegionDetector::detectDirtyRegion(prevFrameData_.data(), frame.pixelData.data(), width_, height_, 4);
+                if (!dirty.isDirty) {
+                    // Desktop frame is static - skip duplicate send to keep latency at 0ms!
+                    return std::nullopt;
+                }
+            }
+
+            prevFrameData_ = frame.pixelData;
             return frame;
         }
     }
