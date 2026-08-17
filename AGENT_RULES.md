@@ -1,20 +1,36 @@
 # AI Agent Instructions & Workspace Coding Rules
 
 > **Project:** Enterprise Cross-Platform Remote Access & Device Management Platform  
-> **Source of Truth:** [`REMOTE-DESKTOP-ARCHITECTURE.md`](./docs/REMOTE-DESKTOP-ARCHITECTURE.md) (Version 4.0)
+> **Source of Truth:** [`docs/REMOTE-DESKTOP-ARCHITECTURE.md`](./docs/REMOTE-DESKTOP-ARCHITECTURE.md) (Version 4.0)
 
 ---
 
-## 0. Mandatory Rule: Live Technical Documentation Log
+## 0. Mandatory Rules
 
-- **Live Implementation Log (`docs/IMPLEMENTATION_LOG.md`)**:
-  Every milestone and feature implemented MUST be continuously updated and documented in `docs/IMPLEMENTATION_LOG.md`.
-  For every change, the log MUST record:
-  1. **What** was implemented (files created/modified, components built).
-  2. **How** it was implemented (architectural patterns, code structure, CMake/Cargo configuration).
-  3. **Why** specific decisions were made (rationale, trade-offs, security considerations).
-  4. **Standards & Best Practices** followed (C++20, LGPLv3 dynamic linking, Rust safety, OWASP ASVS, Conventional Commits).
-  5. **Verification & Test Results** (test execution outputs, static analysis results).
+### 0.1 Live Technical Documentation Log (`docs/IMPLEMENTATION_LOG.md`)
+Every milestone and feature implemented MUST be continuously updated and documented in `docs/IMPLEMENTATION_LOG.md`.
+For every change, the log MUST record:
+1. **What** was implemented (files created/modified, components built).
+2. **How** it was implemented (architectural patterns, code structure, CMake/Cargo configuration).
+3. **Why** specific decisions were made (rationale, trade-offs, security considerations).
+4. **Standards & Best Practices** followed (C++20, LGPLv3 dynamic linking, Rust safety, OWASP ASVS, Conventional Commits).
+5. **Verification & Test Results** (test execution outputs, static analysis results).
+
+### 0.2 DRY Repository & Script Automation Standard
+- **Zero Code/Script Duplication (DRY)**: Keep the codebase clean, modular, and DRY.
+- **Automated Reusable Scripts (`tools/`)**: All environment bootstrap, dependency installation, building, testing, linting, formatting, and deployment MUST be driven by standardized scripts in `tools/`:
+  - `tools/setup_deps.sh` — Prerequisites setup & dependency installer (includes `cppcheck`, `clang-tidy`, `clippy`)
+  - `tools/build.sh` — Unified CMake + Cargo build wrapper with integrated quality gates
+  - `tools/test.sh` — Unified CTest + Cargo test suite wrapper
+  - `tools/lint.sh` — Unified Clang-format, Clang-tidy, Cppcheck, Rustfmt, Clippy, and Qmllint check wrapper
+- **Reutilization over Ad-Hoc Execution**: Human developers and AI agents MUST utilize and re-use the centralized scripts in `tools/` rather than typing manual ad-hoc terminal commands.
+
+### 0.3 Mandatory Quality Gate Rule (Lint -> Build -> Test -> Ready)
+- **Strict Quality Pipeline Order**: No build artifact is considered ready or releaseable until:
+  1. **Static Analysis & Linting Pass**: Code must pass `cppcheck`, `clang-tidy`, `clippy`, `rustfmt`, and `qmllint` with zero warnings (`./tools/lint.sh`).
+  2. **Compilation**: Clean build under C++20 `-Werror` and Rust `#![forbid(unsafe_code)]`.
+  3. **Test Suite Verification**: All C++ Qt Tests, QML Qt Quick Tests, and Rust Cargo unit/integration tests must pass cleanly (`./tools/test.sh`).
+- **Enforcement**: `./tools/build.sh` automatically enforces this order. If static analysis or tests fail, the build fails immediately and no output binary is marked ready.
 
 ---
 
@@ -88,7 +104,7 @@ Every QML file submitted or modified MUST adhere strictly to the following rules
 
 ## 6. Commit & Testing Expectations
 
-1. **Commit Format**: Conventional Commits (`feat:`, `fix:`, `sec:`, `refactor:`, `test:`, `docs:`).
+1. **Commit Format**: Conventional Commits (`feat:`, `fix:`, `sec:`, `refactor:`, `test:`, `docs:`, `ci:`).
 2. **Testing First**:
    - Unit tests required for all C++ logic (`Qt Test` / `GoogleTest`), QML (`Qt Quick Test`), and Rust crates (`cargo test`).
    - Line coverage targets: ≥ 80% on `libs/security`, `libs/protocol`, `libs/transport`, and Rust `services/*`.

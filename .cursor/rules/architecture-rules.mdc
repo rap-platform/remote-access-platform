@@ -8,6 +8,7 @@ globs: **/*
 Refer to `docs/REMOTE-DESKTOP-ARCHITECTURE.md` (v4.0) and `AGENT_RULES.md`.
 
 - **MANDATORY LIVE DOCUMENTATION LOG**: Continuously maintain `docs/IMPLEMENTATION_LOG.md` detailing what was implemented, how, why, standards followed, and test verification results.
+- **QUALITY GATE & SCRIPT AUTOMATION (`tools/`)**: Run static analysis (`cppcheck`, `clang-tidy`, `clippy`, `rustfmt`), compile, and run tests (`ctest`, `cargo test`) before any build artifact is ready (`tools/build.sh`).
 - **Backend**: Rust ONLY (`services/`). `#![forbid(unsafe_code)]` mandatory.
 - **Client UI**: Qt 6 (LGPLv3 dynamic linking) + QML (`apps/client/`).
 - **Core**: C++20 (`apps/client/src/core/`, `apps/agent/`).

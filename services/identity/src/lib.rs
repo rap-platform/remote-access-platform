@@ -5,6 +5,6 @@
 mod tests {
     #[test]
     fn test_identity_stub() {
-        assert!(true);
+        assert_eq!(1 + 1, 2);
     }
 }

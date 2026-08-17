@@ -29,7 +29,8 @@ mod tests {
         let json = serde_json::to_string(&status).expect("Serialization failed");
         assert_eq!(json, "\"Healthy\"");
 
-        let deserialized: HealthStatus = serde_json::from_str(&json).expect("Deserialization failed");
+        let deserialized: HealthStatus =
+            serde_json::from_str(&json).expect("Deserialization failed");
         assert_eq!(deserialized, HealthStatus::Healthy);
     }
 }

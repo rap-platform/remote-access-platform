@@ -4,15 +4,11 @@ Always read and follow the mandatory architecture blueprint in `docs/REMOTE-DESK
 
 Key Rules:
 0. **MANDATORY LIVE DOCUMENTATION LOG**: Continuously maintain `docs/IMPLEMENTATION_LOG.md` detailing what was implemented, how, why, standards followed, and test verification results.
-1. Backend is **Rust ONLY** (`services/`). `#![forbid(unsafe_code)]` at crate root.
-2. Desktop UI is **Qt 6 (LGPLv3 dynamic linking)** + QML. NEVER statically link Qt. Avoid GPL-only modules (`Qt Charts`, `Qt Data Visualization`).
-3. Core client/agent is **C++20**.
-4. Agent MUST be Qt-free.
+1. **QUALITY GATE & SCRIPT AUTOMATION (`tools/`)**: Run static analysis (`cppcheck`, `clang-tidy`, `clippy`, `rustfmt`), then compile, then execute test suites (`ctest`, `cargo test`) before any build artifact is ready. Utilize `tools/build.sh`, `tools/test.sh`, `tools/lint.sh`.
+2. Backend is **Rust ONLY** (`services/`). `#![forbid(unsafe_code)]` at crate root.
+3. Desktop UI is **Qt 6 (LGPLv3 dynamic linking)** + QML. NEVER statically link Qt. Avoid GPL-only modules (`Qt Charts`, `Qt Data Visualization`).
+4. Core client/agent is **C++20**. Agent MUST be Qt-free.
 5. No `#ifdef _WIN32` / `#ifdef __linux__` / `#ifdef __APPLE__` outside `platform/<os>/` subdirectories.
-6. QML:
-   - Mandatory `id` property declared first.
-   - Relative sizing only (using `Metrics.spacing*`, `anchors`, `Layout.*`). No hardcoded pixel sizes.
-   - No hex color strings outside `qml/theme/`. Use `Palette.*`.
-   - Zero business logic in QML.
+6. QML: Mandatory `id` declared first, relative sizing (`Metrics.*`), colors (`Palette.*`), zero business logic in QML.
 7. Logging: Use `QLoggingCategory` (C++) and `tracing` (Rust). Never log credentials, session keys, clipboard data, or raw frame content.
-8. Git Commits: Conventional Commits (`feat:`, `fix:`, `sec:`, `refactor:`, `test:`).
+8. Git Commits: Conventional Commits (`feat:`, `fix:`, `sec:`, `refactor:`, `test:`, `docs:`, `ci:`).
