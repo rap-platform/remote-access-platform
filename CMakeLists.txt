@@ -32,5 +32,6 @@ if(ENABLE_TESTING)
 endif()
 
 add_subdirectory(libs/common)
+add_subdirectory(libs/protocol)
 add_subdirectory(apps/client)
 add_subdirectory(apps/client/tests/qml)

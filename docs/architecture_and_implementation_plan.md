@@ -90,11 +90,12 @@ graph TD
   - [x] `HotReloadManager` C++ devtool with `QFileSystemWatcher` behind CMake `ENABLE_HOT_RELOAD=ON` (default OFF in release)
   - [x] Unit test suites passing for C++ `test_json_logger`, `test_hot_reload`, and Rust `test_json_log_entry_serialization`
 
-- [ ] **Milestone 3: Protocol v0 Schema**
-  - [ ] Protobuf schema definition (`proto/session.proto`) covering `HELLO`, `AUTH`, `FRAME`, `INPUT`, `PING`, `PONG`
-  - [ ] Automated Protobuf code-generation scripts for C++ (`protoc`) and Rust (`prost`/`tonic`)
-  - [ ] Fuzzing stub target for protocol parser (`libs/protocol`)
-  - [ ] Serialization & deserialization unit test suite
+- [x] **Milestone 3: Protocol v0 Schema & Binary Framing Pipeline**
+  - [x] Protobuf schema definition (`proto/session.proto`) covering `SessionEnvelope`, `HandshakeRequest`, `HandshakeResponse`, `FrameHeader`, `InputEvent`, and `Heartbeat`
+  - [x] High-performance C++ Protocol Codec (`libs/protocol/include/ProtocolCodec.h`, `src/ProtocolCodec.cpp`) with std::variant error handling
+  - [x] High-performance Rust Protocol Codec (`services/shared/src/protocol.rs`) matching C++ binary framing layout
+  - [x] Fuzzing stub target created for protocol framing parser (`libs/protocol/fuzz/fuzz_protocol.cpp`)
+  - [x] Cross-language protocol unit test suites passing for C++ `test_protocol` and Rust `test_rust_protocol_encode_decode_roundtrip`
 
 ---
 

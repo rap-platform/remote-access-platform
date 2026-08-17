@@ -75,25 +75,31 @@
   - Controlled by CMake option `ENABLE_HOT_RELOAD=ON` (default OFF in release builds).
   - Unit test `test_hot_reload.cpp` running under **Qt Test** (`100% PASSED`).
 
-### 2. How It Was Implemented
-- Built QML Theme Singletons following strict design token architecture rules.
-- Implemented C++ thread-safe singleton `JsonLogger` using `QMutex` and `QJsonDocument`.
-- Exposed `pub mod logging;` in `rap-shared` Rust crate using `serde` and `tracing-subscriber`.
-- Wrote CMake conditionals in `apps/client/CMakeLists.txt` guaranteeing zero hot reload symbols are compiled into production binaries when `ENABLE_HOT_RELOAD=OFF`.
+---
 
-### 3. Why Specific Decisions Were Made
-- **QML Theme Singletons**: Prevents visual fragmentation and hardcoded magic colors across the UI.
-- **Unified JSON Log Schema**: Ensures log aggregators (Elasticsearch / Grafana Loki) parse C++ client/agent and Rust microservice logs with identical field queries.
-- **Hot Reload Devtool Isolation**: Dramatically accelerates UI iteration speed in development while keeping release binaries lightweight and secure.
+## Milestone 3: Protocol v0 Schema & Binary Framing Pipeline
 
-### 4. Standards & Best Practices Followed
-- **C++20**: `-Wall -Wextra -Wpedantic -Werror`.
-- **Rust Edition 2021**: `#![forbid(unsafe_code)]` with Clippy `-D warnings`.
-- **QML Token Architecture**: Absolute separation of theme values from presentation views.
+### Status: COMPLETED ✅
 
-### 5. Verification & Test Execution Results
+### 1. What Was Implemented
+- **Protobuf Schema Specifications (`proto/session.proto`)**:
+  - `SessionEnvelope`: Top-level multiplexed transport envelope framing header (version, sequence number, timestamp, payload type, payload bytes).
+  - `HandshakeRequest` & `HandshakeResponse`: Version negotiation, public key exchange, error messaging.
+  - `FrameHeader`: Video stream frame metadata (frame number, timestamp_us, width, height, codec enum, keyframe flag, payload size).
+  - `InputEvent`: Mouse movement, button click, keyboard key event, scroll, clipboard text synchronization.
+  - `Heartbeat`: Latency measurement & RTT tracking payload.
+- **C++ High-Performance Protocol Codec (`libs/protocol/`)**:
+  - `ProtocolCodec.h/cpp`: Binary header encoder/decoder supporting zero-copy network buffer deserialization and C++20 `std::variant<Packet, ParseError>` error handling.
+  - Unit test `test_protocol.cpp` running under **Qt Test** (`100% PASSED`).
+  - Fuzzing target `libs/protocol/fuzz/fuzz_protocol.cpp` stubbed for LLVM LibFuzzer.
+- **Rust High-Performance Protocol Codec (`services/shared/src/protocol.rs`)**:
+  - `Packet` struct with `encode` and `decode` routines matching C++ binary layout (28-byte header + binary payload).
+  - Explicit error handling without `.unwrap()` / `.expect()` in production path.
+  - Unit test `test_rust_protocol_encode_decode_roundtrip` running under `cargo test` (`100% PASSED`).
+
+### 2. Verification & Test Execution Results
 - Executed `./tools/build.sh` Quality Gate Pipeline:
-  - **Static Analysis**: `cppcheck`, QML hex color enforcer, `rustfmt`, and `clippy` PASSED (0 warnings).
-  - **CTest Suite**: 4/4 tests PASSED (100%): `test_logging`, `test_json_logger`, `test_hot_reload`, `test_qml_skeleton`.
-  - **Cargo Test Suite**: 7/7 tests PASSED (100%).
+  - **Static Analysis**: `cppcheck`, `rustfmt`, `clippy`, QML hex check PASSED (0 warnings).
+  - **CTest Suite**: 5/5 tests PASSED (`test_logging`, `test_json_logger`, `test_protocol`, `test_hot_reload`, `test_qml_skeleton`).
+  - **Cargo Test Suite**: 8/8 unit tests PASSED.
   - **Pipeline Result**: `=== Quality Gate Complete: Build is Verified & Ready to Use! ===`

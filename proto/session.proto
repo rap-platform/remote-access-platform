@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package rap.protocol;
+
+// Payload type enumeration for multiplexed transport envelope
+enum PayloadType {
+    PAYLOAD_TYPE_UNSPECIFIED = 0;
+    PAYLOAD_TYPE_HANDSHAKE_REQ = 1;
+    PAYLOAD_TYPE_HANDSHAKE_RESP = 2;
+    PAYLOAD_TYPE_FRAME_HEADER = 3;
+    PAYLOAD_TYPE_INPUT_EVENT = 4;
+    PAYLOAD_TYPE_HEARTBEAT = 5;
+}
+
+// Video Codec identifier enumeration
+enum VideoCodec {
+    VIDEO_CODEC_UNSPECIFIED = 0;
+    VIDEO_CODEC_RAW = 1;
+    VIDEO_CODEC_H264 = 2;
+    VIDEO_CODEC_H265 = 3;
+    VIDEO_CODEC_AV1 = 4;
+    VIDEO_CODEC_VP9 = 5;
+}
+
+// Mouse Button identifier enumeration
+enum MouseButton {
+    MOUSE_BUTTON_UNSPECIFIED = 0;
+    MOUSE_BUTTON_LEFT = 1;
+    MOUSE_BUTTON_RIGHT = 2;
+    MOUSE_BUTTON_MIDDLE = 3;
+}
+
+// Top-level multiplexed session transport envelope
+message SessionEnvelope {
+    uint32 version = 1;
+    uint64 sequence_number = 2;
+    uint64 timestamp_ms = 3;
+    PayloadType payload_type = 4;
+    bytes payload = 5;
+}
+
+// Handshake Request message
+message HandshakeRequest {
+    string client_version = 1;
+    bytes client_public_key = 2;
+    repeated string supported_codecs = 3;
+}
+
+// Handshake Response message
+message HandshakeResponse {
+    string agent_version = 1;
+    string session_id = 2;
+    bytes agent_public_key = 3;
+    bool success = 4;
+    string error_message = 5;
+}
+
+// Video Frame Header metadata
+message FrameHeader {
+    uint64 frame_number = 1;
+    uint64 timestamp_us = 2;
+    uint32 width = 3;
+    uint32 height = 4;
+    VideoCodec codec = 5;
+    bool is_keyframe = 6;
+    uint32 payload_size_bytes = 7;
+}
+
+// Mouse Move event
+message MouseMoveEvent {
+    int32 x = 1;
+    int32 y = 2;
+    bool is_relative = 3;
+}
+
+// Mouse Click event
+message MouseButtonEvent {
+    MouseButton button = 1;
+    bool is_down = 2;
+}
+
+// Keyboard Event
+message KeyEvent {
+    uint32 keycode = 1;
+    uint32 modifiers = 2;
+    bool is_down = 3;
+}
+
+// Scroll Event
+message ScrollEvent {
+    int32 delta_x = 1;
+    int32 delta_y = 2;
+}
+
+// Clipboard Event
+message ClipboardEvent {
+    string text_content = 1;
+}
+
+// Consolidated Input Event
+message InputEvent {
+    uint64 timestamp_ms = 1;
+    oneof event {
+        MouseMoveEvent mouse_move = 2;
+        MouseButtonEvent mouse_button = 3;
+        KeyEvent key_event = 4;
+        ScrollEvent scroll_event = 5;
+        ClipboardEvent clipboard_event = 6;
+    }
+}
+
+// Heartbeat Ping/Pong payload
+message Heartbeat {
+    uint64 client_timestamp_ms = 1;
+    uint64 agent_timestamp_ms = 2;
+    bool is_reply = 3;
+}

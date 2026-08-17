@@ -3,6 +3,7 @@
 #![forbid(unsafe_code)]
 
 pub mod logging;
+pub mod protocol;
 
 /// Baseline service health status descriptor.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
