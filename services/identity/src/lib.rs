@@ -67,7 +67,10 @@ impl IdentityService {
         };
 
         self.devices.write().await.insert(device_id.clone(), device);
-        self.tokens.write().await.insert(auth_token.clone(), device_id.clone());
+        self.tokens
+            .write()
+            .await
+            .insert(auth_token.clone(), device_id.clone());
 
         RegistrationResponse {
             success: true,
@@ -124,7 +127,8 @@ mod tests {
         let req = RegistrationRequest {
             hostname: "dell-latitude-7480".into(),
             os_name: "Linux Ubuntu 24.04".into(),
-            public_key_hex: "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20".into(),
+            public_key_hex: "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
+                .into(),
         };
 
         let resp = identity_service.register_device(req.clone()).await;

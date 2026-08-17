@@ -2,7 +2,7 @@
 #![forbid(unsafe_code)]
 
 use axum::{
-    extract::{State},
+    extract::State,
     http::StatusCode,
     routing::{get, post},
     Json, Router,
@@ -51,7 +51,10 @@ async fn register_device_handler(
     Json(req): Json<RegistrationRequest>,
 ) -> Json<RegistrationResponse> {
     let resp = state.identity.register_device(req).await;
-    state.signaling.register_peer(resp.device_id.clone(), true).await;
+    state
+        .signaling
+        .register_peer(resp.device_id.clone(), true)
+        .await;
     Json(resp)
 }
 
@@ -61,7 +64,11 @@ async fn initiate_session_handler(
 ) -> Result<Json<SignalingSession>, (StatusCode, String)> {
     match state
         .signaling
-        .initiate_session(req.client_device_id, req.target_agent_id, req.client_public_key_hex)
+        .initiate_session(
+            req.client_device_id,
+            req.target_agent_id,
+            req.client_public_key_hex,
+        )
         .await
     {
         Ok(session) => Ok(Json(session)),

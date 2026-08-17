@@ -81,9 +81,17 @@ impl SignalingServer {
     }
 
     /// Initiate a new remote desktop signaling session between client and target agent.
-    pub async fn initiate_session(&self, client_device_id: String, target_agent_id: String, client_public_key_hex: String) -> Result<SignalingSession, String> {
+    pub async fn initiate_session(
+        &self,
+        client_device_id: String,
+        target_agent_id: String,
+        client_public_key_hex: String,
+    ) -> Result<SignalingSession, String> {
         if !self.is_peer_online(&target_agent_id).await {
-            return Err(format!("Target agent device {} is offline or not registered", target_agent_id));
+            return Err(format!(
+                "Target agent device {} is offline or not registered",
+                target_agent_id
+            ));
         }
 
         let session_id = format!("rap-sess-{}", Uuid::new_v4().simple());
@@ -99,12 +107,19 @@ impl SignalingServer {
             created_at_ms: now_ms,
         };
 
-        self.active_sessions.write().await.insert(session_id, session.clone());
+        self.active_sessions
+            .write()
+            .await
+            .insert(session_id, session.clone());
         Ok(session)
     }
 
     /// Accept remote session on host agent side with agent X25519 public key.
-    pub async fn accept_session(&self, session_id: &str, agent_public_key_hex: String) -> Result<SignalingSession, String> {
+    pub async fn accept_session(
+        &self,
+        session_id: &str,
+        agent_public_key_hex: String,
+    ) -> Result<SignalingSession, String> {
         let mut sessions = self.active_sessions.write().await;
         if let Some(session) = sessions.get_mut(session_id) {
             session.agent_public_key_hex = Some(agent_public_key_hex);
@@ -150,20 +165,24 @@ mod tests {
         assert!(!server.is_peer_online("unknown-device").await);
 
         // Initiate signaling session
-        let initiate_res = server.initiate_session(
-            client_id.clone(),
-            agent_id.clone(),
-            "0102030405060708090a0b0c0d0e0f10".into(),
-        ).await;
+        let initiate_res = server
+            .initiate_session(
+                client_id.clone(),
+                agent_id.clone(),
+                "0102030405060708090a0b0c0d0e0f10".into(),
+            )
+            .await;
         assert!(initiate_res.is_ok());
         let session = initiate_res.unwrap();
         assert_eq!(session.status, SessionStatus::Initiated);
 
         // Accept session from agent side
-        let accept_res = server.accept_session(
-            &session.session_id,
-            "100f0e0d0c0b0a090807060504030201".into(),
-        ).await;
+        let accept_res = server
+            .accept_session(
+                &session.session_id,
+                "100f0e0d0c0b0a090807060504030201".into(),
+            )
+            .await;
         assert!(accept_res.is_ok());
         let active_sess = accept_res.unwrap();
         assert_eq!(active_sess.status, SessionStatus::Active);
