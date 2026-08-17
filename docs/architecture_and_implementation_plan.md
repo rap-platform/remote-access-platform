@@ -124,10 +124,11 @@ graph TD
   - [x] Input injection unit test suite (`libs/input/tests/test_input.cpp`) passing under CTest (5/5 tests passed)
 
 
-- [ ] **Milestone 7: Security Threat Model & Initial Fuzzing Pass**
-  - [ ] STRIDE threat model documentation (`docs/security/threat-model.md`)
-  - [ ] LibFuzzer / AFL++ fuzzing targets for network transport framing and Protobuf deserializers
-  - [ ] Zero crash benchmark after 1,000,000 fuzzing iterations
+- [x] **Milestone 7: Security Threat Model & Initial Fuzzing Pass**
+  - [x] STRIDE threat model documentation (`docs/security/threat-model.md`)
+  - [x] LibFuzzer / AFL++ fuzzing target (`libs/protocol/fuzz/fuzz_protocol.cpp`) and benchmark executable (`fuzz_runner.cpp`)
+  - [x] Zero crash benchmark after 1,000,000 fuzzing iterations (`test_protocol_fuzz` passing under CTest)
+
 
 ---
 

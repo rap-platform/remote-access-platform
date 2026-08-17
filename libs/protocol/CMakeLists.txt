@@ -15,4 +15,8 @@ if(ENABLE_TESTING)
     add_executable(test_protocol tests/test_protocol.cpp)
     target_link_libraries(test_protocol PRIVATE rap_protocol Qt6::Test)
     add_test(NAME test_protocol COMMAND test_protocol)
+
+    add_executable(test_protocol_fuzz fuzz/fuzz_runner.cpp)
+    target_link_libraries(test_protocol_fuzz PRIVATE rap_protocol Qt6::Test)
+    add_test(NAME test_protocol_fuzz COMMAND test_protocol_fuzz)
 endif()

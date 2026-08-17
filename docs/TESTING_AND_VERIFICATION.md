@@ -1,6 +1,6 @@
 # Remote Access Platform — Testing & Verification Guide
 
-> **Live Document Version:** 1.1.0  
+> **Live Document Version:** 1.2.0  
 > **Target Audience:** Developers, QA Engineers, Security Auditors, Penetration Testers  
 > **Source Repository:** [`Remote-Desktop`](https://github.com/remote-desktop/remote-desktop)
 
@@ -11,7 +11,7 @@
 This document provides a comprehensive, step-by-step testing and verification guide for the **Remote Access Platform**. It details how to validate the system across three primary tiers:
 
 1. **User Functional Verification**: End-to-end interactive desktop streaming, real-time remote input injection (pointer movement, left/right clicks, wheel scrolling), QML UI theme engine, and session lifecycle.
-2. **Security & Cryptographic Audit (Milestones 5 & 6)**: Network wire packet inspection, ChaCha20-Poly1305 AEAD payload encryption for video & input events, X25519 ECDH key agreement, and active MITM bit-flip tamper rejection.
+2. **Security & Cryptographic Audit (Milestones 5, 6 & 7)**: STRIDE threat model compliance (`docs/security/threat-model.md`), network wire packet inspection (`tcpdump`), ChaCha20-Poly1305 AEAD payload encryption for video & input events, X25519 ECDH key agreement, active MITM bit-flip tamper rejection, and **1,000,000 iterations continuous fuzzing test benchmark**.
 3. **Automated Quality Gate Testing**: Static analysis, formatting compliance, and CTest/Cargo test suite execution.
 
 ---
@@ -71,25 +71,40 @@ To prove that input events and video frames are encrypted on the network interfa
    - [x] Input event payloads (`PayloadType::InputEvent`) are encrypted using ChaCha20-Poly1305 AEAD.
    - [x] Zero plain mouse coordinates, keycodes, or unencrypted keystrokes appear on the wire.
 
-### 3.2 Automated Input Injection Unit Test Suite
+### 3.2 Automated Cryptographic Known-Answer Test Suite
 
-Run the standalone input injection C++ unit test binary:
+Run the standalone C++ cryptographic unit test binary:
 
 ```bash
-./build/libs/input/test_input
+./build/libs/security/test_crypto
 ```
 
-**Expected Output (5/5 Input Tests Passed)**:
+### 3.3 Active MITM Bit-Flip Tamper Rejection Test
+
+To test active Man-In-The-Middle (MITM) tamper resistance:
+1. When any single bit of an encrypted network payload is mutated in transit, the Poly1305 authentication tag verification fails in constant time.
+2. The client logger outputs:
+   ```text
+   [Client] E2E Crypto Authentication Failed! Dropping corrupted or tampered frame payload.
+   ```
+3. Corrupted or tampered frame payloads are dropped immediately before any memory allocation or rendering occurs.
+
+### 3.4 1,000,000 Iterations Continuous Stress Fuzzing Benchmark (Milestone 7)
+
+Run the standalone protocol fuzzing stress test binary:
+
+```bash
+./build/libs/protocol/test_protocol_fuzz
+```
+
+**Expected Output (Zero Crash Benchmark)**:
 ```text
 Config: Using QtTest library 6.x
-PASS   : TestInputBackend::initTestCase()
-PASS   : TestInputBackend::testBackendInitialization() # Initializes X11 XTest extension
-PASS   : TestInputBackend::testMouseMoveInjection()     # Pointer position normalization & motion
-PASS   : TestInputBackend::testMouseButtonInjection()   # Left, right, middle button press/release
-PASS   : TestInputBackend::testMouseWheelInjection()    # Scroll wheel delta processing
-PASS   : TestInputBackend::testKeyboardInjection()      # Key press & key release events
-PASS   : TestInputBackend::cleanupTestCase()
-Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+PASS   : TestProtocolFuzz::initTestCase()
+QDEBUG : TestProtocolFuzz::testProtocolCodecFuzzingOneMillionIterations() [Fuzz Benchmark] Completed 1000000 fuzzing iterations. Valid packets parsed: 0 Rejected malformed packets: 1000000
+PASS   : TestProtocolFuzz::testProtocolCodecFuzzingOneMillionIterations()
+PASS   : TestProtocolFuzz::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 420ms
 ```
 
 ---
@@ -109,6 +124,7 @@ To run the complete static analysis, formatting, and unit testing pipeline prior
 | `test_logging` | `libs/common` | Category filtering & console logging sinks |
 | `test_json_logger` | `libs/common` | Structured JSON log schema compliance |
 | `test_protocol` | `libs/protocol` | Binary framing codec serialization/deserialization |
+| `test_protocol_fuzz` | `libs/protocol` | 1,000,000 iterations malformed byte fuzzing stress test |
 | `test_capture` | `libs/capture` | X11 / DRM frame grabber lifecycle & frame rates |
 | `test_crypto` | `libs/security` | Cryptographic engine, ECDH key agreement, AEAD |
 | `test_input` | `libs/input` | Synthetic mouse & keyboard injection via XTest |

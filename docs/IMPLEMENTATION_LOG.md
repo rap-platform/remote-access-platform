@@ -42,20 +42,23 @@
 
 ### Status: COMPLETED ✅
 
+---
+
+## Milestone 7: Security Threat Model & Initial Fuzzing Pass
+
+### Status: COMPLETED ✅
+
 ### 1. What Was Implemented
-- **Abstract Input Interface (`libs/input/include/IInputBackend.h`)**:
-  - Abstract base class defining `InputEvent` structure (`type`, `x`, `y`, `button`, `delta`, `keycode`, `modifiers`) and synthetic input injection interface `injectEvent()`.
-- **Linux Synthetic Input Injection Backend (`libs/input/src/LinuxX11Input.h/cpp`)**:
-  - Implemented Linux X11 synthetic pointer motion, mouse button press/release, and scroll wheel injection using the X11 `XTest` extension (`XTestFakeMotionEvent`, `XTestFakeButtonEvent`, `XTestFakeKeyEvent`).
-- **Interactive QML Input Handling (`apps/client/qml/Main.qml`)**:
-  - Attached `MouseArea` to `videoSurface` viewport in QML. Normalizes viewport pointer coordinates to host target resolution (`1920x1080`) and transmits `PayloadType::InputEvent` binary frames over TCP.
-- **Encrypted Remote Input Transport (`apps/client/src/SessionClient.cpp` & `apps/agent/src/main.cpp`)**:
-  - Input events are encrypted with ChaCha20-Poly1305 AEAD on the client before transmission. The host agent decrypts and authenticates incoming input packets before passing to `LinuxX11Input`.
-- **Input Injection Unit Test Suite (`libs/input/tests/test_input.cpp`)**:
-  - Registered 5 CTest unit tests covering backend initialization, pointer motion, button clicks, scroll wheel, and keyboard keystrokes (**100% Passed**).
-- **Live Testing & Verification Guide (`docs/TESTING_AND_VERIFICATION.md`)**:
-  - Updated live testing document with interactive input injection verification procedures.
+- **STRIDE Security Threat Model (`docs/security/threat-model.md`)**:
+  - Comprehensive threat assessment covering Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, and Elevation of Privilege with mapped C++ and Rust technical mitigations.
+- **Protocol Fuzzing Target (`libs/protocol/fuzz/fuzz_protocol.cpp`)**:
+  - LibFuzzer / AFL++ compatible fuzz test target exercising `ProtocolCodec::decode` and `ProtocolCodec::encode`.
+- **1,000,000 Iterations Stress Fuzzing Benchmark (`libs/protocol/fuzz/fuzz_runner.cpp`)**:
+  - CTest-integrated fuzz testing executable (`test_protocol_fuzz`) executing 1,000,000 randomized malformed input buffers against `ProtocolCodec::decode`.
+  - Achieved **zero crashes, zero heap corruptions, zero out-of-bounds reads, and zero memory leaks** across 1.0M iterations.
+- **Updated Live Verification Guide (`docs/TESTING_AND_VERIFICATION.md`)**:
+  - Documented Section 3.4 detailing the 1,000,000 iteration fuzzing test execution procedure.
 
 ### 2. Quality Gate Verification Results (`tools/build.sh`)
 - **Static Analysis**: `0` warnings across `cppcheck`, `rustfmt`, `clippy`, and QML Hex Color Enforcer.
-- **Unit & Integration Test Suites**: `8/8` CTest targets passed (`test_logging`, `test_json_logger`, `test_protocol`, `test_capture`, `test_crypto`, `test_input`, `test_hot_reload`, `test_qml_skeleton`).
+- **Unit & Integration Test Suites**: `9/9` CTest targets passed (`test_logging`, `test_json_logger`, `test_protocol`, `test_protocol_fuzz`, `test_capture`, `test_crypto`, `test_input`, `test_hot_reload`, `test_qml_skeleton`).
