@@ -1,6 +1,6 @@
 # Remote Access Platform — Testing & Verification Guide
 
-> **Live Document Version:** 1.3.0  
+> **Live Document Version:** 1.4.0  
 > **Target Audience:** Developers, QA Engineers, Security Auditors, Penetration Testers  
 > **Source Repository:** [`Remote-Desktop`](https://github.com/remote-desktop/remote-desktop)
 
@@ -8,12 +8,13 @@
 
 ## 1. Overview & Verification Scope
 
-This document provides a comprehensive, step-by-step testing and verification guide for the **Remote Access Platform**. It details how to validate the system across three primary tiers:
+This document provides a comprehensive, step-by-step testing and verification guide for the **Remote Access Platform**. It details how to validate the system across primary operational tiers:
 
 1. **User Functional Verification**: End-to-end interactive desktop streaming, real-time remote input injection (pointer movement, left/right clicks, wheel scrolling), QML UI theme engine, and session lifecycle.
 2. **Security & Cryptographic Audit (Milestones 5, 6 & 7)**: STRIDE threat model compliance (`docs/security/threat-model.md`), network wire packet inspection (`tcpdump`), ChaCha20-Poly1305 AEAD payload encryption for video & input events, X25519 ECDH key agreement, active MITM bit-flip tamper rejection, and **1,000,000 iterations continuous fuzzing test benchmark**.
 3. **Cloud Control Plane & Microservices (Milestone 8)**: Device Identity Management (`rap-identity`), Rendezvous & Session Signaling (`rap-signaling`), and HTTP API Gateway REST routing (`rap-api-gateway`).
-4. **Automated Quality Gate Testing**: Static analysis, formatting compliance, and CTest/Cargo test suite execution.
+4. **NAT Traversal & Direct P2P Connectivity (Milestone 9)**: STUN client protocol (RFC 5389), ICE candidate pair negotiation, UDP hole punching, and connection mode fallback state machine (`DirectLocal` → `StunHolePunching` → `RelayFallback`).
+5. **Automated Quality Gate Testing**: Static analysis, formatting compliance, and CTest/Cargo test suite execution.
 
 ---
 
@@ -98,22 +99,24 @@ To manually run the Rust Control Plane test suite:
 cargo test --workspace
 ```
 
-**Expected Test Output**:
-```text
-running 1 test
-test tests::test_device_registration_and_authentication_flow ... ok (rap-identity)
+---
 
-running 1 test
-test tests::test_signaling_session_lifecycle ... ok (rap-signaling)
+## 5. Tier 4: NAT Traversal & Direct P2P Connectivity Verification (Milestone 9)
 
-running 2 tests
-test tests::test_api_gateway_health_check ... ok (rap-api-gateway)
-test tests::test_api_gateway_registration_and_session_initiation ... ok (rap-api-gateway)
+Run the dedicated P2P NAT Traversal scenario integration test:
+
+```bash
+cargo test --test test_p2p_nat_traversal
 ```
+
+**Verified Scenarios**:
+1. **STUN Binding Protocol**: RFC 5389 Binding request framing and XOR-Mapped IP/port extraction.
+2. **ICE Candidate Scoring**: Priority score ranking prioritizing direct `Host` candidates over `ServerReflexive` candidates.
+3. **Connection State Machine**: Seamless state transition from `DirectLocal` to `StunHolePunching`, with automatic fallback to `RelayFallback` when UDP hole punching fails.
 
 ---
 
-## 5. Tier 4: Manual Build Execution & Quality Gate Pipeline
+## 6. Tier 5: Manual Build Execution & Quality Gate Pipeline
 
 To build and run all test targets manually:
 
@@ -123,7 +126,7 @@ To build and run all test targets manually:
 
 ---
 
-## 6. Maintenance & Governance Rule
+## 7. Maintenance & Governance Rule
 
 Per **Rule 0.3** of [`AGENT_RULES.md`](../AGENT_RULES.md), whenever new features, network protocol frames, video codecs, or security subsystems are added:
 - Developers and AI agents **MUST** update this file (`docs/TESTING_AND_VERIFICATION.md`) with the new step-by-step verification commands and security audit procedures.

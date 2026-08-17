@@ -3,6 +3,7 @@
 #![forbid(unsafe_code)]
 
 pub mod logging;
+pub mod nat;
 pub mod protocol;
 
 /// Baseline service health status descriptor.

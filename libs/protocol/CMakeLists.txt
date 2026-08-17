@@ -1,6 +1,8 @@
 add_library(rap_protocol STATIC
     src/ProtocolCodec.cpp
+    src/StunClient.cpp
     include/ProtocolCodec.h
+    include/StunClient.h
 )
 
 target_include_directories(rap_protocol PUBLIC

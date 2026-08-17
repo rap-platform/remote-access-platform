@@ -54,15 +54,18 @@
 
 ### Status: COMPLETED ✅
 
+---
+
+## Milestone 9: NAT Traversal & Direct P2P Connectivity
+
+### Status: COMPLETED ✅
+
 ### 1. What Was Implemented
-- **Device Identity Service (`services/identity/`)**:
-  - `Device` data structures, `RegistrationRequest`, and `RegistrationResponse`.
-  - `IdentityService`: In-memory & PostgreSQL compatible device store providing device registration (`register_device`), authentication lookup (`authenticate`), and online presence tracking (`set_presence`).
-  - Unit tests verifying device token generation and registration.
-- **Rendezvous & Signaling Service (`services/signaling/`)**:
-  - JSON & WebSocket signaling protocol envelopes (`SignalingMessage::PeerRegister`, `SessionInitiate`, `SessionAccept`, `CandidateExchange`, `SessionClose`).
-  - `SignalingServer`: Peer online tracking and session state machine (`Initiated`, `Active`, `Terminated`).
-  - Unit tests verifying signaling session initiation, agent acceptance, and session termination.
-- **API Gateway Router (`services/api-gateway/`)**:
-  - Axum HTTP control plane router mapping `/api/v1/health`, `/api/v1/identity/register`, and `/api/v1/signaling/initiate`.
-  - Integration unit tests validating API Gateway endpoints.
+- **STUN Client Protocol (`services/shared/src/nat/stun.rs`, `StunClient.h/cpp`)**:
+  - RFC 5389 STUN Binding Request & Response framing with Magic Cookie `0x2112A442`.
+  - Public IP and mapped port resolution logic for both C++ native runtime and Rust microservices.
+- **ICE-Lite Candidate Negotiation & Hole Punching (`services/shared/src/nat/ice.rs`)**:
+  - `IceCandidate` representation covering `Host`, `ServerReflexive` (`srflx`), and `Relay` candidate types with RFC priority scoring.
+  - `ConnectionStateMachine` managing P2P direct -> STUN UDP hole punching -> Relay server fallback state transitions.
+- **Automated P2P Integration Test (`tests/test_p2p_nat_traversal.rs`)**:
+  - Validates STUN encoding/decoding and end-to-end candidate negotiation & fallback.

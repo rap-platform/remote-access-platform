@@ -141,11 +141,12 @@ graph TD
   - [x] Control Plane Rust unit test suite (`cargo test`) passing 100% across all microservices
 
 
-- [ ] **Milestone 9: NAT Traversal & Direct P2P Connectivity**
-  - [ ] STUN client protocol implementation for public IP/port discovery
-  - [ ] UDP Hole Punching / ICE-lite candidate negotiation
-  - [ ] Fallback connection state machine (P2P direct -> STUN -> Relay)
-  - [ ] Automated end-to-end P2P connection scenario test (`e2e/scenarios/p2p_connect.rs`)
+- [x] **Milestone 9: NAT Traversal & Direct P2P Connectivity**
+  - [x] STUN client protocol implementation (`services/shared/src/nat/stun.rs`, `StunClient.h/cpp`) for public IP/port discovery
+  - [x] UDP Hole Punching / ICE-lite candidate negotiation module (`services/shared/src/nat/ice.rs`)
+  - [x] Fallback connection state machine (`DirectLocal` -> `StunHolePunching` -> `RelayFallback`)
+  - [x] Automated end-to-end P2P connection scenario test (`tests/test_p2p_nat_traversal.rs`)
+
 
 - [ ] **Milestone 10: High-Throughput Stateless Relay Service (Rust)**
   - [ ] Horizontally scalable UDP/QUIC Relay microservice (`services/relay/`)
