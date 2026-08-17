@@ -1,0 +1,69 @@
+name: Continuous Integration Matrix
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-and-format:
+    name: Code Formatting & Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LLVM & Clang-tidy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format clang-tidy
+
+      - name: Check C++ Formatting
+        run: |
+          find apps/ libs/ -name '*.cpp' -o -name '*.h' | xargs clang-format --dry-run --Werror
+
+      - name: Check Rust Formatting & Clippy
+        run: |
+          rustup component add rustfmt clippy
+          cargo fmt --check
+          cargo clippy --workspace --all-targets -- -D warnings
+
+  build-and-test:
+    name: Build & Test Matrix (${{ matrix.os }})
+    needs: lint-and-format
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Qt 6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.6.2'
+          arch: 'gcc_64'
+
+      - name: Setup CMake & Ninja
+        uses: jmillikin/setup-ninja@v1
+
+      - name: Configure CMake (C++)
+        run: |
+          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTING=ON
+
+      - name: Build C++ Targets
+        run: |
+          cmake --build build
+
+      - name: Run C++ Unit Tests (CTest)
+        run: |
+          ctest --test-dir build --output-on-failure
+
+      - name: Run Rust Cargo Tests
+        run: |
+          cargo test --workspace --all-targets
