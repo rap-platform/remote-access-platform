@@ -1,5 +1,6 @@
 #include <QCoreApplication>
 #include <QDebug>
+#include <QMetaObject>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include "ICaptureBackend.h"
@@ -46,8 +47,8 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    // Start frame capture and send encoded protocol packets to connected clients
-    captureBackend->startCapture([&clients](const rap::capture::FrameData &frame) {
+    // Thread-safe frame delivery from capture worker thread to main TCP socket thread
+    captureBackend->startCapture([&app, &clients](const rap::capture::FrameData &frame) {
         if (clients.isEmpty()) {
             return;
         }
@@ -60,12 +61,14 @@ int main(int argc, char *argv[]) {
 
         QByteArray bytes(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size()));
 
-        for (QTcpSocket *client : clients) {
-            if (client && client->isOpen()) {
-                client->write(bytes);
-                client->flush();
+        QMetaObject::invokeMethod(&app, [&clients, bytes]() {
+            for (QTcpSocket *client : clients) {
+                if (client && client->isOpen()) {
+                    client->write(bytes);
+                    client->flush();
+                }
             }
-        }
+        }, Qt::QueuedConnection);
     });
 
     return app.exec();
