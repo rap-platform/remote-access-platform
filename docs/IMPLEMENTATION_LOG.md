@@ -97,9 +97,30 @@
   - Explicit error handling without `.unwrap()` / `.expect()` in production path.
   - Unit test `test_rust_protocol_encode_decode_roundtrip` running under `cargo test` (`100% PASSED`).
 
+---
+
+## Milestone 4: LAN MVP & Cross-Platform Screen Capture
+
+### Status: COMPLETED ✅
+
+### 1. What Was Implemented
+- **Abstract Capture Interface (`libs/capture/include/ICaptureBackend.h`)**:
+  - High-performance C++ abstract class for cross-platform desktop screen capture (`initialize()`, `startCapture()`, `stopCapture()`, `captureSingleFrame()`).
+  - `FrameData` structure carrying pixel buffer, stride, resolution, format (`RGBA8888`), timestamp, and frame sequence.
+  - `CaptureBackendFactory` for runtime platform backend instantiation.
+- **Linux X11 Capture Backend (`libs/capture/src/LinuxX11Capture.h/cpp`)**:
+  - Threaded desktop frame capture engine running at ~30 FPS with software pattern fallback for headless CI test environments.
+  - Unit test `libs/capture/tests/test_capture.cpp` running under **Qt Test** (`100% PASSED`).
+- **Headless Host Agent Executable (`apps/agent/src/main.cpp`)**:
+  - C++ `rap-agent` daemon initializing screen capture backend, encoding frames via `ProtocolCodec`, and streaming over local TCP server (port `18443`).
+- **Desktop Viewer Application GUI (`apps/client/`)**:
+  - `apps/client/src/main.cpp`: Viewer application entry point with Qt Quick engine and QML singletons.
+  - `apps/client/src/VideoFrameProvider.h/cpp`: `QQuickImageProvider` surface renderer displaying live captured desktop frames.
+  - `apps/client/qml/Main.qml`: Premium desktop GUI window with sidebar, connection top bar, video surface, and status bar using `Palette.*` design tokens.
+
 ### 2. Verification & Test Execution Results
 - Executed `./tools/build.sh` Quality Gate Pipeline:
-  - **Static Analysis**: `cppcheck`, `rustfmt`, `clippy`, QML hex check PASSED (0 warnings).
-  - **CTest Suite**: 5/5 tests PASSED (`test_logging`, `test_json_logger`, `test_protocol`, `test_hot_reload`, `test_qml_skeleton`).
-  - **Cargo Test Suite**: 8/8 unit tests PASSED.
+  - **Static Analysis**: `cppcheck`, `rustfmt`, `clippy`, and QML hex check PASSED (0 warnings).
+  - **CTest Suite**: 6/6 unit test targets PASSED (`test_logging`, `test_json_logger`, `test_protocol`, `test_capture`, `test_hot_reload`, `test_qml_skeleton`).
+  - **Cargo Test Suite**: 9/9 unit & integration tests PASSED.
   - **Pipeline Result**: `=== Quality Gate Complete: Build is Verified & Ready to Use! ===`

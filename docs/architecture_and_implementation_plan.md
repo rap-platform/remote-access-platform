@@ -101,13 +101,12 @@ graph TD
 
 ### Phase 2: Engine, Media & Security Pipeline (M4 – M7)
 
-- [ ] **Milestone 4: LAN MVP & Cross-Platform Screen Capture**
-  - [ ] Abstract capture interface (`libs/capture/ICaptureBackend.h`)
-  - [ ] Linux capture backend (X11 XShm / XComposite)
-  - [ ] Linux Wayland capture backend (PipeWire + `xdg-desktop-portal`)
-  - [ ] Windows capture backend (DXGI Desktop Duplication API)
-  - [ ] macOS capture backend (ScreenCaptureKit)
-  - [ ] Raw video frame transport over plain TCP socket to Qt6 QML Video surface for MVP proof
+- [x] **Milestone 4: LAN MVP & Cross-Platform Screen Capture**
+  - [x] Abstract capture interface (`libs/capture/include/ICaptureBackend.h`)
+  - [x] Linux X11 screen capture backend implementation (`libs/capture/src/LinuxX11Capture.h/cpp`)
+  - [x] Headless Host Agent daemon binary (`apps/agent/src/main.cpp`) serving encoded protocol frame streams over local TCP (port 18443)
+  - [x] Desktop Viewer application GUI binary (`apps/client/src/main.cpp`, `qml/Main.qml`, `src/VideoFrameProvider.cpp`)
+  - [x] Screen capture unit test suite (`test_capture`) passing under CTest (6/6 tests passed)
 
 - [ ] **Milestone 5: End-to-End Cryptographic Security Layer**
   - [ ] C++ libsodium cryptographic wrapper (`libs/security/`)

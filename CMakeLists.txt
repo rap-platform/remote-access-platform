@@ -25,7 +25,7 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
-find_package(Qt6 COMPONENTS Core Qml Quick Test REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Qml Quick QuickControls2 Network Test REQUIRED)
 
 if(ENABLE_TESTING)
     enable_testing()
@@ -33,5 +33,7 @@ endif()
 
 add_subdirectory(libs/common)
 add_subdirectory(libs/protocol)
+add_subdirectory(libs/capture)
 add_subdirectory(apps/client)
+add_subdirectory(apps/agent)
 add_subdirectory(apps/client/tests/qml)

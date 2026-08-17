@@ -19,3 +19,29 @@ if(ENABLE_HOT_RELOAD)
         add_test(NAME test_hot_reload COMMAND test_hot_reload)
     endif()
 endif()
+
+add_executable(rap-client
+    src/main.cpp
+    src/VideoFrameProvider.cpp
+    src/VideoFrameProvider.h
+)
+
+target_include_directories(rap-client PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(rap-client PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Qml
+    Qt6::Quick
+    Qt6::QuickControls2
+    Qt6::Network
+    rap_common
+    rap_protocol
+)
+
+if(ENABLE_HOT_RELOAD)
+    target_link_libraries(rap-client PRIVATE rap_client_dev)
+    target_compile_definitions(rap-client PRIVATE ENABLE_HOT_RELOAD)
+endif()
