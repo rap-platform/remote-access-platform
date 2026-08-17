@@ -380,7 +380,7 @@ Rectangle {
                     }
                 }
 
-                // UltraViewer-style Floating Live Chat Box Panel
+                // Floating Live Chat Box Panel
                 Rectangle {
                     id: chatPanel
                     anchors.right: parent.right
@@ -413,7 +413,7 @@ Rectangle {
                                 anchors.rightMargin: Metrics.spacingSm
 
                                 Label {
-                                    text: "💬 UltraViewer Session Chat"
+                                    text: "💬 Remote Session Live Chat"
                                     font.family: Typography.fontFamily
                                     font.pixelSize: Typography.fontCaption
                                     font.weight: Typography.weightBold
