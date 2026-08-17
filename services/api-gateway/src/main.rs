@@ -1,5 +1,6 @@
 //! API Gateway executable binary entry point.
 use rap_api_gateway::{create_router, AppState};
+use rap_audit::AuditLogService;
 use rap_identity::IdentityService;
 use rap_signaling::SignalingServer;
 
@@ -10,6 +11,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let state = AppState {
         identity: IdentityService::new(),
         signaling: SignalingServer::new(),
+        audit: AuditLogService::new(),
     };
 
     let app = create_router(state);

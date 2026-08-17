@@ -12,6 +12,7 @@ QtObject {
     readonly property int fontBody: 13
     readonly property int fontSubtitle: 15
     readonly property int fontTitle: 18
+    readonly property int fontHeadline: 20
     readonly property int fontHeader: 24
     readonly property int fontDisplay: 32
 

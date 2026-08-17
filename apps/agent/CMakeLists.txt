@@ -11,4 +11,5 @@ target_link_libraries(rap-agent PRIVATE
     rap_capture
     rap_security
     rap_input
+    rap_file_transfer
 )

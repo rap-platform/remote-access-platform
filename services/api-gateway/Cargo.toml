@@ -8,6 +8,7 @@ authors.workspace = true
 rap-shared = { path = "../shared" }
 rap-identity = { path = "../identity" }
 rap-signaling = { path = "../signaling" }
+rap-audit = { path = "../audit" }
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

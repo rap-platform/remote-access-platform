@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  signaling-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.signaling
+    container_name: rap-signaling-server
+    ports:
+      - "8080:8080"
+    environment:
+      - RUST_LOG=info
+      - PORT=8080
+    restart: unless-stopped
+
+  relay-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.relay
+    container_name: rap-relay-server
+    ports:
+      - "8443:8443"
+    environment:
+      - RUST_LOG=info
+      - PORT=8443
+    restart: unless-stopped
+
+  audit-gateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gateway
+    container_name: rap-audit-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - RUST_LOG=info
+      - PORT=3000
+    restart: unless-stopped

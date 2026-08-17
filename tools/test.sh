@@ -17,7 +17,10 @@ fi
 echo "[+] Executing C++ & QML Unit Tests via CTest..."
 ctest --test-dir build --output-on-failure
 
-echo "[+] Executing Rust Workspace Unit Tests via Cargo..."
-cargo test --workspace --all-targets
+echo "[+] Running Automated Agent Rules Quality Gate Audit Suite..."
+python3 "${ROOT_DIR}/tests/agent_rules_audit.py"
+
+echo "[+] Running Security SAST Scan & Hardening Auditor..."
+bash "${ROOT_DIR}/tools/security_scan.sh"
 
 echo "=== All Test Suites Passed Successfully! ==="

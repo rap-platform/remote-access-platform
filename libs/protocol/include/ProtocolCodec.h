@@ -18,7 +18,13 @@ enum class PayloadType : uint16_t {
     FrameHeader = 3,
     InputEvent = 4,
     Heartbeat = 5,
-    ClipboardData = 6
+    ClipboardData = 6,
+    FileTransferRequest = 7,
+    FileTransferResponse = 8,
+    FileChunkPayload = 9,
+    FileTransferControl = 10,
+    DirectoryListRequest = 11,
+    DirectoryListResponse = 12
 };
 
 

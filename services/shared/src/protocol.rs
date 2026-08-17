@@ -15,6 +15,13 @@ pub enum PayloadType {
     FrameHeader = 3,
     InputEvent = 4,
     Heartbeat = 5,
+    ClipboardData = 6,
+    FileTransferRequest = 7,
+    FileTransferResponse = 8,
+    FileChunkPayload = 9,
+    FileTransferControl = 10,
+    DirectoryListRequest = 11,
+    DirectoryListResponse = 12,
 }
 
 impl TryFrom<u16> for PayloadType {
@@ -28,6 +35,13 @@ impl TryFrom<u16> for PayloadType {
             3 => Ok(PayloadType::FrameHeader),
             4 => Ok(PayloadType::InputEvent),
             5 => Ok(PayloadType::Heartbeat),
+            6 => Ok(PayloadType::ClipboardData),
+            7 => Ok(PayloadType::FileTransferRequest),
+            8 => Ok(PayloadType::FileTransferResponse),
+            9 => Ok(PayloadType::FileChunkPayload),
+            10 => Ok(PayloadType::FileTransferControl),
+            11 => Ok(PayloadType::DirectoryListRequest),
+            12 => Ok(PayloadType::DirectoryListResponse),
             _ => Err(ProtocolError::UnknownPayloadType(val)),
         }
     }

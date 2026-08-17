@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rap-signaling-server
+  labels:
+    app: rap-signaling
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: rap-signaling
+  template:
+    metadata:
+      labels:
+        app: rap-signaling
+    spec:
+      containers:
+      - name: signaling
+        image: rap/signaling-server:v1.0.0
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rap-signaling-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: rap-signaling

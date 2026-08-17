@@ -2,10 +2,12 @@ find_package(X11 REQUIRED)
 
 add_library(rap_capture STATIC
     src/LinuxX11Capture.cpp
+    src/LinuxDrmCapture.cpp
     src/DirtyRegionDetector.cpp
     src/MirrorShield.cpp
     src/AdaptiveBitrateController.cpp
     src/LinuxX11Capture.h
+    include/LinuxDrmCapture.h
     include/ICaptureBackend.h
     include/DirtyRegionDetector.h
     include/MirrorShield.h

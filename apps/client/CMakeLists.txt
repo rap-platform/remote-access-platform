@@ -55,6 +55,7 @@ target_link_libraries(rap-client PRIVATE
     rap_protocol
     rap_security
     rap_input
+    rap_file_transfer
 )
 
 if(ENABLE_HOT_RELOAD)

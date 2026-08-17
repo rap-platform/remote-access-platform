@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rap-relay-server
+  labels:
+    app: rap-relay
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: rap-relay
+  template:
+    metadata:
+      labels:
+        app: rap-relay
+    spec:
+      containers:
+      - name: relay
+        image: rap/relay-server:v1.0.0
+        ports:
+        - containerPort: 8443
+        resources:
+          limits:
+            cpu: "2"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rap-relay-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8443
+    targetPort: 8443
+  selector:
+    app: rap-relay

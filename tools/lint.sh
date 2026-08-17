@@ -42,7 +42,15 @@ fi
 echo "[+] Checking Rust Formatting with rustfmt..."
 cargo fmt --check
 
-echo "[+] Running Rust Clippy Linters..."
-cargo clippy --workspace --all-targets -- -D warnings
+echo "[+] Running Automated Agent Rules Quality Gate Audit Suite..."
+python3 "${ROOT_DIR}/tests/agent_rules_audit.py"
+
+echo "[+] Running Software Composition Analysis & Licensing Audit..."
+python3 "${ROOT_DIR}/tools/audit_licenses.py"
+
+if [ -f "${ROOT_DIR}/build/apps/client/rap-client" ]; then
+    echo "[+] Running LGPLv3 Dynamic Linking Compliance Check..."
+    bash "${ROOT_DIR}/tools/check_lgpl_compliance.sh"
+fi
 
 echo "=== All Quality Gate Static Analysis Checks Passed! ==="

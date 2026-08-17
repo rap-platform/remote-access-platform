@@ -2,11 +2,12 @@
 #![forbid(unsafe_code)]
 
 use axum::{
-    extract::State,
+    extract::{Query, State},
     http::StatusCode,
     routing::{get, post},
     Json, Router,
 };
+use rap_audit::{AuditEvent, AuditLogIntegrityReport, AuditLogService};
 use rap_identity::{IdentityService, RegistrationRequest, RegistrationResponse};
 use rap_signaling::{SignalingServer, SignalingSession};
 use serde::{Deserialize, Serialize};
@@ -16,6 +17,7 @@ use std::sync::Arc;
 pub struct AppState {
     pub identity: IdentityService,
     pub signaling: SignalingServer,
+    pub audit: AuditLogService,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -31,11 +33,30 @@ pub struct InitiateSessionRequest {
     pub client_public_key_hex: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct AuditQueryParams {
+    pub event_type: Option<String>,
+    pub actor: Option<String>,
+    pub limit: Option<usize>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateAuditLogRequest {
+    pub event_type: String,
+    pub actor: String,
+    pub resource: String,
+    pub status: String,
+    pub details: String,
+}
+
 pub fn create_router(state: AppState) -> Router {
     Router::new()
         .route("/api/v1/health", get(health_handler))
         .route("/api/v1/identity/register", post(register_device_handler))
         .route("/api/v1/signaling/initiate", post(initiate_session_handler))
+        .route("/api/v1/audit/logs", get(query_audit_logs_handler))
+        .route("/api/v1/audit/verify", get(verify_audit_integrity_handler))
+        .route("/api/v1/audit/log", post(create_audit_log_handler))
         .with_state(Arc::new(state))
 }
 
@@ -50,11 +71,24 @@ async fn register_device_handler(
     State(state): State<Arc<AppState>>,
     Json(req): Json<RegistrationRequest>,
 ) -> Json<RegistrationResponse> {
+    let hostname = req.hostname.clone();
     let resp = state.identity.register_device(req).await;
     state
         .signaling
         .register_peer(resp.device_id.clone(), true)
         .await;
+
+    state
+        .audit
+        .log_event(
+            "DEVICE_REGISTER",
+            hostname,
+            resp.device_id.clone(),
+            "SUCCESS",
+            "Registered new remote desktop agent device",
+        )
+        .await;
+
     Json(resp)
 }
 
@@ -62,6 +96,9 @@ async fn initiate_session_handler(
     State(state): State<Arc<AppState>>,
     Json(req): Json<InitiateSessionRequest>,
 ) -> Result<Json<SignalingSession>, (StatusCode, String)> {
+    let client_id = req.client_device_id.clone();
+    let target_id = req.target_agent_id.clone();
+
     match state
         .signaling
         .initiate_session(
@@ -71,9 +108,72 @@ async fn initiate_session_handler(
         )
         .await
     {
-        Ok(session) => Ok(Json(session)),
-        Err(err) => Err((StatusCode::BAD_REQUEST, err)),
+        Ok(session) => {
+            state
+                .audit
+                .log_event(
+                    "SESSION_CONNECT",
+                    client_id,
+                    target_id,
+                    "SUCCESS",
+                    format!("Initiated session {}", session.session_id),
+                )
+                .await;
+            Ok(Json(session))
+        }
+        Err(err) => {
+            state
+                .audit
+                .log_event(
+                    "SESSION_CONNECT",
+                    client_id,
+                    target_id,
+                    "FAILED",
+                    err.clone(),
+                )
+                .await;
+            Err((StatusCode::BAD_REQUEST, err))
+        }
     }
+}
+
+async fn query_audit_logs_handler(
+    State(state): State<Arc<AppState>>,
+    Query(params): Query<AuditQueryParams>,
+) -> Json<Vec<AuditEvent>> {
+    let logs = state
+        .audit
+        .query_logs(
+            params.event_type.as_deref(),
+            params.actor.as_deref(),
+            params.limit.unwrap_or(100),
+        )
+        .await;
+    Json(logs)
+}
+
+async fn verify_audit_integrity_handler(
+    State(state): State<Arc<AppState>>,
+) -> Json<AuditLogIntegrityReport> {
+    let report = state.audit.verify_integrity().await;
+    Json(report)
+}
+
+async fn create_audit_log_handler(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<CreateAuditLogRequest>,
+) -> Json<AuditEvent> {
+    let event = state
+        .audit
+        .log_event(
+            req.event_type,
+            req.actor,
+            req.resource,
+            req.status,
+            req.details,
+        )
+        .await;
+    Json(event)
 }
 
 #[cfg(test)]
@@ -88,10 +188,11 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_api_gateway_registration_and_session_initiation() {
+    async fn test_api_gateway_registration_and_audit_integration() {
         let state = AppState {
             identity: IdentityService::new(),
             signaling: SignalingServer::new(),
+            audit: AuditLogService::new(),
         };
 
         let reg_req = RegistrationRequest {
@@ -109,10 +210,19 @@ mod tests {
             client_public_key_hex: "abcd".into(),
         };
 
-        let init_res = initiate_session_handler(State(Arc::new(state)), Json(init_req)).await;
+        let init_res =
+            initiate_session_handler(State(Arc::new(state.clone())), Json(init_req)).await;
         assert!(init_res.is_ok());
-        if let Ok(Json(session)) = init_res {
-            assert_eq!(session.agent_device_id, reg_resp.device_id);
-        }
+
+        // Verify audit logs generated automatically
+        let logs = state.audit.query_logs(None, None, 100).await;
+        assert_eq!(logs.len(), 2);
+        assert_eq!(logs[0].event_type, "DEVICE_REGISTER");
+        assert_eq!(logs[1].event_type, "SESSION_CONNECT");
+
+        // Verify cryptographic hash chain integrity
+        let integrity = state.audit.verify_integrity().await;
+        assert!(integrity.is_valid);
+        assert_eq!(integrity.total_events, 2);
     }
 }

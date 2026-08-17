@@ -1,8 +1,10 @@
 #include "LinuxX11Capture.h"
+#include "LinuxDrmCapture.h"
 #include "MirrorShield.h"
 #include "DirtyRegionDetector.h"
 #include <chrono>
 #include <cstring>
+#include <cstdlib>
 #include <iostream>
 
 namespace rap::capture {
@@ -32,7 +34,7 @@ bool LinuxX11Capture::initialize() {
 }
 
 // Fetch window title reliably across standard X11 and Extended Window Manager Hints (_NET_WM_NAME)
-static std::string getWindowTitle(Display *display, Window window) {
+[[maybe_unused]] static std::string getWindowTitle(Display *display, Window window) {
     if (!display || !window) return "";
     char *name = nullptr;
     if (XFetchName(display, window, &name) && name) {
@@ -57,7 +59,7 @@ static std::string getWindowTitle(Display *display, Window window) {
 }
 
 // Recursive window tree search finding client viewer window and translating local coordinates to root desktop screen space
-static bool searchClientWindow(Display *display, Window rootWindow, Window currentWindow, WindowBounds &outBounds) {
+[[maybe_unused]] static bool searchClientWindow(Display *display, Window rootWindow, Window currentWindow, WindowBounds &outBounds) {
     std::string title = getWindowTitle(display, currentWindow);
     if (!title.empty() && title.find("Remote Access Platform") != std::string::npos) {
         XWindowAttributes attr;
@@ -88,7 +90,7 @@ static bool searchClientWindow(Display *display, Window rootWindow, Window curre
     return false;
 }
 
-static WindowBounds findClientWindowBounds(Display *display, Window rootWindow) {
+[[maybe_unused]] static WindowBounds findClientWindowBounds(Display *display, Window rootWindow) {
     WindowBounds bounds;
     if (!display || !rootWindow) return bounds;
     searchClientWindow(display, rootWindow, rootWindow, bounds);
@@ -131,13 +133,10 @@ std::optional<FrameData> LinuxX11Capture::captureSingleFrame() {
             }
             XDestroyImage(ximage);
 
-            // 1. Apply Mirror Shield: Refresh window search every 30 frames to eliminate XQueryTree per-frame lag
-            if (frameCounter_ % 30 == 1 || !cachedClientBounds_.isActive) {
-                cachedClientBounds_ = findClientWindowBounds(display_, rootWindow_);
-            }
-            if (cachedClientBounds_.isActive) {
-                MirrorShield::applyMirrorShield(frame.pixelData.data(), width_, height_, cachedClientBounds_, 4);
-            }
+            // 1. Mirror Shield disabled per configuration - capture full desktop unmasked
+            // if (cachedClientBounds_.isActive) {
+            //     MirrorShield::applyMirrorShield(frame.pixelData.data(), width_, height_, cachedClientBounds_, 4);
+            // }
 
 
             // 2. Dirty Region Detection: If frame is unchanged from previous frame, skip duplicate transmission
@@ -201,6 +200,11 @@ void LinuxX11Capture::stopCaptureInternal() {
 }
 
 std::unique_ptr<ICaptureBackend> CaptureBackendFactory::createDefaultBackend() {
+    const char *display = std::getenv("DISPLAY");
+    if (!display || std::strlen(display) == 0) {
+        std::cout << "[CaptureFactory] Headless/Embedded environment detected ($DISPLAY unset); instantiating Linux DRM/KMS Backend." << std::endl;
+        return std::make_unique<LinuxDrmCapture>();
+    }
     return std::make_unique<LinuxX11Capture>();
 }
 

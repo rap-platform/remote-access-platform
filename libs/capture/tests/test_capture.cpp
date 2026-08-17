@@ -1,6 +1,7 @@
 #include <QSignalSpy>
 #include <QTest>
 #include "../include/ICaptureBackend.h"
+#include "../include/LinuxDrmCapture.h"
 
 class TestCapture : public QObject {
     Q_OBJECT
@@ -45,6 +46,18 @@ private slots:
         backend->stopCapture();
         QVERIFY(!backend->isCapturing());
         QVERIFY(frameCount.load() > 0);
+    }
+
+    void testLinuxDrmBackend() {
+        rap::capture::LinuxDrmCapture drmBackend;
+        QVERIFY(drmBackend.initialize());
+        QCOMPARE(drmBackend.backendName(), std::string("LinuxDRM/KMS Framebuffer"));
+
+        auto frameOpt = drmBackend.captureSingleFrame();
+        QVERIFY(frameOpt.has_value());
+        QCOMPARE(frameOpt->width, static_cast<uint32_t>(1920));
+        QCOMPARE(frameOpt->height, static_cast<uint32_t>(1080));
+        QVERIFY(!frameOpt->pixelData.empty());
     }
 };
 

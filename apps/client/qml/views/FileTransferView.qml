@@ -1,0 +1,423 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import "../theme"
+
+Rectangle {
+    id: fileTransferView
+    color: themePalette.background
+
+    Component.onCompleted: {
+        sessionClient.requestLocalDirectoryListing(".")
+        sessionClient.requestDirectoryListing(".")
+    }
+
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: Metrics.spacingMd
+        spacing: Metrics.spacingSm
+
+        // Header Title Bar
+        RowLayout {
+            Layout.fillWidth: true
+            Label {
+                text: "AnyDesk-Style Encrypted File Manager"
+                font.family: Typography.fontFamily
+                font.pixelSize: Typography.fontHeadline
+                font.weight: Typography.weightBold
+                color: themePalette.textPrimary
+                Accessible.role: Accessible.Heading
+                Accessible.name: "File Transfer Dual Pane Title"
+            }
+            Item { Layout.fillWidth: true }
+            Rectangle {
+                Layout.preferredWidth: 230
+                Layout.preferredHeight: 24
+                radius: Metrics.radiusSm
+                color: Qt.rgba(0.0, 0.8, 0.4, 0.15)
+                border.color: themePalette.success
+
+                Label {
+                    anchors.centerIn: parent
+                    text: "⚡ E2E Encrypted • 256KB Chunking"
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightBold
+                    color: themePalette.success
+                }
+            }
+        }
+
+        // Dual Pane Split Layout (Local Device vs. Remote Device)
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: Metrics.spacingMd
+
+            // LEFT PANE: Local System Directory Explorer
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                color: themePalette.surface
+                radius: Metrics.radiusSm
+                border.color: themePalette.border
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: Metrics.spacingSm
+                    spacing: Metrics.spacingXs
+
+                    RowLayout {
+                     Layout.fillWidth: true
+                        Label {
+                            text: "💻  Local Device Explorer"
+                            font.weight: Typography.weightBold
+                            color: themePalette.textPrimary
+                        }
+                        Item { Layout.fillWidth: true }
+                        Button {
+                            text: "⬆ Parent"
+                            Accessible.role: Accessible.Button
+                            Accessible.name: "Local Up Directory"
+                            onClicked: {
+                                let path = sessionClient.currentLocalPath
+                                let parts = path.split("/")
+                                if (parts.length > 1) {
+                                    parts.pop()
+                                    let newPath = parts.join("/")
+                                    sessionClient.requestLocalDirectoryListing(newPath.length === 0 ? "." : newPath)
+                                }
+                            }
+                        }
+                        Button {
+                            text: "🔄 Refresh"
+                            Accessible.role: Accessible.Button
+                            Accessible.name: "Refresh Local Directory"
+                            onClicked: sessionClient.requestLocalDirectoryListing(sessionClient.currentLocalPath)
+                        }
+                    }
+
+                    TextField {
+                        id: localPathInput
+                        Layout.fillWidth: true
+                        text: sessionClient.currentLocalPath
+                        selectByMouse: true
+                        color: themePalette.textPrimary
+                        background: Rectangle {
+                            color: themePalette.surfaceVariant
+                            border.color: themePalette.border
+                            radius: Metrics.radiusSm
+                        }
+                        onAccepted: sessionClient.requestLocalDirectoryListing(text)
+                    }
+
+                    // Table Header Bar (SharkView pattern)
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 26
+                        color: themePalette.surfaceVariant
+                        radius: Metrics.radiusSm
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: Metrics.spacingSm
+                            anchors.rightMargin: Metrics.spacingSm
+
+                            Label { text: "Name"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.fillWidth: true }
+                            Label { text: "Type"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.preferredWidth: 60 }
+                            Label { text: "Size"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.preferredWidth: 70 }
+                            Label { text: "Actions"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.preferredWidth: 110 }
+                        }
+                    }
+
+                    ListView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        model: sessionClient.localDirectoryList
+
+                        delegate: Rectangle {
+                            width: ListView.view.width
+                            height: 36
+                            color: index % 2 === 0 ? themePalette.surface : themePalette.surfaceVariant
+                            border.color: themePalette.border
+                            border.width: 0.5
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: Metrics.spacingSm
+                                anchors.rightMargin: Metrics.spacingSm
+
+                                Label {
+                                    text: modelData.name
+                                    font.weight: modelData.isDir ? Typography.weightBold : Typography.weightMedium
+                                    color: modelData.isDir ? themePalette.primary : themePalette.textPrimary
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                }
+
+                                // Type Badge
+                                Rectangle {
+                                    Layout.preferredWidth: 50
+                                    Layout.preferredHeight: 20
+                                    radius: 3
+                                    color: modelData.isDir ? Qt.rgba(0.2, 0.5, 1.0, 0.15) : Qt.rgba(0.5, 0.5, 0.5, 0.15)
+                                    border.color: modelData.isDir ? themePalette.primary : themePalette.border
+
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: modelData.isDir ? "DIR" : "FILE"
+                                        font.pixelSize: 10
+                                        font.weight: Typography.weightBold
+                                        color: parent.border.color
+                                    }
+                                }
+
+                                Label {
+                                    text: modelData.isDir ? "-" : Math.round(modelData.size / 1024) + " KB"
+                                    color: themePalette.textSecondary
+                                    Layout.preferredWidth: 70
+                                }
+
+                                RowLayout {
+                                    Layout.preferredWidth: 110
+                                    spacing: 4
+
+                                    Button {
+                                        text: modelData.isDir ? "Open" : "Upload ➔"
+                                        onClicked: {
+                                            if (modelData.isDir) {
+                                                let nextPath = sessionClient.currentLocalPath === "." ? modelData.name : sessionClient.currentLocalPath + "/" + modelData.name
+                                                sessionClient.requestLocalDirectoryListing(nextPath)
+                                            } else {
+                                                let fullPath = sessionClient.currentLocalPath === "." ? modelData.name : sessionClient.currentLocalPath + "/" + modelData.name
+                                                sessionClient.startFileUpload(fullPath, sessionClient.currentRemotePath)
+                                            }
+                                        }
+                                    }
+
+                                    Button {
+                                        text: "🗑️"
+                                        onClicked: {
+                                            let fullPath = sessionClient.currentLocalPath === "." ? modelData.name : sessionClient.currentLocalPath + "/" + modelData.name
+                                            sessionClient.deleteLocalFile(fullPath)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // RIGHT PANE: Remote Agent System Directory Explorer
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                color: themePalette.surface
+                radius: Metrics.radiusSm
+                border.color: themePalette.border
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: Metrics.spacingSm
+                    spacing: Metrics.spacingXs
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: "🖥️  Remote Agent Explorer"
+                            font.weight: Typography.weightBold
+                            color: themePalette.textPrimary
+                        }
+                        Item { Layout.fillWidth: true }
+                        Button {
+                            text: "⬆ Parent"
+                            Accessible.role: Accessible.Button
+                            Accessible.name: "Remote Up Directory"
+                            onClicked: {
+                                let path = sessionClient.currentRemotePath
+                                let parts = path.split("/")
+                                if (parts.length > 1) {
+                                    parts.pop()
+                                    let newPath = parts.join("/")
+                                    sessionClient.requestDirectoryListing(newPath.length === 0 ? "." : newPath)
+                                }
+                            }
+                        }
+                        Button {
+                            text: "🔄 Refresh"
+                            Accessible.role: Accessible.Button
+                            Accessible.name: "Refresh Remote Directory"
+                            onClicked: sessionClient.requestDirectoryListing(sessionClient.currentRemotePath)
+                        }
+                    }
+
+                    TextField {
+                        id: remotePathInput
+                        Layout.fillWidth: true
+                        text: sessionClient.currentRemotePath
+                        selectByMouse: true
+                        color: themePalette.textPrimary
+                        background: Rectangle {
+                            color: themePalette.surfaceVariant
+                            border.color: themePalette.border
+                            radius: Metrics.radiusSm
+                        }
+                        onAccepted: sessionClient.requestDirectoryListing(text)
+                    }
+
+                    // Table Header Bar (SharkView pattern)
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 26
+                        color: themePalette.surfaceVariant
+                        radius: Metrics.radiusSm
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: Metrics.spacingSm
+                            anchors.rightMargin: Metrics.spacingSm
+
+                            Label { text: "Name"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.fillWidth: true }
+                            Label { text: "Type"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.preferredWidth: 60 }
+                            Label { text: "Size"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.preferredWidth: 70 }
+                            Label { text: "Actions"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.preferredWidth: 120 }
+                        }
+                    }
+
+                    ListView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        model: sessionClient.directoryList
+
+                        delegate: Rectangle {
+                            width: ListView.view.width
+                            height: 36
+                            color: index % 2 === 0 ? themePalette.surface : themePalette.surfaceVariant
+                            border.color: themePalette.border
+                            border.width: 0.5
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: Metrics.spacingSm
+                                anchors.rightMargin: Metrics.spacingSm
+
+                                Label {
+                                    text: modelData.name
+                                    font.weight: modelData.isDir ? Typography.weightBold : Typography.weightMedium
+                                    color: modelData.isDir ? themePalette.primary : themePalette.textPrimary
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                }
+
+                                // Type Badge
+                                Rectangle {
+                                    Layout.preferredWidth: 50
+                                    Layout.preferredHeight: 20
+                                    radius: 3
+                                    color: modelData.isDir ? Qt.rgba(0.2, 0.5, 1.0, 0.15) : Qt.rgba(0.5, 0.5, 0.5, 0.15)
+                                    border.color: modelData.isDir ? themePalette.primary : themePalette.border
+
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: modelData.isDir ? "DIR" : "FILE"
+                                        font.pixelSize: 10
+                                        font.weight: Typography.weightBold
+                                        color: parent.border.color
+                                    }
+                                }
+
+                                Label {
+                                    text: modelData.isDir ? "-" : Math.round(modelData.size / 1024) + " KB"
+                                    color: themePalette.textSecondary
+                                    Layout.preferredWidth: 70
+                                }
+
+                                RowLayout {
+                                    Layout.preferredWidth: 120
+                                    spacing: 4
+
+                                    Button {
+                                        text: modelData.isDir ? "Open" : "⬅ Download"
+                                        onClicked: {
+                                            if (modelData.isDir) {
+                                                let nextPath = sessionClient.currentRemotePath === "." ? modelData.name : sessionClient.currentRemotePath + "/" + modelData.name
+                                                sessionClient.requestDirectoryListing(nextPath)
+                                            } else {
+                                                let fullPath = sessionClient.currentRemotePath === "." ? modelData.name : sessionClient.currentRemotePath + "/" + modelData.name
+                                                sessionClient.startFileDownload(fullPath, sessionClient.currentLocalPath)
+                                            }
+                                        }
+                                    }
+
+                                    Button {
+                                        text: "🗑️"
+                                        onClicked: {
+                                            let fullPath = sessionClient.currentRemotePath === "." ? modelData.name : sessionClient.currentRemotePath + "/" + modelData.name
+                                            sessionClient.deleteRemoteFile(fullPath)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // BOTTOM PANEL: Active File Transfer Status & Progress Bar
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 85
+            color: themePalette.surface
+            radius: Metrics.radiusSm
+            border.color: themePalette.border
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: Metrics.spacingSm
+                spacing: 4
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Label {
+                        text: "Status: " + sessionClient.transferStatus
+                        font.weight: Typography.weightBold
+                        color: themePalette.textPrimary
+                    }
+                    Item { Layout.fillWidth: true }
+                    Label {
+                        text: "Speed: " + sessionClient.transferSpeed
+                        font.weight: Typography.weightBold
+                        color: themePalette.primary
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 12
+                    color: themePalette.surfaceVariant
+                    radius: 6
+
+                    Rectangle {
+                        width: parent.width * sessionClient.transferProgress
+                        height: parent.height
+                        color: themePalette.primary
+                        radius: 6
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Metrics.spacingSm
+                    Button { text: "Pause"; onClicked: sessionClient.pauseFileTransfer() }
+                    Button { text: "Resume"; onClicked: sessionClient.resumeFileTransfer() }
+                    Button { text: "Cancel"; onClicked: sessionClient.cancelFileTransfer() }
+                    Item { Layout.fillWidth: true }
+                    Label { text: Math.round(sessionClient.transferProgress * 100) + "%"; color: themePalette.textSecondary }
+                }
+            }
+        }
+    }
+}
