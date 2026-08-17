@@ -62,6 +62,10 @@ fi
 echo "[+] Compiling C++ targets..."
 cmake --build build
 
+echo "[+] Syncing QML template assets..."
+mkdir -p build/apps/client/qml
+cp -r apps/client/qml/* build/apps/client/qml/
+
 echo "[+] Compiling Rust workspace crates with Cargo..."
 if [ "${BUILD_TYPE}" = "Release" ]; then
     cargo build --workspace --release

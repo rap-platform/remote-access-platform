@@ -318,7 +318,7 @@ Rectangle {
                         font.pixelSize: Typography.fontBody
                         font.weight: Typography.weightBold
                         onClicked: {
-                            if (targetIdInput.text.contains(":")) {
+                            if (targetIdInput.text.indexOf(":") !== -1) {
                                 let parts = targetIdInput.text.split(":")
                                 sessionClient.connectToHost(parts[0], parseInt(parts[1]))
                             } else {
@@ -341,5 +341,6 @@ Rectangle {
             }
         }
     }
+}
 }
 }
