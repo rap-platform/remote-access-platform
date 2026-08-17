@@ -330,6 +330,40 @@ Rectangle {
                         }
 
                         Button {
+                            id: actionsMenuBtn
+                            text: "⚡ Actions"
+                            Layout.preferredHeight: 26
+                            font.family: Typography.fontFamily
+                            font.pixelSize: 11
+                            font.weight: Typography.weightBold
+                            onClicked: actionsMenu.open()
+                            background: Rectangle {
+                                color: themePalette.surfaceVariant
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
+
+                            Menu {
+                                id: actionsMenu
+                                y: actionsMenuBtn.height + 4
+                                width: 180
+
+                                MenuItem {
+                                    text: "🔑 Send Ctrl+Alt+Del"
+                                    onTriggered: sessionClient.sendSessionControlAction(1)
+                                }
+                                MenuItem {
+                                    text: "🔒 Lock Remote Workstation"
+                                    onTriggered: sessionClient.sendSessionControlAction(2)
+                                }
+                                MenuItem {
+                                    text: "🕶️ Toggle Privacy Mode"
+                                    onTriggered: sessionClient.sendSessionControlAction(3)
+                                }
+                            }
+                        }
+
+                        Button {
                             text: desktopSessionView.unreadChatCount > 0 ? "💬 Chat (" + desktopSessionView.unreadChatCount + ")" : "💬 Chat"
                             Layout.preferredHeight: 26
                             font.family: Typography.fontFamily

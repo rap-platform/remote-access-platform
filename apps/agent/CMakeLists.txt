@@ -6,6 +6,8 @@ target_link_libraries(rap-agent PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network
+    Qt6::Qml
+    Qt6::Quick
     rap_common
     rap_protocol
     rap_capture

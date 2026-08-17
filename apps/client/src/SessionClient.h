@@ -46,6 +46,7 @@ public:
     Q_INVOKABLE void sendInputEvent(uint16_t type, int32_t x, int32_t y, uint32_t button, int32_t delta, uint32_t keycode, uint32_t modifiers);
     Q_INVOKABLE void sendClipboardText(const QString &text);
     Q_INVOKABLE void sendChatMessage(const QString &message);
+    Q_INVOKABLE void sendSessionControlAction(uint32_t actionId);
     Q_INVOKABLE void requestDirectoryListing(const QString &path);
     Q_INVOKABLE void requestLocalDirectoryListing(const QString &path);
     Q_INVOKABLE void deleteLocalFile(const QString &path);

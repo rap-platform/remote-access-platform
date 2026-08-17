@@ -176,6 +176,38 @@ void SessionClient::sendChatMessage(const QString &message) {
     emit chatMessageReceived("You", cleanMsg, timeStr);
 }
 
+void SessionClient::sendSessionControlAction(uint32_t actionId) {
+    if (!socket_.isOpen() || socket_.state() != QAbstractSocket::ConnectedState) {
+        return;
+    }
+
+    const std::vector<uint8_t> sessionKey = {
+        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+        0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
+    };
+
+    std::vector<uint8_t> plaintext(4, 0);
+    std::memcpy(plaintext.data(), &actionId, 4);
+
+    std::vector<uint8_t> nonce(12, 0);
+    uint64_t seq = ++inputSequence_;
+    std::memcpy(nonce.data(), &seq, sizeof(seq));
+
+    auto encryptedPayload = rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
+    auto encoded = rap::protocol::ProtocolCodec::encode(
+        rap::protocol::PayloadType::SessionControl,
+        seq,
+        0,
+        encryptedPayload
+    );
+
+    socket_.write(QByteArray(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size())));
+    socket_.flush();
+    qInfo() << "[Client] Dispatched Session Control Action ID:" << actionId << "to remote host.";
+}
+
 void SessionClient::onClipboardChanged() {
     if (!isConnected_) {
         return;

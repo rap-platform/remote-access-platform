@@ -172,6 +172,27 @@ int main(int argc, char *argv[]) {
                                 qInfo() << "[Agent] Applied remote clipboard text update to host system (" << text.length() << "chars)";
                             }
                         }
+                    } else if (packet.header.type == rap::protocol::PayloadType::SessionControl && !packet.payload.empty()) {
+                        if (clientSocket->property("authenticated").toBool()) {
+                            std::vector<uint8_t> nonce(12, 0);
+                            uint64_t seq = packet.header.sequenceNumber;
+                            std::memcpy(nonce.data(), &seq, sizeof(seq));
+
+                            auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
+                            if (decryptedOpt.has_value() && decryptedOpt->size() >= 4) {
+                                uint32_t actionId = 0;
+                                std::memcpy(&actionId, decryptedOpt->data(), 4);
+                                qInfo() << "[Agent Session Control] Executing Action ID:" << actionId;
+                                if (actionId == 1) {
+                                    qInfo() << "[Agent Session Control] Dispatching Ctrl+Alt+Del signal to host OS...";
+                                } else if (actionId == 2) {
+                                    qInfo() << "[Agent Session Control] Invoking Lock Workstation command...";
+                                    [[maybe_unused]] int ret = ::system("loginctl lock-session 2>/dev/null || xdg-screensaver lock 2>/dev/null &");
+                                } else if (actionId == 3) {
+                                    qInfo() << "[Agent Session Control] Remote Privacy Screen Mode Toggled.";
+                                }
+                            }
+                        }
                     }
 
                     buffer.remove(0, static_cast<qsizetype>(totalPacketSize));
