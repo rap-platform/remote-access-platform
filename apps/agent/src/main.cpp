@@ -6,6 +6,7 @@
 #include <cstring>
 #include "CryptoEngine.h"
 #include "ICaptureBackend.h"
+#include "IInputBackend.h"
 #include "ProtocolCodec.h"
 #include "logging/JsonLogger.h"
 
@@ -21,6 +22,12 @@ int main(int argc, char *argv[]) {
     if (!captureBackend || !captureBackend->initialize()) {
         qCritical() << "[Agent] Failed to initialize screen capture backend!";
         return 1;
+    }
+
+    auto inputBackend = rap::input::InputBackendFactory::createDefaultBackend();
+    if (inputBackend) {
+        inputBackend->initialize();
+        qInfo() << "[Agent] Remote Input Injection initialized:" << QString::fromStdString(inputBackend->backendName());
     }
 
     qInfo() << "[Agent] Screen capture initialized:" << QString::fromStdString(captureBackend->backendName());
@@ -44,11 +51,54 @@ int main(int argc, char *argv[]) {
 
     QList<QTcpSocket *> clients;
 
-    QObject::connect(&server, &QTcpServer::newConnection, [&server, &clients]() {
+    QObject::connect(&server, &QTcpServer::newConnection, [&server, &clients, &inputBackend, sessionKey]() {
         while (server.hasPendingConnections()) {
             QTcpSocket *clientSocket = server.nextPendingConnection();
             clients.append(clientSocket);
             qInfo() << "[Agent] New client connected from:" << clientSocket->peerAddress().toString();
+
+            // Handle incoming remote input events over encrypted socket
+            QObject::connect(clientSocket, &QTcpSocket::readyRead, [clientSocket, &inputBackend, sessionKey]() {
+                QByteArray buffer = clientSocket->readAll();
+                while (buffer.size() >= 28) {
+                    const uint8_t *data = reinterpret_cast<const uint8_t *>(buffer.constData());
+                    size_t size = static_cast<size_t>(buffer.size());
+
+                    auto result = rap::protocol::ProtocolCodec::decode(data, size);
+                    if (std::holds_alternative<rap::protocol::ParseError>(result)) {
+                        break;
+                    }
+
+                    const auto &packet = std::get<rap::protocol::Packet>(result);
+                    size_t totalPacketSize = 28 + packet.header.payloadSize;
+
+                    if (packet.header.type == rap::protocol::PayloadType::InputEvent && !packet.payload.empty()) {
+                        std::vector<uint8_t> nonce(12, 0);
+                        uint64_t seq = packet.header.sequenceNumber;
+                        std::memcpy(nonce.data(), &seq, sizeof(seq));
+
+                        auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
+                        if (decryptedOpt.has_value() && decryptedOpt->size() >= 24) {
+                            const auto &decrypted = decryptedOpt.value();
+                            rap::input::InputEvent event;
+                            uint16_t typeVal = 0;
+                            std::memcpy(&typeVal, decrypted.data() + 0, 2);
+                            event.type = static_cast<rap::input::InputEventType>(typeVal);
+                            std::memcpy(&event.x, decrypted.data() + 4, 4);
+                            std::memcpy(&event.y, decrypted.data() + 8, 4);
+                            std::memcpy(&event.button, decrypted.data() + 12, 4);
+                            std::memcpy(&event.delta, decrypted.data() + 16, 4);
+                            std::memcpy(&event.keycode, decrypted.data() + 20, 4);
+
+                            if (inputBackend) {
+                                inputBackend->injectEvent(event);
+                            }
+                        }
+                    }
+
+                    buffer.remove(0, static_cast<qsizetype>(totalPacketSize));
+                }
+            });
 
             QObject::connect(clientSocket, &QTcpSocket::disconnected, [clientSocket, &clients]() {
                 qInfo() << "[Agent] Client disconnected.";

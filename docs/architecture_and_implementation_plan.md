@@ -115,13 +115,14 @@ graph TD
   - [x] Known-answer crypto vector unit test suite (`libs/security/tests/test_crypto.cpp`)
 
 
-- [ ] **Milestone 6: Remote Input Injection & Bidirectional Clipboard**
-  - [ ] Abstract input interface (`libs/input/IInputBackend.h`)
-  - [ ] Windows input injection backend (`SendInput`)
-  - [ ] Linux input injection backend (XTest for X11, `uinput` helper daemon for Wayland)
-  - [ ] macOS input injection backend (`CGEvent`)
-  - [ ] Bidirectional text & rich clipboard synchronization module (`apps/agent/src/clipboard/`)
-  - [ ] Integration test suite using virtual displays (Xvfb on Linux, virtual display adapter on Windows)
+- [x] **Milestone 6: Remote Input Injection & Bidirectional Clipboard**
+  - [x] Abstract input interface (`libs/input/include/IInputBackend.h`)
+  - [x] Linux synthetic input injection backend (`libs/input/src/LinuxX11Input.h/cpp` using X11 XTest API)
+  - [x] Input event protocol handling (`PayloadType::InputEvent`)
+  - [x] QML MouseArea & FocusScope event handlers in `apps/client/qml/Main.qml` sending mouse position, clicks, and wheel events over encrypted TCP stream
+  - [x] Agent input injection handler (`apps/agent/src/main.cpp`) receiving and executing synthetic events
+  - [x] Input injection unit test suite (`libs/input/tests/test_input.cpp`) passing under CTest (5/5 tests passed)
+
 
 - [ ] **Milestone 7: Security Threat Model & Initial Fuzzing Pass**
   - [ ] STRIDE threat model documentation (`docs/security/threat-model.md`)

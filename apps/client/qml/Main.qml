@@ -258,6 +258,43 @@ ApplicationWindow {
                         color: themePalette.transparent
                     }
 
+                    MouseArea {
+                        id: viewportMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+
+                        onPositionChanged: (mouse) => {
+                            if (sessionClient.isConnected && width > 0 && height > 0) {
+                                var normX = Math.round((mouse.x / width) * 1920);
+                                var normY = Math.round((mouse.y / height) * 1080);
+                                sessionClient.sendInputEvent(1, normX, normY, 0, 0, 0, 0);
+                            }
+                        }
+                        onPressed: (mouse) => {
+                            if (sessionClient.isConnected && width > 0 && height > 0) {
+                                var normX = Math.round((mouse.x / width) * 1920);
+                                var normY = Math.round((mouse.y / height) * 1080);
+                                var btn = (mouse.button === Qt.LeftButton) ? 1 : ((mouse.button === Qt.RightButton) ? 3 : 2);
+                                sessionClient.sendInputEvent(2, normX, normY, btn, 0, 0, 0);
+                            }
+                        }
+                        onReleased: (mouse) => {
+                            if (sessionClient.isConnected && width > 0 && height > 0) {
+                                var normX = Math.round((mouse.x / width) * 1920);
+                                var normY = Math.round((mouse.y / height) * 1080);
+                                var btn = (mouse.button === Qt.LeftButton) ? 1 : ((mouse.button === Qt.RightButton) ? 3 : 2);
+                                sessionClient.sendInputEvent(3, normX, normY, btn, 0, 0, 0);
+                            }
+                        }
+                        onWheel: (wheel) => {
+                            if (sessionClient.isConnected) {
+                                sessionClient.sendInputEvent(4, 0, 0, 0, wheel.angleDelta.y, 0, 0);
+                            }
+                        }
+                    }
+
+
                     Column {
                         anchors.centerIn: parent
                         spacing: Metrics.spacingMd

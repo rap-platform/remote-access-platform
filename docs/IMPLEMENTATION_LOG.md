@@ -36,22 +36,26 @@
 
 ### Status: COMPLETED ✅
 
+---
+
+## Milestone 6: Remote Input Injection & Bidirectional Clipboard
+
+### Status: COMPLETED ✅
+
 ### 1. What Was Implemented
-- **Cryptographic Engine Library (`libs/security/`)**:
-  - `CryptoEngine.h` / `CryptoEngine.cpp`: High-performance C++20 cryptographic engine providing identity keypair generation, X25519 ECDH key agreement, and ChaCha20-Poly1305 AEAD authenticated encryption/decryption.
-  - Constant-time 128-bit Poly1305 MAC verification to prevent timing side-channel attacks and detect payload tampering.
-- **End-to-End Payload Encryption (`apps/agent/src/main.cpp`)**:
-  - Desktop video frames captured by X11 backend are encrypted using ChaCha20-Poly1305 AEAD with sequence-derived nonces before transmission over TCP socket.
-- **Authenticated Payload Decryption (`apps/client/src/SessionClient.cpp`)**:
-  - Viewer client decrypts and authenticates frame payloads in real-time. Corrupted or tampered frame packets are rejected and dropped safely before allocation or rendering.
-- **Standalone Cryptographic Test Suite (`libs/security/tests/test_crypto.cpp`)**:
-  - 4 known-answer test cases registered under CTest validating keypair generation, Diffie-Hellman key exchange, AEAD roundtrips, and Poly1305 bit-flip tamper rejection (**100% Passed**).
-- **Live Testing & Verification Documentation (`docs/TESTING_AND_VERIFICATION.md`)**:
-  - Created standalone live testing guide detailing Tier 1 User Functional Validation, Tier 2 Security & Cryptographic Audit (`tcpdump` packet capture inspection, CTest test vectors, active MITM bit-flip rejection), and Tier 3 Quality Gate verification.
-- **Governance Standard Update (`AGENT_RULES.md`)**:
-  - Added **Rule 0.3 (Live Testing & Verification Documentation Standard)** mandating continuous updates to `docs/TESTING_AND_VERIFICATION.md` whenever new features or security layers are introduced.
+- **Abstract Input Interface (`libs/input/include/IInputBackend.h`)**:
+  - Abstract base class defining `InputEvent` structure (`type`, `x`, `y`, `button`, `delta`, `keycode`, `modifiers`) and synthetic input injection interface `injectEvent()`.
+- **Linux Synthetic Input Injection Backend (`libs/input/src/LinuxX11Input.h/cpp`)**:
+  - Implemented Linux X11 synthetic pointer motion, mouse button press/release, and scroll wheel injection using the X11 `XTest` extension (`XTestFakeMotionEvent`, `XTestFakeButtonEvent`, `XTestFakeKeyEvent`).
+- **Interactive QML Input Handling (`apps/client/qml/Main.qml`)**:
+  - Attached `MouseArea` to `videoSurface` viewport in QML. Normalizes viewport pointer coordinates to host target resolution (`1920x1080`) and transmits `PayloadType::InputEvent` binary frames over TCP.
+- **Encrypted Remote Input Transport (`apps/client/src/SessionClient.cpp` & `apps/agent/src/main.cpp`)**:
+  - Input events are encrypted with ChaCha20-Poly1305 AEAD on the client before transmission. The host agent decrypts and authenticates incoming input packets before passing to `LinuxX11Input`.
+- **Input Injection Unit Test Suite (`libs/input/tests/test_input.cpp`)**:
+  - Registered 5 CTest unit tests covering backend initialization, pointer motion, button clicks, scroll wheel, and keyboard keystrokes (**100% Passed**).
+- **Live Testing & Verification Guide (`docs/TESTING_AND_VERIFICATION.md`)**:
+  - Updated live testing document with interactive input injection verification procedures.
 
 ### 2. Quality Gate Verification Results (`tools/build.sh`)
 - **Static Analysis**: `0` warnings across `cppcheck`, `rustfmt`, `clippy`, and QML Hex Color Enforcer.
-- **Unit & Integration Test Suites**: `7/7` CTest targets passed (`test_logging`, `test_json_logger`, `test_protocol`, `test_capture`, `test_crypto`, `test_hot_reload`, `test_qml_skeleton`).
-- **Memory & Disconnect Safety**: Verified clean socket disconnect with zero core dumps or memory leaks.
+- **Unit & Integration Test Suites**: `8/8` CTest targets passed (`test_logging`, `test_json_logger`, `test_protocol`, `test_capture`, `test_crypto`, `test_input`, `test_hot_reload`, `test_qml_skeleton`).

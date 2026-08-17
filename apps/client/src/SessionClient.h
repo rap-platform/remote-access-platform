@@ -22,6 +22,8 @@ public:
     bool isConnected() const { return isConnected_; }
     QString statusText() const { return statusText_; }
 
+    Q_INVOKABLE void sendInputEvent(uint16_t type, int32_t x, int32_t y, uint32_t button, int32_t delta, uint32_t keycode, uint32_t modifiers);
+
 public slots:
     void connectToHost(const QString &host, uint16_t port);
     void disconnectFromHost();
@@ -45,6 +47,7 @@ private:
     bool isConnected_{false};
     QString statusText_{"Disconnected"};
     uint64_t receivedFrames_{0};
+    uint64_t inputSequence_{0};
 };
 
 } // namespace rap::client
