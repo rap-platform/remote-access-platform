@@ -213,21 +213,21 @@ graph TD
   - [x] Standalone release packager (`tools/package.sh`) producing minimal `-O3` stripped Release binaries in `dist/rap-v1.0.0-linux-x86_64.tar.gz`
   - [x] Direct launcher script (`run.sh`) inside release tarball for instant execution without root/installation
   - [x] System installer script (`install.sh`) inside release tarball for system-wide `/opt/rap/` deployment, desktop entry, and systemd service installation
-  - [x] Cloud signaling and relay containerization infra (`docker/docker-compose.yml`)
+  - [x] Cloud signaling and relay containerization infra (`infra/docker/docker-compose.yml`)
 
 ---
 
 ### Phase 7: Cloud Infrastructure, Kubernetes Orchestration & Terraform IaC (M19 – M21)
 
 - [x] **Milestone 19: Containerization (Docker)**
-  - [x] Isolated multi-stage Docker containers for Signaling Server (`docker/Dockerfile.signaling`), STUN/TURN Relay (`docker/Dockerfile.relay`), and Audit Gateway (`docker/Dockerfile.gateway`)
-  - [x] Local multi-container development environment with `docker-compose.yml`
+  - [x] Isolated multi-stage Docker containers for Signaling Server (`infra/docker/Dockerfile.signaling`), STUN/TURN Relay (`infra/docker/Dockerfile.relay`), and Audit Gateway (`infra/docker/Dockerfile.gateway`)
+  - [x] Local multi-container development environment with `infra/docker/docker-compose.yml`
 
 - [x] **Milestone 20: Cloud Orchestration (Kubernetes)**
-  - [x] High-availability Kubernetes manifests for Signaling Server (`docker/k8s/signaling-deployment.yaml`) with auto-scaling replicas and LoadBalancer services
-  - [x] Kubernetes manifests for TURN/STUN Relay Nodes (`docker/k8s/relay-deployment.yaml`) with CPU/memory resource boundaries
+  - [x] High-availability Kubernetes manifests for Signaling Server (`infra/k8s/signaling-deployment.yaml`) with auto-scaling replicas and LoadBalancer services
+  - [x] Kubernetes manifests for TURN/STUN Relay Nodes (`infra/k8s/relay-deployment.yaml`) with CPU/memory resource boundaries
 
 - [x] **Milestone 21: Infrastructure as Code (Terraform)**
-  - [x] Reproducible AWS cloud infrastructure definition (`terraform/main.tf`) provisioning custom VPCs, public subnets, and security firewall rules for ports 8080 (signaling) and 8443 (relay)
+  - [x] Reproducible AWS cloud infrastructure definition (`infra/terraform/main.tf`) provisioning custom VPCs, public subnets, and security firewall rules for ports 8080 (signaling) and 8443 (relay)
 
 
