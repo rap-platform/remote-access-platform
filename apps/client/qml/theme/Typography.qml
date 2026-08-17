@@ -18,6 +18,7 @@ QtObject {
 
     // Font Weights
     readonly property int weightNormal: Font.Normal
+    readonly property int weightRegular: Font.Normal
     readonly property int weightMedium: Font.Medium
     readonly property int weightBold: Font.Bold
 }

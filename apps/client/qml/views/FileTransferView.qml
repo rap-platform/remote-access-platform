@@ -9,7 +9,19 @@ Rectangle {
 
     Component.onCompleted: {
         sessionClient.requestLocalDirectoryListing(".")
-        sessionClient.requestDirectoryListing(".")
+        if (sessionClient.isConnected) {
+            sessionClient.requestDirectoryListing(".")
+        }
+    }
+
+    Connections {
+        target: sessionClient
+        function onConnectionStateChanged(connected) {
+            if (connected) {
+                sessionClient.requestLocalDirectoryListing(".")
+                sessionClient.requestDirectoryListing(".")
+            }
+        }
     }
 
     ColumnLayout {
@@ -30,8 +42,29 @@ Rectangle {
                 Accessible.name: "File Transfer Dual Pane Title"
             }
             Item { Layout.fillWidth: true }
+
+            Label {
+                text: "Target Agent:"
+                font.family: Typography.fontFamily
+                font.pixelSize: Typography.fontCaption
+                color: themePalette.textSecondary
+                visible: sessionClient.isConnected
+            }
+
+            ComboBox {
+                id: targetAgentSelector
+                Layout.preferredWidth: 200
+                visible: sessionClient.isConnected
+                model: [ "Agent #1 (127.0.0.1:18443)", "Agent #2 (P2P Relay)" ]
+                font.family: Typography.fontFamily
+                font.pixelSize: Typography.fontCaption
+                onActivated: (index) => {
+                    sessionClient.requestDirectoryListing(sessionClient.currentRemotePath)
+                }
+            }
+
             Rectangle {
-                Layout.preferredWidth: 230
+                Layout.preferredWidth: 210
                 Layout.preferredHeight: 24
                 radius: Metrics.radiusSm
                 color: Qt.rgba(0.0, 0.8, 0.4, 0.15)
@@ -47,10 +80,50 @@ Rectangle {
             }
         }
 
+        // Disconnected Offline Notice Overlay
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: !sessionClient.isConnected
+            color: themePalette.surface
+            radius: Metrics.radiusLg
+            border.color: themePalette.border
+
+            ColumnLayout {
+                anchors.centerIn: parent
+                spacing: Metrics.spacingMd
+
+                Label {
+                    text: "🔒"
+                    font.pixelSize: 56
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
+                Label {
+                    text: "File Explorer Offline — No Agent Connected"
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontTitle
+                    font.weight: Typography.weightBold
+                    color: themePalette.textPrimary
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
+                Label {
+                    text: "Dual-pane file directory browsing is available when connected to a remote host.\nPlease switch to the Remote Desktop tab and connect to a peer's Desk ID."
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontBody
+                    color: themePalette.textSecondary
+                    horizontalAlignment: Text.AlignHCenter
+                    Layout.alignment: Qt.AlignHCenter
+                }
+            }
+        }
+
         // Dual Pane Split Layout (Local Device vs. Remote Device)
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            visible: sessionClient.isConnected
             spacing: Metrics.spacingMd
 
             // LEFT PANE: Local System Directory Explorer
@@ -373,6 +446,7 @@ Rectangle {
             color: themePalette.surface
             radius: Metrics.radiusSm
             border.color: themePalette.border
+            visible: sessionClient.isConnected
 
             ColumnLayout {
                 anchors.fill: parent

@@ -8,6 +8,9 @@ Rectangle {
     color: themePalette.background
 
     property int activeTabIndex: 0
+    property var currentTab: sessionTabsModel.count > activeTabIndex ? sessionTabsModel.get(activeTabIndex) : null
+    property bool isCurrentTabConnected: currentTab ? (currentTab.connected && sessionClient.isConnected) : false
+
     ListModel {
         id: sessionTabsModel
         ListElement { title: "New Session"; p2pId: ""; connected: false }
@@ -122,6 +125,7 @@ Rectangle {
                 fillMode: Image.PreserveAspectFit
                 source: "image://frameprovider/current"
                 cache: false
+                visible: desktopSessionView.isCurrentTabConnected
                 Accessible.role: Accessible.Graphic
                 Accessible.name: "Live Remote Desktop Viewport"
                 Accessible.description: "Interactive canvas displaying decoded remote host desktop stream"
@@ -194,7 +198,7 @@ Rectangle {
 
         RowLayout {
             anchors.centerIn: parent
-            visible: !sessionClient.isConnected
+            visible: !desktopSessionView.isCurrentTabConnected
             spacing: Metrics.spacingLg
 
             // Card 1: THIS DESK (Your P2P Desk ID)
@@ -318,11 +322,14 @@ Rectangle {
                         font.pixelSize: Typography.fontBody
                         font.weight: Typography.weightBold
                         onClicked: {
-                            if (targetIdInput.text.indexOf(":") !== -1) {
-                                let parts = targetIdInput.text.split(":")
+                            let target = targetIdInput.text
+                            sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "title", target.length > 0 ? target : "Desk Session")
+                            sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "connected", true)
+                            if (target.indexOf(":") !== -1) {
+                                let parts = target.split(":")
                                 sessionClient.connectToHost(parts[0], parseInt(parts[1]))
                             } else {
-                                sessionClient.connectByP2PId(targetIdInput.text)
+                                sessionClient.connectByP2PId(target)
                             }
                         }
                         contentItem: Text {
