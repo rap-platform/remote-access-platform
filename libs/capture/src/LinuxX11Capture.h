@@ -2,6 +2,7 @@
 #define RAP_CAPTURE_LINUX_X11_CAPTURE_H
 
 #include "ICaptureBackend.h"
+#include "AdaptiveBitrateController.h"
 #include <atomic>
 #include <thread>
 #include <X11/Xlib.h>
@@ -23,6 +24,7 @@ public:
 
     uint32_t width() const { return width_; }
     uint32_t height() const { return height_; }
+    AdaptiveBitrateController &bitrateController() { return bitrateController_; }
 
 private:
     void stopCaptureInternal();
@@ -37,8 +39,8 @@ private:
     Display *display_{nullptr};
     Window rootWindow_{0};
     std::vector<uint8_t> prevFrameData_;
+    AdaptiveBitrateController bitrateController_{8000, 60};
 };
-
 
 } // namespace rap::capture
 

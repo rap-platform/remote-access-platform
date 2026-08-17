@@ -1,4 +1,5 @@
 #include "VideoFrameProvider.h"
+#include <QMutexLocker>
 
 namespace rap::client {
 
@@ -11,6 +12,8 @@ VideoFrameProvider::VideoFrameProvider()
 
 QImage VideoFrameProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize) {
     Q_UNUSED(id)
+    QMutexLocker locker(&mutex_);
+
     if (size) {
         *size = currentFrame_.size();
     }
@@ -23,7 +26,10 @@ QImage VideoFrameProvider::requestImage(const QString &id, QSize *size, const QS
 }
 
 void VideoFrameProvider::updateFrame(const QImage &image) {
-    currentFrame_ = image;
+    {
+        QMutexLocker locker(&mutex_);
+        currentFrame_ = image;
+    }
     emit frameReady();
 }
 

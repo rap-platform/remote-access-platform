@@ -2,6 +2,7 @@
 #define RAP_CLIENT_VIDEO_FRAME_PROVIDER_H
 
 #include <QImage>
+#include <QMutex>
 #include <QQuickImageProvider>
 
 namespace rap::client {
@@ -22,6 +23,7 @@ signals:
 
 private:
     QImage currentFrame_;
+    QMutex mutex_;
 };
 
 } // namespace rap::client
