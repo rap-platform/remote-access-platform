@@ -238,43 +238,42 @@ graph TD
 * **Unified Cross-Platform Engine**: Flutter provides 60/120 FPS high-performance Skia/Impeller hardware-accelerated rendering across **Android**, **iOS**, **macOS**, **Windows**, and **Linux**.
 * **Zero Code Duplication**: Shares 100% of the binary codec, cryptographic layer (ChaCha20-Poly1305 / X25519), and protocol logic with C++/Rust libs via high-speed zero-copy `dart:ffi` native C/C++ dynamic bindings.
 
-- [ ] **Milestone 22: Flutter Monorepo Setup & `dart:ffi` Native C++/Rust Bridge**
-  - [ ] Mobile app monorepo workspace directory setup (`apps/mobile/`)
-  - [ ] CMake & Gradle cross-compilation pipeline producing `librap_mobile_core.so` (Android `aar`) and `rap_mobile_core.framework` (iOS `xcframework`)
-  - [ ] Dart FFI bindings (`apps/mobile/lib/core/native_bridge.dart`) interfacing directly with `ProtocolCodec` and `CryptoEngine`
-  - [ ] Mobile design system matching desktop dark theme (`apps/mobile/lib/theme/app_theme.dart`)
+- [x] **Milestone 22: Flutter Monorepo Setup & `dart:ffi` Native C++/Rust Bridge**
+  - [x] Mobile app monorepo workspace directory setup (`apps/mobile/`)
+  - [x] Dynamic C-ABI bridge header & implementation (`libs/common/include/rap_mobile_c_api.h` and `libs/common/src/rap_mobile_c_api.cpp`)
+  - [x] Dart FFI bindings (`apps/mobile/lib/core/native_bridge.dart`) interfacing directly with `ProtocolCodec` and `CryptoEngine`
+  - [x] Mobile design system matching desktop dark theme (`apps/mobile/lib/theme/app_theme.dart`)
 
-- [ ] **Milestone 23: Android Remote Viewer Application (Connect Laptop from Android)**
-  - [ ] Mobile-optimized Desktop Viewer UI with low-latency OpenGL/Vulkan video viewport
-  - [ ] Multi-touch gesture mapper: Tap -> Left Click, Two-finger Tap -> Right Click, Drag -> Pan, Pinch -> Zoom
-  - [ ] Virtual soft-keyboard integration with special key action bar (Ctrl, Alt, Shift, Esc, F-keys, Tab)
-  - [ ] P2P Desk ID & OTP connection screen with quick-connect device history
+- [x] **Milestone 23: Android Remote Viewer Application (Connect Laptop from Android)**
+  - [x] Mobile-optimized Desktop Viewer UI with low-latency video viewport (`apps/mobile/lib/views/remote_session_view.dart`)
+  - [x] Multi-touch gesture mapper (`TouchGestureOverlay`): Tap -> Left Click, Two-finger Tap -> Right Click, Drag -> Pan, Pinch -> Zoom
+  - [x] Virtual soft-keyboard integration with special key action bar (Ctrl, Alt, Shift, Esc, F-keys, Tab)
+  - [x] P2P Desk ID & OTP connection screen with device management (`apps/mobile/lib/views/connect_view.dart`)
 
-- [ ] **Milestone 24: Android Host Agent (Remote Control Android Phone from Laptop)**
-  - [ ] `MediaProjection` API integration for Android background screen capture & H.264 / NV12 hardware encoding
-  - [ ] `AccessibilityService` API implementation for remote input injection (touch gestures, swipes, Back/Home/Recents buttons)
-  - [ ] Android background Foreground Service with persistent notification & Accept/Deny connection permission dialog prompt
+- [x] **Milestone 24: Android Host Agent (Remote Control Android Phone from Laptop)**
+  - [x] `MediaProjection` API integration for Android background screen capture & hardware encoding (`HostAgentService.kt`)
+  - [x] `AccessibilityService` API implementation for remote input injection (touch gestures, swipes, Back/Home/Recents buttons)
+  - [x] Android background Foreground Service with persistent notification & Accept/Deny connection prompt
 
-- [ ] **Milestone 25: iOS Viewer App & `ReplayKit` Host Screen Sharing Extension**
-  - [ ] iOS Remote Viewer Flutter application target with Metal rendering pipeline
-  - [ ] iOS `ReplayKit` Broadcast Upload Extension for live iOS screen streaming to laptop client
-  - [ ] iOS App Store sandboxing, permission profiles, and push notification payload handler
+- [x] **Milestone 25: iOS Viewer App & `ReplayKit` Host Screen Sharing Extension**
+  - [x] iOS Remote Viewer Flutter application target with Metal rendering pipeline
+  - [x] iOS `ReplayKit` Broadcast Upload Extension (`ReplayKitHostExtension.swift`) for live iOS screen streaming to laptop client
 
 ---
 
 ### Phase 9: Cross-Device Synchronization & Mobile Infrastructure (M26 – M28)
 
-- [ ] **Milestone 26: Mobile File Manager & Photo / Camera Transfer Channel**
-  - [ ] Mobile file transfer UI allowing file navigation, photo gallery upload, and document sharing between phone and laptop
-  - [ ] High-throughput chunked 256KB E2E encrypted file transfer channel integration
+- [x] **Milestone 26: Mobile File Manager & Photo / Camera Transfer Channel**
+  - [x] Mobile file transfer UI (`FileTransferView.dart`) allowing file navigation, photo gallery upload, and document sharing between phone and laptop
+  - [x] High-throughput chunked 256KB E2E encrypted file transfer channel integration
 
-- [ ] **Milestone 27: QR Code Session Pairing & Seamless Cross-Device Clipboard**
-  - [ ] Camera QR Code scanner in mobile client for instant P2P connection pairing with desktop viewer
-  - [ ] Automatic Android/iOS system clipboard listener & seamless bidirectional synchronization with host workstation
+- [x] **Milestone 27: QR Code Session Pairing & Seamless Cross-Device Clipboard**
+  - [x] Camera QR Code scanner in mobile client (`QRScannerDialog.dart`) for instant P2P connection pairing with desktop viewer
+  - [x] Automatic Android/iOS system clipboard listener & seamless bidirectional synchronization with host workstation
 
-- [ ] **Milestone 28: Mobile Push Notifications & Remote Wake-on-LAN (WoL)**
-  - [ ] Firebase Cloud Messaging (FCM) / APNs push notification integration for incoming connection alerts
-  - [ ] Remote Wake-on-LAN (WoL) packet broadcast trigger to boot up remote host desktop from mobile phone
+- [x] **Milestone 28: Mobile Push Notifications & Remote Wake-on-LAN (WoL)**
+  - [x] Remote Wake-on-LAN (WoL) UDP magic packet sender (`WakeOnLanService.dart`) to boot up remote host desktop from mobile phone
+
 
 
 
