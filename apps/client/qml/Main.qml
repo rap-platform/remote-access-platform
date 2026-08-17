@@ -16,6 +16,14 @@ ApplicationWindow {
     color: themePalette.background
 
     property int currentViewIndex: 0 // 0: Desktop Session, 1: Saved Devices, 2: Security & Keys, 3: File Transfer
+    property bool isFullScreen: false
+
+    visibility: isFullScreen ? Window.FullScreen : Window.Windowed
+
+    Shortcut {
+        sequence: "F11"
+        onActivated: mainWindow.isFullScreen = !mainWindow.isFullScreen
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -24,8 +32,11 @@ ApplicationWindow {
         Accessible.name: "Remote Access Platform Desktop Viewer"
         Accessible.description: "Enterprise cross-platform remote desktop viewer and management client"
 
-        // Top Navigation Header Bar
-        HeaderBar { id: headerBar }
+        // Top Navigation Header Bar (Hidden in Fullscreen mode)
+        HeaderBar {
+            id: headerBar
+            visible: !mainWindow.isFullScreen
+        }
 
         // Central Content Area
         RowLayout {
@@ -33,9 +44,10 @@ ApplicationWindow {
             Layout.fillHeight: true
             spacing: 0
 
-            // Left Navigation Sidebar
+            // Left Navigation Sidebar (Hidden in Fullscreen mode)
             SidebarNav {
                 id: sidebarNav
+                visible: !mainWindow.isFullScreen
                 currentViewIndex: mainWindow.currentViewIndex
                 onNavigateTo: (index) => mainWindow.currentViewIndex = index
             }
@@ -53,7 +65,10 @@ ApplicationWindow {
             }
         }
 
-        // Bottom Status Bar
-        StatusBar { id: statusBar }
+        // Bottom Status Bar (Hidden in Fullscreen mode)
+        StatusBar {
+            id: statusBar
+            visible: !mainWindow.isFullScreen
+        }
     }
 }

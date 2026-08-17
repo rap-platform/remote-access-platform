@@ -13,7 +13,7 @@ Rectangle {
 
     ListModel {
         id: sessionTabsModel
-        ListElement { title: "New Session"; targetHost: "127.0.0.1:18443"; connected: false }
+        ListElement { title: "New Session"; targetHost: "115 604 669"; connected: false }
     }
 
     Connections {
@@ -94,12 +94,13 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        // Multi-Tab Session Connection Bar
+        // Multi-Tab Session Connection Bar (Hidden in Fullscreen mode if user prefers immersive view)
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 38
             color: themePalette.surfaceVariant
             border.color: themePalette.border
+            visible: !mainWindow.isFullScreen
 
             RowLayout {
                 anchors.fill: parent
@@ -118,7 +119,6 @@ Rectangle {
                     delegate: Rectangle {
                         width: 160
                         height: 32
-                        anchors.verticalCenter: parent.verticalCenter
                         color: index === desktopSessionView.activeTabIndex ? themePalette.surface : themePalette.background
                         radius: Metrics.radiusSm
                         border.color: index === desktopSessionView.activeTabIndex ? themePalette.primary : themePalette.border
@@ -179,7 +179,21 @@ Rectangle {
                 }
 
                 Button {
-                    text: "🔌 Disconnect Session"
+                    text: mainWindow.isFullScreen ? "⛶ Exit Fullscreen" : "⛶ Fullscreen (F11)"
+                    Layout.preferredHeight: 30
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightMedium
+                    onClicked: mainWindow.isFullScreen = !mainWindow.isFullScreen
+                    background: Rectangle {
+                        color: themePalette.surface
+                        radius: Metrics.radiusSm
+                        border.color: themePalette.border
+                    }
+                }
+
+                Button {
+                    text: "🔌 Disconnect"
                     Layout.preferredHeight: 30
                     font.family: Typography.fontFamily
                     font.pixelSize: Typography.fontCaption
@@ -202,7 +216,7 @@ Rectangle {
                     font.pixelSize: Typography.fontCaption
                     onClicked: {
                         let newIdx = sessionTabsModel.count + 1
-                        sessionTabsModel.append({ title: "Session " + newIdx, targetHost: "127.0.0.1:18443", connected: false })
+                        sessionTabsModel.append({ title: "Session " + newIdx, targetHost: "115 604 669", connected: false })
                         desktopSessionView.activeTabIndex = sessionTabsModel.count - 1
                     }
                     background: Rectangle {
@@ -222,7 +236,7 @@ Rectangle {
             // Live Remote Viewport Container (Shown when connected and active tab selected)
             Item {
                 anchors.fill: parent
-                anchors.margins: Metrics.spacingMd
+                anchors.margins: mainWindow.isFullScreen ? 0 : Metrics.spacingMd
                 visible: desktopSessionView.isCurrentTabConnected
 
                 Image {
@@ -249,17 +263,17 @@ Rectangle {
                     anchors.fill: parent
                     color: "transparent"
                     border.color: themePalette.border
-                    border.width: 1
-                    radius: Metrics.radiusSm
+                    border.width: mainWindow.isFullScreen ? 0 : 1
+                    radius: mainWindow.isFullScreen ? 0 : Metrics.radiusSm
                 }
 
-                // Overlay disconnect header bar inside active session
+                // Overlay control header bar inside active session
                 Rectangle {
                     anchors.top: parent.top
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.topMargin: Metrics.spacingSm
-                    width: 360
-                    height: 36
+                    width: 460
+                    height: 38
                     radius: Metrics.radiusSm
                     color: themePalette.surface
                     border.color: themePalette.border
@@ -283,6 +297,20 @@ Rectangle {
                             color: themePalette.textPrimary
                             elide: Text.ElideRight
                             Layout.fillWidth: true
+                        }
+
+                        Button {
+                            text: mainWindow.isFullScreen ? "⛶ Exit Fullscreen" : "⛶ Fullscreen"
+                            Layout.preferredHeight: 26
+                            font.family: Typography.fontFamily
+                            font.pixelSize: 11
+                            font.weight: Typography.weightMedium
+                            onClicked: mainWindow.isFullScreen = !mainWindow.isFullScreen
+                            background: Rectangle {
+                                color: themePalette.surfaceVariant
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
                         }
 
                         Button {
