@@ -10,6 +10,7 @@ rap-identity = { path = "../identity" }
 rap-signaling = { path = "../signaling" }
 tokio.workspace = true
 tracing.workspace = true
+tracing-subscriber.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 axum.workspace = true
