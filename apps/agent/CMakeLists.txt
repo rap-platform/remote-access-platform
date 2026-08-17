@@ -4,6 +4,7 @@ add_executable(rap-agent
 
 target_link_libraries(rap-agent PRIVATE
     Qt6::Core
+    Qt6::Gui
     Qt6::Network
     rap_common
     rap_protocol

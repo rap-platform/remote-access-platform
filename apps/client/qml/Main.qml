@@ -262,7 +262,10 @@ ApplicationWindow {
                         id: viewportMouseArea
                         anchors.fill: parent
                         hoverEnabled: true
+                        focus: true
                         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+
+                        onClicked: { viewportMouseArea.forceActiveFocus(); }
 
                         onPositionChanged: (mouse) => {
                             if (sessionClient.isConnected && width > 0 && height > 0) {
@@ -272,6 +275,7 @@ ApplicationWindow {
                             }
                         }
                         onPressed: (mouse) => {
+                            viewportMouseArea.forceActiveFocus();
                             if (sessionClient.isConnected && width > 0 && height > 0) {
                                 var normX = Math.round((mouse.x / width) * 1920);
                                 var normY = Math.round((mouse.y / height) * 1080);
@@ -292,7 +296,20 @@ ApplicationWindow {
                                 sessionClient.sendInputEvent(4, 0, 0, 0, wheel.angleDelta.y, 0, 0);
                             }
                         }
+                        Keys.onPressed: (event) => {
+                            if (sessionClient.isConnected) {
+                                sessionClient.sendInputEvent(5, 0, 0, 0, 0, event.nativeScanCode || event.key, event.modifiers);
+                                event.accepted = true;
+                            }
+                        }
+                        Keys.onReleased: (event) => {
+                            if (sessionClient.isConnected) {
+                                sessionClient.sendInputEvent(6, 0, 0, 0, 0, event.nativeScanCode || event.key, event.modifiers);
+                                event.accepted = true;
+                            }
+                        }
                     }
+
 
 
                     Column {

@@ -12,6 +12,10 @@ SessionClient::SessionClient(VideoFrameProvider *frameProvider, QObject *parent)
     connect(&socket_, &QTcpSocket::connected, this, &SessionClient::onConnected);
     connect(&socket_, &QTcpSocket::disconnected, this, &SessionClient::onDisconnected);
     connect(&socket_, &QTcpSocket::errorOccurred, this, &SessionClient::onErrorOccurred);
+
+    if (QGuiApplication::clipboard()) {
+        connect(QGuiApplication::clipboard(), &QClipboard::dataChanged, this, &SessionClient::onClipboardChanged);
+    }
 }
 
 SessionClient::~SessionClient() {
@@ -78,6 +82,57 @@ void SessionClient::sendInputEvent(uint16_t type, int32_t x, int32_t y, uint32_t
     socket_.flush();
 }
 
+void SessionClient::sendClipboardText(const QString &text) {
+    if (text.isEmpty() || !socket_.isOpen() || socket_.state() != QAbstractSocket::ConnectedState) {
+        return;
+    }
+
+    if (text == lastClipboardText_) {
+        return;
+    }
+    lastClipboardText_ = text;
+
+    const std::vector<uint8_t> sessionKey = {
+        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+        0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
+    };
+
+    QByteArray utf8Data = text.toUtf8();
+    std::vector<uint8_t> plaintext(utf8Data.constData(), utf8Data.constData() + utf8Data.size());
+
+    std::vector<uint8_t> nonce(12, 0);
+    uint64_t seq = ++inputSequence_;
+    std::memcpy(nonce.data(), &seq, sizeof(seq));
+
+    auto encryptedPayload = rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
+
+    auto encoded = rap::protocol::ProtocolCodec::encode(
+        rap::protocol::PayloadType::ClipboardData,
+        seq,
+        0,
+        encryptedPayload);
+
+    QByteArray bytes(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size()));
+    socket_.write(bytes);
+    socket_.flush();
+    qInfo() << "[Client] Synchronized local clipboard text to remote host (" << text.length() << "chars)";
+}
+
+void SessionClient::onClipboardChanged() {
+    if (!isConnected_) {
+        return;
+    }
+    QClipboard *cb = QGuiApplication::clipboard();
+    if (cb) {
+        QString text = cb->text();
+        if (!text.isEmpty() && text != lastClipboardText_) {
+            sendClipboardText(text);
+        }
+    }
+}
+
 void SessionClient::onConnected() {
     isConnected_ = true;
     receiveBuffer_.clear();
@@ -125,10 +180,8 @@ void SessionClient::onReadyRead() {
             auto err = std::get<rap::protocol::ParseError>(result);
             if (err == rap::protocol::ParseError::IncompleteHeader ||
                 err == rap::protocol::ParseError::IncompletePayload) {
-                // Buffer incomplete, wait for next TCP chunk
                 break;
             } else {
-                // Drop corrupt byte to realign header
                 receiveBuffer_.remove(0, 1);
                 continue;
             }
@@ -142,7 +195,6 @@ void SessionClient::onReadyRead() {
             uint64_t fn = packet.header.sequenceNumber;
             std::memcpy(nonce.data(), &fn, sizeof(fn));
 
-            // Decrypt & authenticate payload via ChaCha20-Poly1305 AEAD
             auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
 
             if (decryptedOpt.has_value() && decryptedOpt->size() >= 8) {
@@ -163,6 +215,22 @@ void SessionClient::onReadyRead() {
                 }
             } else {
                 qWarning() << "[Client] E2E Crypto Authentication Failed! Dropping corrupted or tampered frame payload.";
+            }
+        } else if (packet.header.type == rap::protocol::PayloadType::ClipboardData && !packet.payload.empty()) {
+            std::vector<uint8_t> nonce(12, 0);
+            uint64_t seq = packet.header.sequenceNumber;
+            std::memcpy(nonce.data(), &seq, sizeof(seq));
+
+            auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
+            if (decryptedOpt.has_value() && !decryptedOpt->empty()) {
+                QString text = QString::fromUtf8(reinterpret_cast<const char *>(decryptedOpt->data()), static_cast<int>(decryptedOpt->size()));
+                lastClipboardText_ = text;
+                QClipboard *cb = QGuiApplication::clipboard();
+                if (cb) {
+                    cb->setText(text);
+                }
+                emit clipboardTextReceived(text);
+                qInfo() << "[Client] Received bidirectional clipboard update from remote host (" << text.length() << "chars)";
             }
         }
 

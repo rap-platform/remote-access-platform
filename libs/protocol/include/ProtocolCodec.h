@@ -17,8 +17,10 @@ enum class PayloadType : uint16_t {
     HandshakeResp = 2,
     FrameHeader = 3,
     InputEvent = 4,
-    Heartbeat = 5
+    Heartbeat = 5,
+    ClipboardData = 6
 };
+
 
 enum class ParseError {
     None = 0,

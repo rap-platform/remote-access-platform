@@ -2,6 +2,8 @@
 #define RAP_CLIENT_SESSION_CLIENT_H
 
 #include <QByteArray>
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QHostAddress>
 #include <QImage>
 #include <QObject>
@@ -23,6 +25,7 @@ public:
     QString statusText() const { return statusText_; }
 
     Q_INVOKABLE void sendInputEvent(uint16_t type, int32_t x, int32_t y, uint32_t button, int32_t delta, uint32_t keycode, uint32_t modifiers);
+    Q_INVOKABLE void sendClipboardText(const QString &text);
 
 public slots:
     void connectToHost(const QString &host, uint16_t port);
@@ -31,12 +34,14 @@ public slots:
 signals:
     void connectionStateChanged(bool connected);
     void statusTextChanged(const QString &status);
+    void clipboardTextReceived(const QString &text);
 
 private slots:
     void onReadyRead();
     void onConnected();
     void onDisconnected();
     void onErrorOccurred(QAbstractSocket::SocketError socketError);
+    void onClipboardChanged();
 
 private:
     void setStatus(const QString &status);
@@ -48,6 +53,7 @@ private:
     QString statusText_{"Disconnected"};
     uint64_t receivedFrames_{0};
     uint64_t inputSequence_{0};
+    QString lastClipboardText_;
 };
 
 } // namespace rap::client

@@ -1,4 +1,6 @@
+#include <QClipboard>
 #include <QCoreApplication>
+#include <QGuiApplication>
 #include <QDebug>
 #include <QMetaObject>
 #include <QTcpServer>
@@ -11,7 +13,7 @@
 #include "logging/JsonLogger.h"
 
 int main(int argc, char *argv[]) {
-    QCoreApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
     app.setApplicationName("rap-agent");
     app.setApplicationVersion("0.1.0");
 
@@ -57,7 +59,7 @@ int main(int argc, char *argv[]) {
             clients.append(clientSocket);
             qInfo() << "[Agent] New client connected from:" << clientSocket->peerAddress().toString();
 
-            // Handle incoming remote input events over encrypted socket
+            // Handle incoming remote input events and clipboard sync over encrypted socket
             QObject::connect(clientSocket, &QTcpSocket::readyRead, [clientSocket, &inputBackend, sessionKey]() {
                 QByteArray buffer = clientSocket->readAll();
                 while (buffer.size() >= 28) {
@@ -93,6 +95,20 @@ int main(int argc, char *argv[]) {
                             if (inputBackend) {
                                 inputBackend->injectEvent(event);
                             }
+                        }
+                    } else if (packet.header.type == rap::protocol::PayloadType::ClipboardData && !packet.payload.empty()) {
+                        std::vector<uint8_t> nonce(12, 0);
+                        uint64_t seq = packet.header.sequenceNumber;
+                        std::memcpy(nonce.data(), &seq, sizeof(seq));
+
+                        auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
+                        if (decryptedOpt.has_value() && !decryptedOpt->empty()) {
+                            QString text = QString::fromUtf8(reinterpret_cast<const char *>(decryptedOpt->data()), static_cast<int>(decryptedOpt->size()));
+                            QClipboard *cb = QGuiApplication::clipboard();
+                            if (cb) {
+                                cb->setText(text);
+                            }
+                            qInfo() << "[Agent] Applied remote clipboard text update to host system (" << text.length() << "chars)";
                         }
                     }
 
