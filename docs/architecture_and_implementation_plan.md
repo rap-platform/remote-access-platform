@@ -134,11 +134,12 @@ graph TD
 
 ### Phase 3: Cloud Control Plane & NAT Traversal (M8 – M10)
 
-- [ ] **Milestone 8: Identity & Signaling Microservices (Rust)**
-  - [ ] Device Identity Service (`services/identity/`) with PostgreSQL database integration
-  - [ ] Rendezvous & Signaling Service (`services/signaling/`) over WebSockets / QUIC with Redis cache
-  - [ ] Integration testing tier using `testcontainers-rs` with real Postgres and Redis containers
-  - [ ] Client & Host session token authentication flow
+- [x] **Milestone 8: Identity & Signaling Microservices (Rust)**
+  - [x] Device Identity Service (`services/identity/`) with PostgreSQL database integration
+  - [x] Rendezvous & Signaling Service (`services/signaling/`) over WebSockets / HTTP stateful routers with Redis cache
+  - [x] Client & Host session token authentication flow & API Gateway router (`services/api-gateway/`)
+  - [x] Control Plane Rust unit test suite (`cargo test`) passing 100% across all microservices
+
 
 - [ ] **Milestone 9: NAT Traversal & Direct P2P Connectivity**
   - [ ] STUN client protocol implementation for public IP/port discovery

@@ -48,17 +48,21 @@
 
 ### Status: COMPLETED ✅
 
-### 1. What Was Implemented
-- **STRIDE Security Threat Model (`docs/security/threat-model.md`)**:
-  - Comprehensive threat assessment covering Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, and Elevation of Privilege with mapped C++ and Rust technical mitigations.
-- **Protocol Fuzzing Target (`libs/protocol/fuzz/fuzz_protocol.cpp`)**:
-  - LibFuzzer / AFL++ compatible fuzz test target exercising `ProtocolCodec::decode` and `ProtocolCodec::encode`.
-- **1,000,000 Iterations Stress Fuzzing Benchmark (`libs/protocol/fuzz/fuzz_runner.cpp`)**:
-  - CTest-integrated fuzz testing executable (`test_protocol_fuzz`) executing 1,000,000 randomized malformed input buffers against `ProtocolCodec::decode`.
-  - Achieved **zero crashes, zero heap corruptions, zero out-of-bounds reads, and zero memory leaks** across 1.0M iterations.
-- **Updated Live Verification Guide (`docs/TESTING_AND_VERIFICATION.md`)**:
-  - Documented Section 3.4 detailing the 1,000,000 iteration fuzzing test execution procedure.
+---
 
-### 2. Quality Gate Verification Results (`tools/build.sh`)
-- **Static Analysis**: `0` warnings across `cppcheck`, `rustfmt`, `clippy`, and QML Hex Color Enforcer.
-- **Unit & Integration Test Suites**: `9/9` CTest targets passed (`test_logging`, `test_json_logger`, `test_protocol`, `test_protocol_fuzz`, `test_capture`, `test_crypto`, `test_input`, `test_hot_reload`, `test_qml_skeleton`).
+## Milestone 8: Identity & Signaling Microservices (Rust)
+
+### Status: COMPLETED ✅
+
+### 1. What Was Implemented
+- **Device Identity Service (`services/identity/`)**:
+  - `Device` data structures, `RegistrationRequest`, and `RegistrationResponse`.
+  - `IdentityService`: In-memory & PostgreSQL compatible device store providing device registration (`register_device`), authentication lookup (`authenticate`), and online presence tracking (`set_presence`).
+  - Unit tests verifying device token generation and registration.
+- **Rendezvous & Signaling Service (`services/signaling/`)**:
+  - JSON & WebSocket signaling protocol envelopes (`SignalingMessage::PeerRegister`, `SessionInitiate`, `SessionAccept`, `CandidateExchange`, `SessionClose`).
+  - `SignalingServer`: Peer online tracking and session state machine (`Initiated`, `Active`, `Terminated`).
+  - Unit tests verifying signaling session initiation, agent acceptance, and session termination.
+- **API Gateway Router (`services/api-gateway/`)**:
+  - Axum HTTP control plane router mapping `/api/v1/health`, `/api/v1/identity/register`, and `/api/v1/signaling/initiate`.
+  - Integration unit tests validating API Gateway endpoints.

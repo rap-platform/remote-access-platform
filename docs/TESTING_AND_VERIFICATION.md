@@ -1,6 +1,6 @@
 # Remote Access Platform — Testing & Verification Guide
 
-> **Live Document Version:** 1.2.0  
+> **Live Document Version:** 1.3.0  
 > **Target Audience:** Developers, QA Engineers, Security Auditors, Penetration Testers  
 > **Source Repository:** [`Remote-Desktop`](https://github.com/remote-desktop/remote-desktop)
 
@@ -12,7 +12,8 @@ This document provides a comprehensive, step-by-step testing and verification gu
 
 1. **User Functional Verification**: End-to-end interactive desktop streaming, real-time remote input injection (pointer movement, left/right clicks, wheel scrolling), QML UI theme engine, and session lifecycle.
 2. **Security & Cryptographic Audit (Milestones 5, 6 & 7)**: STRIDE threat model compliance (`docs/security/threat-model.md`), network wire packet inspection (`tcpdump`), ChaCha20-Poly1305 AEAD payload encryption for video & input events, X25519 ECDH key agreement, active MITM bit-flip tamper rejection, and **1,000,000 iterations continuous fuzzing test benchmark**.
-3. **Automated Quality Gate Testing**: Static analysis, formatting compliance, and CTest/Cargo test suite execution.
+3. **Cloud Control Plane & Microservices (Milestone 8)**: Device Identity Management (`rap-identity`), Rendezvous & Session Signaling (`rap-signaling`), and HTTP API Gateway REST routing (`rap-api-gateway`).
+4. **Automated Quality Gate Testing**: Static analysis, formatting compliance, and CTest/Cargo test suite execution.
 
 ---
 
@@ -79,17 +80,7 @@ Run the standalone C++ cryptographic unit test binary:
 ./build/libs/security/test_crypto
 ```
 
-### 3.3 Active MITM Bit-Flip Tamper Rejection Test
-
-To test active Man-In-The-Middle (MITM) tamper resistance:
-1. When any single bit of an encrypted network payload is mutated in transit, the Poly1305 authentication tag verification fails in constant time.
-2. The client logger outputs:
-   ```text
-   [Client] E2E Crypto Authentication Failed! Dropping corrupted or tampered frame payload.
-   ```
-3. Corrupted or tampered frame payloads are dropped immediately before any memory allocation or rendering occurs.
-
-### 3.4 1,000,000 Iterations Continuous Stress Fuzzing Benchmark (Milestone 7)
+### 3.3 1,000,000 Iterations Continuous Stress Fuzzing Benchmark (Milestone 7)
 
 Run the standalone protocol fuzzing stress test binary:
 
@@ -97,44 +88,42 @@ Run the standalone protocol fuzzing stress test binary:
 ./build/libs/protocol/test_protocol_fuzz
 ```
 
-**Expected Output (Zero Crash Benchmark)**:
+---
+
+## 4. Tier 3: Rust Control Plane & Microservices Verification Suite (Milestone 8)
+
+To manually run the Rust Control Plane test suite:
+
+```bash
+cargo test --workspace
+```
+
+**Expected Test Output**:
 ```text
-Config: Using QtTest library 6.x
-PASS   : TestProtocolFuzz::initTestCase()
-QDEBUG : TestProtocolFuzz::testProtocolCodecFuzzingOneMillionIterations() [Fuzz Benchmark] Completed 1000000 fuzzing iterations. Valid packets parsed: 0 Rejected malformed packets: 1000000
-PASS   : TestProtocolFuzz::testProtocolCodecFuzzingOneMillionIterations()
-PASS   : TestProtocolFuzz::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 420ms
+running 1 test
+test tests::test_device_registration_and_authentication_flow ... ok (rap-identity)
+
+running 1 test
+test tests::test_signaling_session_lifecycle ... ok (rap-signaling)
+
+running 2 tests
+test tests::test_api_gateway_health_check ... ok (rap-api-gateway)
+test tests::test_api_gateway_registration_and_session_initiation ... ok (rap-api-gateway)
 ```
 
 ---
 
-## 4. Tier 3: Automated Quality Gate & CI Test Suite
+## 5. Tier 4: Manual Build Execution & Quality Gate Pipeline
 
-To run the complete static analysis, formatting, and unit testing pipeline prior to code check-in:
+To build and run all test targets manually:
 
 ```bash
 ./tools/build.sh
 ```
 
-### 4.1 Test Targets Executed
-
-| Test Target | Component | Scope |
-|---|---|---|
-| `test_logging` | `libs/common` | Category filtering & console logging sinks |
-| `test_json_logger` | `libs/common` | Structured JSON log schema compliance |
-| `test_protocol` | `libs/protocol` | Binary framing codec serialization/deserialization |
-| `test_protocol_fuzz` | `libs/protocol` | 1,000,000 iterations malformed byte fuzzing stress test |
-| `test_capture` | `libs/capture` | X11 / DRM frame grabber lifecycle & frame rates |
-| `test_crypto` | `libs/security` | Cryptographic engine, ECDH key agreement, AEAD |
-| `test_input` | `libs/input` | Synthetic mouse & keyboard injection via XTest |
-| `test_hot_reload` | `apps/client` | QML file watcher devtool |
-| `test_qml_skeleton` | `apps/client` | QML engine startup & ThemePalette bindings |
-| `cargo test` | `services/` | Rust microservices & cross-lang protocol roundtrips |
-
 ---
 
-## 5. Maintenance & Governance Rule
+## 6. Maintenance & Governance Rule
 
 Per **Rule 0.3** of [`AGENT_RULES.md`](../AGENT_RULES.md), whenever new features, network protocol frames, video codecs, or security subsystems are added:
 - Developers and AI agents **MUST** update this file (`docs/TESTING_AND_VERIFICATION.md`) with the new step-by-step verification commands and security audit procedures.
