@@ -139,9 +139,10 @@ mod tests {
         // Verify authentication lookup using valid token
         let authenticated_device = identity_service.authenticate(&resp.auth_token).await;
         assert!(authenticated_device.is_some());
-        let dev = authenticated_device.unwrap();
-        assert_eq!(dev.hostname, req.hostname);
-        assert!(dev.is_online);
+        if let Some(dev) = authenticated_device {
+            assert_eq!(dev.hostname, req.hostname);
+            assert!(dev.is_online);
+        }
 
         // Verify authentication fails for invalid token
         let invalid_auth = identity_service.authenticate("invalid-token").await;
@@ -150,7 +151,10 @@ mod tests {
         // Test presence status update
         let updated = identity_service.set_presence(&resp.device_id, false).await;
         assert!(updated);
-        let dev_after = identity_service.get_device(&resp.device_id).await.unwrap();
+        let dev_after = identity_service
+            .get_device(&resp.device_id)
+            .await
+            .expect("Device should exist");
         assert!(!dev_after.is_online);
     }
 }

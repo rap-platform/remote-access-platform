@@ -173,7 +173,7 @@ mod tests {
             )
             .await;
         assert!(initiate_res.is_ok());
-        let session = initiate_res.unwrap();
+        let session = initiate_res.expect("Session initiation should succeed");
         assert_eq!(session.status, SessionStatus::Initiated);
 
         // Accept session from agent side
@@ -184,14 +184,17 @@ mod tests {
             )
             .await;
         assert!(accept_res.is_ok());
-        let active_sess = accept_res.unwrap();
+        let active_sess = accept_res.expect("Session acceptance should succeed");
         assert_eq!(active_sess.status, SessionStatus::Active);
         assert!(active_sess.agent_public_key_hex.is_some());
 
         // Close session
         let closed = server.close_session(&session.session_id).await;
         assert!(closed);
-        let final_sess = server.get_session(&session.session_id).await.unwrap();
+        let final_sess = server
+            .get_session(&session.session_id)
+            .await
+            .expect("Session should exist");
         assert_eq!(final_sess.status, SessionStatus::Terminated);
     }
 }

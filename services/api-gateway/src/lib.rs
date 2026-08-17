@@ -111,7 +111,8 @@ mod tests {
 
         let init_res = initiate_session_handler(State(Arc::new(state)), Json(init_req)).await;
         assert!(init_res.is_ok());
-        let session = init_res.unwrap().0;
-        assert_eq!(session.agent_device_id, reg_resp.device_id);
+        if let Ok(Json(session)) = init_res {
+            assert_eq!(session.agent_device_id, reg_resp.device_id);
+        }
     }
 }
