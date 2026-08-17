@@ -6,7 +6,7 @@ import "../theme"
 Rectangle {
     id: headerBar
     Layout.fillWidth: true
-    Layout.preferredHeight: 60
+    Layout.preferredHeight: 50
     color: themePalette.surface
     border.color: themePalette.border
     border.width: 1
@@ -35,50 +35,19 @@ Rectangle {
             color: themePalette.border
         }
 
-        TextField {
-            id: remoteIdInput
-            Layout.preferredWidth: 280
-            text: "127.0.0.1:18443"
-            placeholderText: "127.0.0.1:18443"
-            font.family: Typography.fontFamily
-            font.pixelSize: Typography.fontBody
-            color: themePalette.textPrimary
-            Accessible.role: Accessible.EditableText
-            Accessible.name: "Remote Host Address Input"
-            Accessible.description: "Enter target host IP and TCP port number (e.g. 127.0.0.1:18443)"
-            background: Rectangle {
-                color: themePalette.surfaceVariant
-                radius: Metrics.radiusSm
-                border.color: themePalette.border
-            }
-        }
+        Rectangle {
+            Layout.preferredWidth: 180
+            Layout.preferredHeight: 24
+            radius: Metrics.radiusSm
+            color: Qt.rgba(0.0, 0.8, 0.4, 0.12)
+            border.color: themePalette.success
 
-        Button {
-            id: connectButton
-            text: sessionClient.isConnected ? "Disconnect" : "Connect Session"
-            font.family: Typography.fontFamily
-            font.pixelSize: Typography.fontBody
-            font.weight: Typography.weightMedium
-            Accessible.role: Accessible.Button
-            Accessible.name: sessionClient.isConnected ? "Disconnect Session" : "Connect Session"
-            Accessible.description: "Initiates or terminates remote desktop stream connection"
-            onClicked: {
-                if (sessionClient.isConnected) {
-                    sessionClient.disconnectFromHost()
-                } else {
-                    sessionClient.connectToHost("127.0.0.1", 18443)
-                }
-            }
-            contentItem: Text {
-                text: connectButton.text
-                font: connectButton.font
-                color: themePalette.textPrimary
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-            background: Rectangle {
-                color: sessionClient.isConnected ? themePalette.error : themePalette.primary
-                radius: Metrics.radiusSm
+            Label {
+                anchors.centerIn: parent
+                text: "⚡ Hardware P2P Active"
+                font.pixelSize: Typography.fontCaption
+                font.weight: Typography.weightBold
+                color: themePalette.success
             }
         }
 

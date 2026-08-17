@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 
                             if (inputBackend) {
                                 QHostAddress peerAddr = clientSocket->peerAddress();
-                                bool isLoopback = (peerAddr == QHostAddress::LocalHost || peerAddr == QHostAddress::LocalHostIPv6 || peerAddr.toString().contains("127.0.0.1"));
+                                bool isLoopback = peerAddr.isLoopback() || peerAddr.toString().contains("127.0.0.1") || peerAddr.toString().contains("::1") || peerAddr.toString().contains("::ffff:127.0.0.1");
                                 if (!isLoopback) {
                                     inputBackend->injectEvent(event);
                                 }

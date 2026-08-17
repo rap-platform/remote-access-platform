@@ -8,11 +8,24 @@ Rectangle {
     color: themePalette.background
 
     property int activeTabIndex: 0
-    property bool isCurrentTabConnected: sessionClient.isConnected && (activeTabIndex === 0)
+    property int activeConnectedTabIndex: -1
+    property bool isCurrentTabConnected: sessionClient.isConnected && (activeTabIndex === activeConnectedTabIndex)
 
     ListModel {
         id: sessionTabsModel
-        ListElement { title: "New Session"; p2pId: ""; connected: false }
+        ListElement { title: "New Session"; targetHost: "127.0.0.1:18443"; connected: false }
+    }
+
+    Connections {
+        target: sessionClient
+        function onIsConnectedChanged() {
+            if (!sessionClient.isConnected) {
+                desktopSessionView.activeConnectedTabIndex = -1
+                for (let i = 0; i < sessionTabsModel.count; ++i) {
+                    sessionTabsModel.setProperty(i, "connected", false)
+                }
+            }
+        }
     }
 
     ColumnLayout {
@@ -48,6 +61,11 @@ Rectangle {
                         radius: Metrics.radiusSm
                         border.color: index === desktopSessionView.activeTabIndex ? themePalette.primary : themePalette.border
 
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: desktopSessionView.activeTabIndex = index
+                        }
+
                         RowLayout {
                             anchors.fill: parent
                             anchors.leftMargin: Metrics.spacingSm
@@ -56,7 +74,7 @@ Rectangle {
 
                             Rectangle {
                                 width: 8; height: 8; radius: 4
-                                color: (index === 0 && sessionClient.isConnected) ? themePalette.success : themePalette.textSecondary
+                                color: (index === desktopSessionView.activeConnectedTabIndex && sessionClient.isConnected) ? themePalette.success : themePalette.textSecondary
                             }
 
                             Text {
@@ -71,24 +89,29 @@ Rectangle {
 
                             Text {
                                 text: "✕"
-                                font.pixelSize: 10
+                                font.pixelSize: 12
+                                font.weight: Typography.weightBold
                                 color: themePalette.textSecondary
                                 visible: sessionTabsModel.count > 1
+
                                 MouseArea {
                                     anchors.fill: parent
-                                    onClicked: {
-                                        sessionTabsModel.remove(index)
+                                    anchors.margins: -4
+                                    z: 10
+                                    onClicked: (mouse) => {
+                                        mouse.accepted = true
+                                        let removeIdx = index
+                                        sessionTabsModel.remove(removeIdx)
                                         if (desktopSessionView.activeTabIndex >= sessionTabsModel.count) {
-                                            desktopSessionView.activeTabIndex = sessionTabsModel.count - 1
+                                            desktopSessionView.activeTabIndex = Math.max(0, sessionTabsModel.count - 1)
+                                        }
+                                        if (removeIdx === desktopSessionView.activeConnectedTabIndex) {
+                                            sessionClient.disconnectFromHost()
+                                            desktopSessionView.activeConnectedTabIndex = -1
                                         }
                                     }
                                 }
                             }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: desktopSessionView.activeTabIndex = index
                         }
                     }
                 }
@@ -100,7 +123,7 @@ Rectangle {
                     font.pixelSize: Typography.fontCaption
                     onClicked: {
                         let newIdx = sessionTabsModel.count + 1
-                        sessionTabsModel.append({ title: "Session " + newIdx, p2pId: "", connected: false })
+                        sessionTabsModel.append({ title: "Session " + newIdx, targetHost: "127.0.0.1:18443", connected: false })
                         desktopSessionView.activeTabIndex = sessionTabsModel.count - 1
                     }
                     background: Rectangle {
@@ -150,6 +173,56 @@ Rectangle {
                     radius: Metrics.radiusSm
                 }
 
+                // Overlay disconnect header bar inside active session
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.topMargin: Metrics.spacingSm
+                    width: 320
+                    height: 36
+                    radius: Metrics.radiusSm
+                    color: themePalette.surface
+                    border.color: themePalette.border
+                    z: 50
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: Metrics.spacingSm
+                        anchors.rightMargin: Metrics.spacingSm
+
+                        Rectangle {
+                            width: 8; height: 8; radius: 4
+                            color: themePalette.success
+                        }
+
+                        Label {
+                            text: sessionClient.statusText
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            font.weight: Typography.weightBold
+                            color: themePalette.textPrimary
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                        }
+
+                        Button {
+                            text: "Disconnect"
+                            Layout.preferredHeight: 26
+                            font.family: Typography.fontFamily
+                            font.pixelSize: 11
+                            font.weight: Typography.weightBold
+                            onClicked: {
+                                sessionClient.disconnectFromHost()
+                                desktopSessionView.activeConnectedTabIndex = -1
+                            }
+                            background: Rectangle {
+                                color: themePalette.error
+                                radius: Metrics.radiusSm
+                            }
+                        }
+                    }
+                }
+
                 MouseArea {
                     id: inputArea
                     anchors.fill: parent
@@ -188,14 +261,16 @@ Rectangle {
                     }
 
                     Keys.onPressed: (event) => {
-                        if (sessionClient.isConnected) {
+                        if (sessionClient.isConnected && inputArea.containsMouse) {
                             sessionClient.sendInputEvent(4, 0, 0, 0, 0, event.nativeScanCode, event.modifiers)
+                            event.accepted = true
                         }
                     }
 
                     Keys.onReleased: (event) => {
-                        if (sessionClient.isConnected) {
+                        if (sessionClient.isConnected && inputArea.containsMouse) {
                             sessionClient.sendInputEvent(5, 0, 0, 0, 0, event.nativeScanCode, event.modifiers)
+                            event.accepted = true
                         }
                     }
                 }
@@ -329,6 +404,7 @@ Rectangle {
                             font.weight: Typography.weightBold
                             onClicked: {
                                 let target = targetIdInput.text
+                                desktopSessionView.activeConnectedTabIndex = desktopSessionView.activeTabIndex
                                 sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "title", target.length > 0 ? target : "Desk Session")
                                 sessionTabsModel.setProperty(desktopSessionView.activeTabIndex, "connected", true)
                                 if (target.indexOf(":") !== -1) {
