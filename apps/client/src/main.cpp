@@ -5,6 +5,7 @@
 #include <QQmlContext>
 #include <QUrl>
 #include "SessionClient.h"
+#include "ThemeManager.h"
 #include "VideoFrameProvider.h"
 #include "logging/JsonLogger.h"
 
@@ -21,6 +22,9 @@ int main(int argc, char *argv[]) {
     qInfo() << "[Client] Remote Access Platform Viewer launching...";
 
     QQmlApplicationEngine engine;
+
+    auto themeManager = new rap::client::ThemeManager(&app);
+    engine.rootContext()->setContextProperty("themePalette", themeManager);
 
     auto frameProvider = new rap::client::VideoFrameProvider();
     engine.addImageProvider("frameprovider", frameProvider);
@@ -55,7 +59,6 @@ int main(int argc, char *argv[]) {
 
     QString qmlDir = QFileInfo(resolvedPath).absolutePath();
     engine.addImportPath(qmlDir);
-    engine.addImportPath(qmlDir + "/theme");
 
 #ifdef ENABLE_HOT_RELOAD
     qInfo() << "[Client] Initializing QML Hot Reload Manager devtool...";

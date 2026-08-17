@@ -26,6 +26,8 @@ add_executable(rap-client
     src/VideoFrameProvider.h
     src/SessionClient.cpp
     src/SessionClient.h
+    src/theme/ThemeManager.cpp
+    include/ThemeManager.h
 )
 
 # Copy QML directory to output build folder for standalone execution
@@ -39,6 +41,7 @@ add_dependencies(rap-client copy_qml_files)
 
 target_include_directories(rap-client PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_link_libraries(rap-client PRIVATE

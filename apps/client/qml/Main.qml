@@ -11,13 +11,8 @@ ApplicationWindow {
     minimumWidth: 900
     minimumHeight: 600
     title: "Remote Access Platform — Enterprise Desktop Viewer"
+    color: themePalette.background
 
-    // Design System Instantiated Component Objects
-    Palette { id: palette }
-    Typography { id: typography }
-    Metrics { id: metrics }
-
-    color: palette.background
     property int frameCounter: 0
 
     Connections {
@@ -36,30 +31,30 @@ ApplicationWindow {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 60
-            color: palette.surface
-            border.color: palette.border
+            color: themePalette.surface
+            border.color: themePalette.border
             border.width: 1
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: metrics.spacingLg
-                anchors.rightMargin: metrics.spacingLg
-                spacing: metrics.spacingMd
+                anchors.leftMargin: Metrics.spacingLg
+                anchors.rightMargin: Metrics.spacingLg
+                spacing: Metrics.spacingMd
 
                 Label {
                     text: "Remote Access Platform"
-                    font.family: typography.fontFamily
-                    font.pixelSize: typography.fontSubtitle
-                    font.weight: typography.weightBold
-                    color: palette.textPrimary
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontSubtitle
+                    font.weight: Typography.weightBold
+                    color: themePalette.textPrimary
                 }
 
                 Rectangle {
                     Layout.preferredWidth: 1
                     Layout.fillHeight: true
-                    Layout.topMargin: metrics.spacingSm
-                    Layout.bottomMargin: metrics.spacingSm
-                    color: palette.border
+                    Layout.topMargin: Metrics.spacingSm
+                    Layout.bottomMargin: Metrics.spacingSm
+                    color: themePalette.border
                 }
 
                 TextField {
@@ -67,22 +62,22 @@ ApplicationWindow {
                     Layout.preferredWidth: 280
                     text: "127.0.0.1:18443"
                     placeholderText: "127.0.0.1:18443"
-                    font.family: typography.fontFamily
-                    font.pixelSize: typography.fontBody
-                    color: palette.textPrimary
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontBody
+                    color: themePalette.textPrimary
                     background: Rectangle {
-                        color: palette.surfaceVariant
-                        radius: metrics.radiusSm
-                        border.color: palette.border
+                        color: themePalette.surfaceVariant
+                        radius: Metrics.radiusSm
+                        border.color: themePalette.border
                     }
                 }
 
                 Button {
                     id: connectButton
                     text: sessionClient.isConnected ? "Disconnect" : "Connect Session"
-                    font.family: typography.fontFamily
-                    font.pixelSize: typography.fontBody
-                    font.weight: typography.weightMedium
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontBody
+                    font.weight: Typography.weightMedium
                     onClicked: {
                         if (sessionClient.isConnected) {
                             sessionClient.disconnectFromHost()
@@ -93,13 +88,13 @@ ApplicationWindow {
                     contentItem: Text {
                         text: connectButton.text
                         font: connectButton.font
-                        color: palette.textPrimary
+                        color: themePalette.textPrimary
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: sessionClient.isConnected ? palette.error : palette.primary
-                        radius: metrics.radiusSm
+                        color: sessionClient.isConnected ? themePalette.error : themePalette.primary
+                        radius: Metrics.radiusSm
                     }
                 }
 
@@ -108,47 +103,47 @@ ApplicationWindow {
                 // Theme Switcher Selector
                 Label {
                     text: "Theme:"
-                    font.family: typography.fontFamily
-                    font.pixelSize: typography.fontCaption
-                    font.weight: typography.weightMedium
-                    color: palette.textSecondary
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightMedium
+                    color: themePalette.textSecondary
                 }
 
                 ComboBox {
                     id: themeSelector
                     model: ["Catppuccin Dark", "Tokyo Night", "Nordic Frost", "GitHub Dark", "Enterprise Light"]
-                    currentIndex: palette.currentTheme
-                    font.family: typography.fontFamily
-                    font.pixelSize: typography.fontCaption
-                    onCurrentIndexChanged: {
-                        palette.setTheme(currentIndex)
+                    currentIndex: themePalette.currentTheme
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    onActivated: (index) => {
+                        themePalette.setTheme(index)
                     }
                     contentItem: Text {
                         text: themeSelector.displayText
                         font: themeSelector.font
-                        color: palette.textPrimary
+                        color: themePalette.textPrimary
                         verticalAlignment: Text.AlignVCenter
-                        leftPadding: metrics.spacingSm
+                        leftPadding: Metrics.spacingSm
                     }
                     background: Rectangle {
-                        color: palette.surfaceVariant
-                        radius: metrics.radiusSm
-                        border.color: palette.border
+                        color: themePalette.surfaceVariant
+                        radius: Metrics.radiusSm
+                        border.color: themePalette.border
                     }
                 }
 
                 Rectangle {
                     Layout.preferredWidth: 12
                     Layout.preferredHeight: 12
-                    radius: metrics.radiusFull
-                    color: sessionClient.isConnected ? palette.success : palette.warning
+                    radius: Metrics.radiusFull
+                    color: sessionClient.isConnected ? themePalette.success : themePalette.warning
                 }
 
                 Label {
                     text: sessionClient.isConnected ? "Session Active" : "Agent Ready"
-                    font.family: typography.fontFamily
-                    font.pixelSize: typography.fontCaption
-                    color: palette.textSecondary
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    color: themePalette.textSecondary
                 }
             }
         }
@@ -163,39 +158,39 @@ ApplicationWindow {
             Rectangle {
                 Layout.preferredWidth: 220
                 Layout.fillHeight: true
-                color: palette.surface
-                border.color: palette.border
+                color: themePalette.surface
+                border.color: themePalette.border
                 border.width: 1
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: metrics.spacingMd
-                    spacing: metrics.spacingSm
+                    anchors.margins: Metrics.spacingMd
+                    spacing: Metrics.spacingSm
 
                     Label {
                         text: "NAVIGATION"
-                        font.family: typography.fontFamily
-                        font.pixelSize: typography.fontCaption
-                        font.weight: typography.weightBold
-                        color: palette.textSecondary
+                        font.family: Typography.fontFamily
+                        font.pixelSize: Typography.fontCaption
+                        font.weight: Typography.weightBold
+                        color: themePalette.textSecondary
                     }
 
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
-                        radius: metrics.radiusSm
-                        color: palette.surfaceVariant
+                        radius: Metrics.radiusSm
+                        color: themePalette.surfaceVariant
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: metrics.spacingSm
+                            anchors.leftMargin: Metrics.spacingSm
 
                             Label {
                                 text: "Desktop Session"
-                                font.family: typography.fontFamily
-                                font.pixelSize: typography.fontBody
-                                font.weight: typography.weightMedium
-                                color: palette.primary
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontBody
+                                font.weight: Typography.weightMedium
+                                color: themePalette.primary
                             }
                         }
                     }
@@ -203,18 +198,18 @@ ApplicationWindow {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
-                        radius: metrics.radiusSm
-                        color: palette.surface
+                        radius: Metrics.radiusSm
+                        color: themePalette.surface
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: metrics.spacingSm
+                            anchors.leftMargin: Metrics.spacingSm
 
                             Label {
                                 text: "Saved Devices"
-                                font.family: typography.fontFamily
-                                font.pixelSize: typography.fontBody
-                                color: palette.textSecondary
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontBody
+                                color: themePalette.textSecondary
                             }
                         }
                     }
@@ -222,18 +217,18 @@ ApplicationWindow {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
-                        radius: metrics.radiusSm
-                        color: palette.surface
+                        radius: Metrics.radiusSm
+                        color: themePalette.surface
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: metrics.spacingSm
+                            anchors.leftMargin: Metrics.spacingSm
 
                             Label {
                                 text: "Security & Keys"
-                                font.family: typography.fontFamily
-                                font.pixelSize: typography.fontBody
-                                color: palette.textSecondary
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontBody
+                                color: themePalette.textSecondary
                             }
                         }
                     }
@@ -246,43 +241,43 @@ ApplicationWindow {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: palette.background
+                color: themePalette.background
 
                 Image {
                     id: videoSurface
                     anchors.fill: parent
-                    anchors.margins: metrics.spacingMd
+                    anchors.margins: Metrics.spacingMd
                     fillMode: Image.PreserveAspectFit
                     source: "image://frameprovider/current"
                     cache: false
 
                     Rectangle {
                         anchors.fill: parent
-                        border.color: palette.border
+                        border.color: themePalette.border
                         border.width: 1
-                        color: palette.transparent
+                        color: themePalette.transparent
                     }
 
                     Column {
                         anchors.centerIn: parent
-                        spacing: metrics.spacingMd
+                        spacing: Metrics.spacingMd
                         visible: !sessionClient.isConnected
 
                         Label {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "No Active Remote Stream"
-                            font.family: typography.fontFamily
-                            font.pixelSize: typography.fontTitle
-                            font.weight: typography.weightBold
-                            color: palette.textPrimary
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontTitle
+                            font.weight: Typography.weightBold
+                            color: themePalette.textPrimary
                         }
 
                         Label {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "Click 'Connect Session' above to start real-time desktop streaming"
-                            font.family: typography.fontFamily
-                            font.pixelSize: typography.fontBody
-                            color: palette.textSecondary
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontBody
+                            color: themePalette.textSecondary
                         }
                     }
                 }
@@ -293,29 +288,29 @@ ApplicationWindow {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 32
-            color: palette.surface
-            border.color: palette.border
+            color: themePalette.surface
+            border.color: themePalette.border
             border.width: 1
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: metrics.spacingMd
-                anchors.rightMargin: metrics.spacingMd
+                anchors.leftMargin: Metrics.spacingMd
+                anchors.rightMargin: Metrics.spacingMd
 
                 Label {
-                    text: "Status: " + sessionClient.statusText + " | Active Theme: " + palette.currentThemeName
-                    font.family: typography.fontFamily
-                    font.pixelSize: typography.fontCaption
-                    color: palette.textSecondary
+                    text: "Status: " + sessionClient.statusText + " | Active Theme: " + themePalette.currentThemeName
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    color: themePalette.textSecondary
                 }
 
                 Item { Layout.fillWidth: true }
 
                 Label {
                     text: "v0.1.0-dev (Milestone 4)"
-                    font.family: typography.fontFamily
-                    font.pixelSize: typography.fontCaption
-                    color: palette.textSecondary
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    color: themePalette.textSecondary
                 }
             }
         }
