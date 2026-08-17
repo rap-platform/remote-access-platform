@@ -8,8 +8,7 @@ Rectangle {
     color: themePalette.background
 
     property int activeTabIndex: 0
-    property var currentTab: sessionTabsModel.count > activeTabIndex ? sessionTabsModel.get(activeTabIndex) : null
-    property bool isCurrentTabConnected: currentTab ? (currentTab.connected && sessionClient.isConnected) : false
+    property bool isCurrentTabConnected: sessionClient.isConnected && (activeTabIndex === 0)
 
     ListModel {
         id: sessionTabsModel
