@@ -73,6 +73,17 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install ninja
 
+      - name: Create AGL framework stub (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # Qt 6.6.x prebuilt macOS binaries reference AGL which was removed in macOS 14.
+          # We create a minimal stub dylib so the linker can satisfy the reference at build time.
+          echo 'void AGL_stub(void){}' | clang -dynamiclib -o /tmp/AGL -x c -
+          sudo mkdir -p /Library/Frameworks/AGL.framework/Versions/A/Headers
+          sudo cp /tmp/AGL /Library/Frameworks/AGL.framework/Versions/A/AGL
+          sudo ln -sf A /Library/Frameworks/AGL.framework/Versions/Current
+          sudo ln -sf Versions/Current/AGL /Library/Frameworks/AGL.framework/AGL
+
       - name: Install Ninja (Windows)
         if: runner.os == 'Windows'
         run: choco install ninja --no-progress -y

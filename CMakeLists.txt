@@ -33,12 +33,6 @@ endif()
 
 find_package(Qt6 COMPONENTS Core Gui Qml Quick QuickControls2 QuickLayouts Network Test REQUIRED)
 
-# macOS: suppress any remaining weak AGL framework references from Qt prebuilt libs.
-# AGL was removed in macOS 14 Sonoma; -weak_framework prevents a hard linker failure.
-if(APPLE)
-    add_link_options(-weak_framework AGL)
-endif()
-
 if(ENABLE_TESTING)
     enable_testing()
 endif()
