@@ -1,0 +1,74 @@
+name: Code Review Bot (Reviewdog)
+
+on:
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  reviewdog-clang-tidy:
+    name: clang-tidy Inline Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write   # required to post review comments
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-tidy & compilation DB tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy clang bear cmake ninja-build \
+            libgl1-mesa-dev libxcb1-dev libxcb-cursor-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev pkg-config \
+            libx11-dev libxext-dev libxtst-dev libxrandr-dev
+
+      - name: Setup Qt 6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.6.2'
+          arch: 'gcc_64'
+
+      - name: Generate compile_commands.json
+        run: |
+          cmake -B build -S . \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_TESTING=ON \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cp build/compile_commands.json compile_commands.json
+
+      - name: Run reviewdog (clang-tidy inline PR comments)
+        uses: reviewdog/action-clang-tidy@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review      # posts inline review comments on the diff
+          level: warning                  # warn on warnings, error on errors
+          filter_mode: added              # only review lines changed in this PR
+          clang_tidy_flags: >-
+            --extra-arg=-std=c++20
+            -checks=bugprone-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,performance-*,readability-*
+            -warnings-as-errors=*
+
+  reviewdog-cargo-clippy:
+    name: Clippy Inline Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Run reviewdog (Cargo Clippy inline PR comments)
+        uses: reviewdog/action-clippy@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: warning
+          filter_mode: added
+          clippy_flags: --workspace --all-targets
