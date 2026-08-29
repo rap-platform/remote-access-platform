@@ -148,7 +148,12 @@ Rectangle {
                         }
                         Item { Layout.fillWidth: true }
                         Button {
+                            id: btnLocalUp
                             text: "⬆ Parent"
+                            Layout.preferredHeight: 30
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            font.weight: Typography.weightMedium
                             Accessible.role: Accessible.Button
                             Accessible.name: "Local Up Directory"
                             onClicked: {
@@ -160,12 +165,29 @@ Rectangle {
                                     sessionClient.requestLocalDirectoryListing(newPath.length === 0 ? "." : newPath)
                                 }
                             }
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            background: Rectangle {
+                                color: btnLocalUp.hovered ? themePalette.surfaceVariant : themePalette.surface
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
                         }
                         Button {
+                            id: btnLocalRefresh
                             text: "🔄 Refresh"
+                            Layout.preferredHeight: 30
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            font.weight: Typography.weightMedium
                             Accessible.role: Accessible.Button
                             Accessible.name: "Refresh Local Directory"
                             onClicked: sessionClient.requestLocalDirectoryListing(sessionClient.currentLocalPath)
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            background: Rectangle {
+                                color: btnLocalRefresh.hovered ? themePalette.surfaceVariant : themePalette.surface
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
                         }
                     }
 
@@ -304,7 +326,12 @@ Rectangle {
                         }
                         Item { Layout.fillWidth: true }
                         Button {
+                            id: btnRemoteUp
                             text: "⬆ Parent"
+                            Layout.preferredHeight: 30
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            font.weight: Typography.weightMedium
                             Accessible.role: Accessible.Button
                             Accessible.name: "Remote Up Directory"
                             onClicked: {
@@ -316,12 +343,29 @@ Rectangle {
                                     sessionClient.requestDirectoryListing(newPath.length === 0 ? "." : newPath)
                                 }
                             }
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            background: Rectangle {
+                                color: btnRemoteUp.hovered ? themePalette.surfaceVariant : themePalette.surface
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
                         }
                         Button {
+                            id: btnRemoteRefresh
                             text: "🔄 Refresh"
+                            Layout.preferredHeight: 30
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            font.weight: Typography.weightMedium
                             Accessible.role: Accessible.Button
                             Accessible.name: "Refresh Remote Directory"
                             onClicked: sessionClient.requestDirectoryListing(sessionClient.currentRemotePath)
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            background: Rectangle {
+                                color: btnRemoteRefresh.hovered ? themePalette.surfaceVariant : themePalette.surface
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
                         }
                     }
 

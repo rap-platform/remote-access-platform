@@ -624,7 +624,7 @@ Rectangle {
                 // Card 1: THIS DESK (Your P2P Desk ID)
                 Rectangle {
                     Layout.preferredWidth: 360
-                    Layout.preferredHeight: 220
+                    Layout.preferredHeight: 260
                     color: themePalette.surface
                     radius: Metrics.radiusLg
                     border.color: themePalette.border
@@ -650,14 +650,23 @@ Rectangle {
                             }
                         }
 
-                        Label {
-                            text: sessionClient.p2pId
-                            font.family: Typography.fontFamily
-                            font.pixelSize: 32
-                            font.weight: Typography.weightBold
-                            color: themePalette.primary
-                            Accessible.role: Accessible.StaticText
-                            Accessible.name: "Your AnyDesk P2P Desk ID"
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 56
+                            radius: Metrics.radiusSm
+                            color: themePalette.surfaceVariant
+                            border.color: themePalette.border
+
+                            Label {
+                                anchors.centerIn: parent
+                                text: sessionClient.p2pId
+                                font.family: Typography.fontFamily
+                                font.pixelSize: 28
+                                font.weight: Typography.weightBold
+                                color: themePalette.primary
+                                Accessible.role: Accessible.StaticText
+                                Accessible.name: "Your AnyDesk P2P Desk ID"
+                            }
                         }
 
                         Label {
@@ -672,14 +681,29 @@ Rectangle {
                         Item { Layout.fillHeight: true }
 
                         Button {
+                            id: btnCopyId
                             text: "Copy Desk ID"
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 38
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontCaption
                             font.weight: Typography.weightMedium
                             onClicked: sessionClient.sendClipboardText(sessionClient.p2pId)
+
+                            HoverHandler {
+                                cursorShape: Qt.PointingHandCursor
+                            }
+
+                            contentItem: Text {
+                                text: btnCopyId.text
+                                font: btnCopyId.font
+                                color: themePalette.textPrimary
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
                             background: Rectangle {
-                                color: themePalette.surfaceVariant
+                                color: btnCopyId.hovered ? themePalette.surfaceVariant : themePalette.surface
                                 radius: Metrics.radiusSm
                                 border.color: themePalette.border
                             }
@@ -714,13 +738,15 @@ Rectangle {
                             placeholderText: "Enter Remote P2P ID or IP:Port"
                             text: "115 604 669"
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 38
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontBody
                             color: themePalette.textPrimary
                             background: Rectangle {
                                 color: themePalette.surfaceVariant
                                 radius: Metrics.radiusSm
-                                border.color: themePalette.border
+                                border.color: targetIdInput.activeFocus ? themePalette.primary : themePalette.border
+                                border.width: 1
                             }
                         }
 
@@ -730,18 +756,20 @@ Rectangle {
                             text: "admin123"
                             echoMode: TextInput.Password
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 38
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontBody
                             color: themePalette.textPrimary
                             background: Rectangle {
                                 color: themePalette.surfaceVariant
                                 radius: Metrics.radiusSm
-                                border.color: themePalette.border
+                                border.color: targetPasswordInput.activeFocus ? themePalette.primary : themePalette.border
+                                border.width: 1
                             }
                         }
 
                         Label {
-                            text: "Enter peer's Desk ID and 6-digit OTP or unattended master password."
+                            text: "Enter peer's Desk ID and 6-digit OTP or unattended password."
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontCaption
                             color: themePalette.textSecondary
@@ -752,8 +780,10 @@ Rectangle {
                         Item { Layout.fillHeight: true }
 
                         Button {
+                            id: btnConnectRemote
                             text: "Connect to Remote Desk"
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 38
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontBody
                             font.weight: Typography.weightBold
@@ -794,15 +824,20 @@ Rectangle {
                                     sessionClient.connectByP2PId(rawTarget, reqPassword)
                                 }
                             }
+
+                            HoverHandler {
+                                cursorShape: Qt.PointingHandCursor
+                            }
+
                             contentItem: Text {
-                                text: parent.text
-                                font: parent.font
-                                color: themePalette.textPrimary
+                                text: btnConnectRemote.text
+                                font: btnConnectRemote.font
+                                color: "#FFFFFF"
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
                             background: Rectangle {
-                                color: themePalette.primary
+                                color: btnConnectRemote.hovered ? Qt.lighter(themePalette.primary, 1.1) : themePalette.primary
                                 radius: Metrics.radiusSm
                             }
                         }

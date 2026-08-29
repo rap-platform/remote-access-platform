@@ -34,19 +34,31 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 40
             radius: Metrics.radiusSm
-            color: sidebarNav.currentViewIndex === 0 ? themePalette.surfaceVariant : themePalette.surface
-            Accessible.role: Accessible.Button
-            Accessible.name: "Desktop Session View"
-            Accessible.description: "Switches workspace view to live remote desktop interactive viewport"
+            color: navHover0.hovered ? themePalette.surfaceVariant : (sidebarNav.currentViewIndex === 0 ? themePalette.surfaceVariant : themePalette.surface)
+            border.color: sidebarNav.currentViewIndex === 0 ? themePalette.primary : "transparent"
+            border.width: 1
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: sidebarNav.navigateTo(0)
+            HoverHandler {
+                id: navHover0
+                cursorShape: Qt.PointingHandCursor
+            }
+
+            TapHandler {
+                onTapped: sidebarNav.navigateTo(0)
             }
 
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: Metrics.spacingSm
+                anchors.rightMargin: Metrics.spacingSm
+                spacing: Metrics.spacingSm
+
+                Rectangle {
+                    width: 3
+                    Layout.fillHeight: true
+                    color: sidebarNav.currentViewIndex === 0 ? themePalette.primary : "transparent"
+                    radius: 2
+                }
 
                 Label {
                     text: "Desktop Session"
@@ -54,6 +66,7 @@ Rectangle {
                     font.pixelSize: Typography.fontBody
                     font.weight: sidebarNav.currentViewIndex === 0 ? Typography.weightBold : Typography.weightMedium
                     color: sidebarNav.currentViewIndex === 0 ? themePalette.primary : themePalette.textPrimary
+                    Layout.fillWidth: true
                 }
             }
         }
@@ -63,19 +76,31 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 40
             radius: Metrics.radiusSm
-            color: sidebarNav.currentViewIndex === 1 ? themePalette.surfaceVariant : themePalette.surface
-            Accessible.role: Accessible.Button
-            Accessible.name: "Saved Devices View"
-            Accessible.description: "Switches workspace view to control plane registered devices directory"
+            color: navHover1.hovered ? themePalette.surfaceVariant : (sidebarNav.currentViewIndex === 1 ? themePalette.surfaceVariant : themePalette.surface)
+            border.color: sidebarNav.currentViewIndex === 1 ? themePalette.primary : "transparent"
+            border.width: 1
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: sidebarNav.navigateTo(1)
+            HoverHandler {
+                id: navHover1
+                cursorShape: Qt.PointingHandCursor
+            }
+
+            TapHandler {
+                onTapped: sidebarNav.navigateTo(1)
             }
 
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: Metrics.spacingSm
+                anchors.rightMargin: Metrics.spacingSm
+                spacing: Metrics.spacingSm
+
+                Rectangle {
+                    width: 3
+                    Layout.fillHeight: true
+                    color: sidebarNav.currentViewIndex === 1 ? themePalette.primary : "transparent"
+                    radius: 2
+                }
 
                 Label {
                     text: "Saved Devices"
@@ -83,6 +108,7 @@ Rectangle {
                     font.pixelSize: Typography.fontBody
                     font.weight: sidebarNav.currentViewIndex === 1 ? Typography.weightBold : Typography.weightMedium
                     color: sidebarNav.currentViewIndex === 1 ? themePalette.primary : themePalette.textSecondary
+                    Layout.fillWidth: true
                 }
             }
         }
@@ -92,19 +118,31 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 40
             radius: Metrics.radiusSm
-            color: sidebarNav.currentViewIndex === 2 ? themePalette.surfaceVariant : themePalette.surface
-            Accessible.role: Accessible.Button
-            Accessible.name: "Security & Keys View"
-            Accessible.description: "Switches workspace view to cryptographic cipher and STUN connection details"
+            color: navHover2.hovered ? themePalette.surfaceVariant : (sidebarNav.currentViewIndex === 2 ? themePalette.surfaceVariant : themePalette.surface)
+            border.color: sidebarNav.currentViewIndex === 2 ? themePalette.primary : "transparent"
+            border.width: 1
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: sidebarNav.navigateTo(2)
+            HoverHandler {
+                id: navHover2
+                cursorShape: Qt.PointingHandCursor
+            }
+
+            TapHandler {
+                onTapped: sidebarNav.navigateTo(2)
             }
 
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: Metrics.spacingSm
+                anchors.rightMargin: Metrics.spacingSm
+                spacing: Metrics.spacingSm
+
+                Rectangle {
+                    width: 3
+                    Layout.fillHeight: true
+                    color: sidebarNav.currentViewIndex === 2 ? themePalette.primary : "transparent"
+                    radius: 2
+                }
 
                 Label {
                     text: "Security & NAT Keys"
@@ -112,6 +150,7 @@ Rectangle {
                     font.pixelSize: Typography.fontBody
                     font.weight: sidebarNav.currentViewIndex === 2 ? Typography.weightBold : Typography.weightMedium
                     color: sidebarNav.currentViewIndex === 2 ? themePalette.primary : themePalette.textSecondary
+                    Layout.fillWidth: true
                 }
             }
         }
@@ -121,19 +160,31 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 40
             radius: Metrics.radiusSm
-            color: sidebarNav.currentViewIndex === 3 ? themePalette.surfaceVariant : themePalette.surface
-            Accessible.role: Accessible.Button
-            Accessible.name: "File Transfer Channel View"
-            Accessible.description: "Switches workspace view to high-speed encrypted file upload, download, and directory browser"
+            color: navHover3.hovered ? themePalette.surfaceVariant : (sidebarNav.currentViewIndex === 3 ? themePalette.surfaceVariant : themePalette.surface)
+            border.color: sidebarNav.currentViewIndex === 3 ? themePalette.primary : "transparent"
+            border.width: 1
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: sidebarNav.navigateTo(3)
+            HoverHandler {
+                id: navHover3
+                cursorShape: Qt.PointingHandCursor
+            }
+
+            TapHandler {
+                onTapped: sidebarNav.navigateTo(3)
             }
 
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: Metrics.spacingSm
+                anchors.rightMargin: Metrics.spacingSm
+                spacing: Metrics.spacingSm
+
+                Rectangle {
+                    width: 3
+                    Layout.fillHeight: true
+                    color: sidebarNav.currentViewIndex === 3 ? themePalette.primary : "transparent"
+                    radius: 2
+                }
 
                 Label {
                     text: "File Transfer Channel"
@@ -141,6 +192,7 @@ Rectangle {
                     font.pixelSize: Typography.fontBody
                     font.weight: sidebarNav.currentViewIndex === 3 ? Typography.weightBold : Typography.weightMedium
                     color: sidebarNav.currentViewIndex === 3 ? themePalette.primary : themePalette.textSecondary
+                    Layout.fillWidth: true
                 }
             }
         }

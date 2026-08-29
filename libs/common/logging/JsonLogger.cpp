@@ -28,7 +28,9 @@ void JsonLogger::initialize(const QString& logFilePath) {
 
     if (!logFilePath.isEmpty()) {
         logFile_.setFileName(logFilePath);
-        logFile_.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+        if (!logFile_.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
+            std::cerr << "Failed to open log file: " << logFilePath.toStdString() << std::endl;
+        }
     }
     initialized_ = true;
 }
