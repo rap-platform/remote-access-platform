@@ -79,6 +79,8 @@ jobs:
           cmake --build build --config Debug
 
       - name: Run C++ Unit Tests (CTest)
+        env:
+          QT_QPA_PLATFORM: offscreen
         run: |
           ctest --test-dir build -C Debug --output-on-failure
 

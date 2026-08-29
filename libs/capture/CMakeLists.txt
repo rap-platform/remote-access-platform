@@ -39,6 +39,7 @@ else()
         src/DirtyRegionDetector.cpp
         src/MirrorShield.cpp
         src/AdaptiveBitrateController.cpp
+        src/CrossPlatformCapture.cpp
         include/ICaptureBackend.h
         include/DirtyRegionDetector.h
         include/MirrorShield.h
