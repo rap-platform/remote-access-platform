@@ -51,7 +51,6 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           version: '6.6.2'
-          arch: 'gcc_64'
 
       - name: Setup CMake & Ninja
         uses: ctimothee/setup-ninja@v1
