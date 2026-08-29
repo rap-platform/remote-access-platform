@@ -9,6 +9,9 @@ jobs:
   validate-pr-title:
     name: Validate PR Title (Conventional Commits)
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      statuses: write
     steps:
       - uses: amannn/action-semantic-pull-request@v5
         env:
