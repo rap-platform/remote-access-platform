@@ -58,8 +58,17 @@ jobs:
         with:
           version: '6.6.2'
 
-      - name: Setup Ninja
-        uses: abdes/setup-ninja@v3
+      - name: Install Ninja (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y ninja-build
+
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Install Ninja (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ninja --no-progress -y
 
       - name: Configure CMake (C++)
         run: |
