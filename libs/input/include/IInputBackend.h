@@ -41,6 +41,19 @@ public:
     static std::unique_ptr<IInputBackend> createDefaultBackend();
 };
 
+#ifndef __linux__
+class CrossPlatformDummyInput : public IInputBackend {
+public:
+    bool initialize() override { return true; }
+    bool injectEvent(const InputEvent&) override { return true; }
+    std::string backendName() const override { return "CrossPlatform Stub Input"; }
+};
+
+inline std::unique_ptr<IInputBackend> InputBackendFactory::createDefaultBackend() {
+    return std::make_unique<CrossPlatformDummyInput>();
+}
+#endif
+
 } // namespace rap::input
 
 #endif // RAP_INPUT_I_INPUT_BACKEND_H

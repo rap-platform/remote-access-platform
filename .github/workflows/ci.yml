@@ -51,7 +51,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libxcb1-dev libxcb-cursor-dev libxkbcommon-dev libxkbcommon-x11-dev pkg-config ninja-build
+          sudo apt-get install -y libgl1-mesa-dev libxcb1-dev libxcb-cursor-dev libxkbcommon-dev libxkbcommon-x11-dev pkg-config ninja-build libx11-dev libxext-dev libxtst-dev libxrandr-dev libxfixes-dev libxdamage-dev
 
       - name: Setup Qt 6
         uses: jurplel/install-qt-action@v3
@@ -63,15 +63,15 @@ jobs:
 
       - name: Configure CMake (C++)
         run: |
-          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTING=ON
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTING=ON
 
       - name: Build C++ Targets
         run: |
-          cmake --build build
+          cmake --build build --config Debug
 
       - name: Run C++ Unit Tests (CTest)
         run: |
-          ctest --test-dir build --output-on-failure
+          ctest --test-dir build -C Debug --output-on-failure
 
       - name: Run Rust Cargo Tests
         run: |
