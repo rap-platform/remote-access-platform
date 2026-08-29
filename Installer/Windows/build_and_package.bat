@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 REM =========================================================================
 REM             Remote Access Platform Master Build & Package Script
-REM             Delegates CMake and Compilation to build_msvc.ps1
+REM             Stages binaries into rap-client-build for Inno Setup
 REM =========================================================================
 
 set "ROOT_DIR=%~dp0"
@@ -26,7 +26,7 @@ echo =========================================================================
 echo.
 
 REM ==== 1. BUILD PROJECT USING POWERSHELL SCRIPT ====
-echo [1/4] Executing MSVC Build Pipeline...
+echo [1/5] Executing MSVC Build Pipeline...
 choice /C RBS /M "Do you want to [R]ebuild, [B]uild, or [S]kip build?"
 if errorlevel 3 (
     echo Skipping build step...
@@ -45,17 +45,54 @@ if errorlevel 3 (
 )
 echo.
 
-REM ==== 2. STAGE & DEPLOY BINARIES & QT RUNTIME ====
-echo [2/4] Executing Qt Deployment and Staging Pipeline...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "& '%PROJECT_ROOT%build-scripts\deploy_msvc.ps1'"
-if errorlevel 1 (
-    echo ERROR: deploy_msvc.ps1 failed.
-    goto FAIL
+REM ==== 2. STAGE COMPILED ARTIFACTS TO rap-client-build ====
+echo [2/5] Staging files to local rap-client-build folder...
+set "STAGE_DIR=%ROOT_DIR%rap-client-build"
+set "BUILD_DIR=%PROJECT_ROOT%build\Desktop_Qt_6_11_1_MSVC2022_64bit_Release"
+
+REM Load .env file overrides for Qt MSVC path and custom build bin dir if present
+set "QT_MSVC_PATH=C:\Qt_my\6.11.1\msvc2022_64"
+set "ENV_FILE=%PROJECT_ROOT%.env"
+if exist "%ENV_FILE%" (
+    for /f "usebackq tokens=1,* delims==" %%A in ("%ENV_FILE%") do (
+        if "%%A"=="BUILD_BIN_DIR" set "BUILD_DIR=%%~B"
+        if "%%A"=="QT_MSVC_PATH" set "QT_MSVC_PATH=%%~B"
+    )
 )
+
+if exist "%STAGE_DIR%" (
+    echo Cleaning existing staging folder "%STAGE_DIR%"...
+    rd /s /q "%STAGE_DIR%"
+)
+mkdir "%STAGE_DIR%"
+mkdir "%STAGE_DIR%\qml"
+
+echo Copying Release binaries and DLL dependencies...
+if exist "%BUILD_DIR%\apps\client\rap-client.exe" (
+    copy /Y "%BUILD_DIR%\apps\client\rap-client.exe" "%STAGE_DIR%\" >nul
+)
+if exist "%BUILD_DIR%\apps\agent\rap-agent.exe" (
+    copy /Y "%BUILD_DIR%\apps\agent\rap-agent.exe" "%STAGE_DIR%\" >nul
+)
+
+xcopy /Y /S /E "%BUILD_DIR%\*.dll" "%STAGE_DIR%\" >nul 2>&1
+
+echo Copying QML assets...
+xcopy /Y /S /E "%PROJECT_ROOT%apps\client\qml\*" "%STAGE_DIR%\qml\" >nul 2>&1
+
+REM ==== 3. RUN WINDEPLOYQT ON STAGED BINARY ====
+echo [3/5] Running windeployqt on staged rap-client.exe...
+set "WINDEPLOYQT=%QT_MSVC_PATH%\bin\windeployqt.exe"
+if exist "%WINDEPLOYQT%" (
+    "%WINDEPLOYQT%" --no-compiler-runtime --qmldir "%PROJECT_ROOT%apps\client\qml" --dir "%STAGE_DIR%" --release "%STAGE_DIR%\rap-client.exe"
+) else (
+    echo WARNING: windeployqt.exe not found at %WINDEPLOYQT%.
+)
+echo Staging complete.
 echo.
 
-REM ==== 3. RUN INSTALLER COMPILER ====
-echo [3/4] Building Windows Installer via Inno Setup...
+REM ==== 4. RUN INSTALLER COMPILER ====
+echo [4/5] Building Windows Installer via Inno Setup...
 call "%ROOT_DIR%build_installers.bat" "%APP_VERSION%"
 if errorlevel 1 (
     echo ERROR: build_installers.bat failed.
@@ -63,8 +100,8 @@ if errorlevel 1 (
 )
 echo.
 
-REM ==== 4. GENERATE CHECKSUMS AND ZIP ARCHIVE ====
-echo [4/4] Generating Integrity Checksums ^& Archiving Release Bundle...
+REM ==== 5. GENERATE CHECKSUMS AND ZIP ARCHIVE ====
+echo [5/5] Generating Integrity Checksums ^& Archiving Release Bundle...
 set "RAP_OUT=%ROOT_DIR%rap-client\Output\version-%APP_VERSION%"
 set "SETUP_EXE=%RAP_OUT%\RemoteAccessPlatform-Setup-V%APP_VERSION%.exe"
 set "ZIP_OUT=%ROOT_DIR%rap-client\Output\version-%APP_VERSION%.zip"
@@ -106,6 +143,7 @@ echo =========================================================================
 echo    SUCCESS: REMOTE ACCESS PLATFORM PACKAGING PIPELINE COMPLETE
 echo =========================================================================
 echo Output Artifacts:
+echo    Staged Folder  : %STAGE_DIR%
 echo    Installer Setup: %RAP_OUT%\RemoteAccessPlatform-Setup-V%APP_VERSION%.exe
 echo    Integrity Files: %RAP_OUT%\checksums.txt
 echo    Zip Archive    : %ZIP_OUT%

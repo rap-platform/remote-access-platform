@@ -8,8 +8,9 @@ This directory contains the packaging configuration files and build automation s
 
 - `rap-client/`
   - `RemoteAccessPlatform.iss`: Inno Setup script configuring application metadata, file installation, Start Menu shortcuts, optional desktop icon, autostart service registry entries, and compression parameters.
-  - `Output/`: Directory containing compiled setup installer executables (`RemoteAccessPlatform-Setup-V0.3.0.exe`), SHA-256/MD5 checksums, and `.zip` release archives.
-- `build_and_package.bat`: Master automated script that compiles C++ binaries, deploys Qt runtime and QML assets via `windeployqt`, builds the Inno Setup installer, and generates release checksums.
+  - `Output/`: *(Gitignored)* Directory containing compiled setup installer executables (`RemoteAccessPlatform-Setup-V0.3.0.exe`), SHA-256/MD5 checksums, and `.zip` release archives.
+- `rap-client-build/`: *(Gitignored)* Local staging folder holding compiled executables (`rap-client.exe`, `rap-agent.exe`), Qt runtime DLLs, and QML resources processed by `windeployqt`.
+- `build_and_package.bat`: Master automated script that compiles C++ binaries, stages files into `rap-client-build/`, runs `windeployqt`, builds the Inno Setup installer, and generates release checksums.
 - `build_installers.bat`: Batch script to run *only* the Inno Setup compiler on `RemoteAccessPlatform.iss`.
 
 ---
@@ -35,8 +36,8 @@ build_and_package.bat 0.3.0
 ### What the script executes automatically:
 1. **Reads Centralized Versioning**: Reads `VERSION` file (`AppVersion=0.3.0`) or uses the version string passed as argument.
 2. **Compiles C++ Binaries**: Invokes `build-scripts/build_msvc.ps1` with Ninja & MSVC 2022.
-3. **Deploys Qt Runtime & QML Modules**: Runs `build-scripts/deploy_msvc.ps1` to populate `deploy_windows` with binaries, QML files, and Qt DLL dependencies using `windeployqt`.
-4. **Compiles Installer**: Invokes `ISCC.exe` on `RemoteAccessPlatform.iss` generating:
+3. **Stages & Deploys Qt Runtime**: Populates `rap-client-build/` with binaries, QML files, and Qt DLL dependencies using `windeployqt`.
+4. **Compiles Installer**: Invokes `ISCC.exe` on `RemoteAccessPlatform.iss` (sourcing from `rap-client-build/`), generating:
    `rap-client\Output\version-0.3.0\RemoteAccessPlatform-Setup-V0.3.0.exe`
 5. **Generates Checksums & Zip Release**: Computes SHA-256 and MD5 hashes using `certutil` and creates a compressed release `.zip` bundle.
 

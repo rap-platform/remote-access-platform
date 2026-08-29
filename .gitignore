@@ -4,6 +4,9 @@ build-*/
 !build-scripts/
 dist/
 deploy_windows/
+rap-client-build/
+Output/
+
 
 cmake-build-*/
 out/

@@ -46,9 +46,9 @@ REM ==== VALIDATE ISS FILE ====
 if not exist "%RAP_ISS%" goto ISS_ERROR
 
 REM ==== STAGE DEPLOYMENT IF NEEDED ====
-if not exist "%PROJECT_ROOT%deploy_windows\bin\rap-client.exe" (
-    echo Staging deployment binaries with deploy_msvc.ps1...
-    powershell -ExecutionPolicy Bypass -File "%PROJECT_ROOT%build-scripts\deploy_msvc.ps1"
+if not exist "%ROOT_DIR%rap-client-build\rap-client.exe" (
+    echo WARNING: Staging directory rap-client-build\rap-client.exe not found!
+    echo Please run build_and_package.bat to build and stage the binaries first.
 )
 
 REM ==== BUILD INSTALLER ====

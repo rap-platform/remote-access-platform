@@ -40,13 +40,14 @@ Name: "desktopicon"; Description: "Create Desktop Icon"; Flags: unchecked
 Name: "autostartagent"; Description: "Auto-start Host Agent Service on Windows startup"; Flags: unchecked
 
 [Files]
-Source: "..\..\..\deploy_windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\rap-client-build\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; WorkingDir: "{app}\bin"
-Name: "{group}\Remote Access Agent Service"; Filename: "{app}\bin\{#MyAppAgentExe}"; WorkingDir: "{app}\bin"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
+Name: "{group}\Remote Access Host Agent"; Filename: "{app}\{#MyAppAgentExe}"; WorkingDir: "{app}"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\bin\{#MyAppExeName}"; WorkingDir: "{app}\bin"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Registry]
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "RemoteAccessHostAgent"; ValueData: """{app}\bin\{#MyAppAgentExe}"""; Flags: uninsdeletevalue; Tasks: autostartagent
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "RemoteAccessHostAgent"; ValueData: """{app}\{#MyAppAgentExe}"""; Flags: uninsdeletevalue; Tasks: autostartagent
+
