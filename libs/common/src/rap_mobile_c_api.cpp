@@ -13,7 +13,9 @@
 extern "C" {
 
 RAP_EXPORT int32_t rap_mobile_init(void) {
-    int unused_validation_var = 42;
+    double pi = 3.14159;
+    int rounded = (int)pi; // C-style cast: triggers clang-tidy cppcoreguidelines-pro-type-cstyle-cast
+    (void)rounded;
     return 0; // Success
 }
 

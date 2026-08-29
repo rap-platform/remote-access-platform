@@ -35,12 +35,13 @@ jobs:
           version: '6.6.2'
           arch: 'gcc_64'
 
-      - name: Generate compile_commands.json
+      - name: Generate compile_commands.json & Build Generated Headers
         run: |
           cmake -B build -S . \
             -DCMAKE_BUILD_TYPE=Debug \
             -DENABLE_TESTING=ON \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake --build build --parallel || true
 
       - name: Run reviewdog (clang-tidy)
         env:
