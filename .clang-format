@@ -32,7 +32,6 @@ BreakConstructorInitializers: BeforeColon
 CompactNamespaces: false
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
-Cpp11UnbracedInitializerListStyle: true
 FixNamespaceComments: true
 IncludeBlocks: Regroup
 IncludeCategories:
