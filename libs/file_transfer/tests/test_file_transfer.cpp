@@ -46,10 +46,12 @@ void testFileChunkingAndAssembly() {
     for (const auto &chunk : chunks) {
         bool ok = rap::file_transfer::FileTransferEngine::writeChunkToFile(tempDest, chunk.offset, chunk.data);
         assert(ok);
+        (void)ok;
     }
 
     bool verified = rap::file_transfer::FileTransferEngine::verifyIntegrity(tempDest, sourceHash);
     assert(verified);
+    (void)verified;
 
     fs::remove(tempSource);
     fs::remove(tempDest);

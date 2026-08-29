@@ -25,7 +25,7 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
-find_package(Qt6 COMPONENTS Core Gui Qml Quick QuickControls2 Network Test REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Qml Quick QuickControls2 QuickLayouts Network Test REQUIRED)
 
 if(ENABLE_TESTING)
     enable_testing()

@@ -1,0 +1,27 @@
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -y && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:okirby/qt6-backports && \
+    apt-get update -y && \
+    apt-get install -y \
+      build-essential \
+      cmake \
+      g++ \
+      qt6-base-dev \
+      qt6-base-private-dev \
+      qt6-declarative-dev \
+      qt6-declarative-private-dev \
+      libgl1-mesa-dev \
+      libx11-dev \
+      libxext-dev \
+      libxtst-dev \
+      libxfixes-dev \
+      libxdamage-dev \
+      libxkbcommon-dev && \
+    mkdir -p /usr/include/x86_64-linux-gnu/qt6/QtGui/6.2.2 && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace

@@ -50,6 +50,7 @@ target_link_libraries(rap-client PRIVATE
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
+    Qt6::QuickLayouts
     Qt6::Network
     rap_common
     rap_protocol

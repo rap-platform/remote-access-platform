@@ -34,7 +34,9 @@ if command -v flutter &> /dev/null; then
     cd "${WORKSPACE_ROOT}/apps/mobile"
     flutter pub get
     echo "[+] Step 4: Compiling Android Release APK..."
+    rm -rf ~/.gradle/wrapper/dists/*/*.lck ~/.gradle/wrapper/dists/*/*.part 2>/dev/null || true
     flutter build apk --release
+
     echo "==============================================================="
     echo "  SUCCESS: Android APK generated successfully at:"
     echo "  ${WORKSPACE_ROOT}/apps/mobile/build/app/outputs/flutter-apk/app-release.apk"
