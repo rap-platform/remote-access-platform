@@ -47,6 +47,12 @@ jobs:
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install System Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libxcb1-dev libxcb-cursor-dev libxkbcommon-dev libxkbcommon-x11-dev pkg-config
+
       - name: Setup Qt 6
         uses: jurplel/install-qt-action@v3
         with:
