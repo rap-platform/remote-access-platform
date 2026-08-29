@@ -54,7 +54,7 @@ jobs:
           arch: 'gcc_64'
 
       - name: Setup CMake & Ninja
-        uses: jmillikin/setup-ninja@v1
+        uses: ctimothee/setup-ninja@v1
 
       - name: Configure CMake (C++)
         run: |
