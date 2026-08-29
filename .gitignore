@@ -1,7 +1,10 @@
 # Build directories
 build/
 build-*/
+!build-scripts/
 dist/
+deploy_windows/
+
 cmake-build-*/
 out/
 target/
