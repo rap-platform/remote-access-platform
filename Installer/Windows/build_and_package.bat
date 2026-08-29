@@ -49,16 +49,24 @@ REM ==== 2. STAGE COMPILED ARTIFACTS TO rap-client-build ====
 echo [2/5] Staging files to local rap-client-build folder...
 set "STAGE_DIR=%ROOT_DIR%rap-client-build"
 set "BUILD_DIR=%PROJECT_ROOT%build\Desktop_Qt_6_11_1_MSVC2022_64bit_Release"
-
-REM Load .env file overrides for Qt MSVC path and custom build bin dir if present
 set "QT_MSVC_PATH=C:\Qt_my\6.11.1\msvc2022_64"
+
+REM Load .env file overrides
 set "ENV_FILE=%PROJECT_ROOT%.env"
 if exist "%ENV_FILE%" (
     for /f "usebackq tokens=1,* delims==" %%A in ("%ENV_FILE%") do (
-        if "%%A"=="BUILD_BIN_DIR" set "BUILD_DIR=%%~B"
-        if "%%A"=="QT_MSVC_PATH" set "QT_MSVC_PATH=%%~B"
+        set "KEY=%%A"
+        set "VAL=%%~B"
+        if "!KEY!"=="BUILD_DIR" set "BUILD_DIR=!VAL!"
+        if "!KEY!"=="BUILD_BIN_DIR" set "BUILD_DIR=!VAL!"
+        if "!KEY!"=="QT_MSVC_PATH" set "QT_MSVC_PATH=!VAL!"
     )
 )
+
+REM Strip surrounding quotes from paths
+set "BUILD_DIR=%BUILD_DIR:"=%"
+set "QT_MSVC_PATH=%QT_MSVC_PATH:"=%"
+set "STAGE_DIR=%STAGE_DIR:"=%"
 
 if exist "%STAGE_DIR%" (
     echo Cleaning existing staging folder "%STAGE_DIR%"...
@@ -68,17 +76,35 @@ mkdir "%STAGE_DIR%"
 mkdir "%STAGE_DIR%\qml"
 
 echo Copying Release binaries and DLL dependencies...
+set "CLIENT_EXE_FOUND=0"
 if exist "%BUILD_DIR%\apps\client\rap-client.exe" (
     copy /Y "%BUILD_DIR%\apps\client\rap-client.exe" "%STAGE_DIR%\" >nul
+    set "CLIENT_EXE_FOUND=1"
+) else if exist "%BUILD_DIR%\rap-client.exe" (
+    copy /Y "%BUILD_DIR%\rap-client.exe" "%STAGE_DIR%\" >nul
+    set "CLIENT_EXE_FOUND=1"
+) else if exist "%BUILD_DIR%\bin\rap-client.exe" (
+    copy /Y "%BUILD_DIR%\bin\rap-client.exe" "%STAGE_DIR%\" >nul
+    set "CLIENT_EXE_FOUND=1"
 )
+
 if exist "%BUILD_DIR%\apps\agent\rap-agent.exe" (
     copy /Y "%BUILD_DIR%\apps\agent\rap-agent.exe" "%STAGE_DIR%\" >nul
+) else if exist "%BUILD_DIR%\rap-agent.exe" (
+    copy /Y "%BUILD_DIR%\rap-agent.exe" "%STAGE_DIR%\" >nul
+) else if exist "%BUILD_DIR%\bin\rap-agent.exe" (
+    copy /Y "%BUILD_DIR%\bin\rap-agent.exe" "%STAGE_DIR%\" >nul
 )
 
 xcopy /Y /S /E "%BUILD_DIR%\*.dll" "%STAGE_DIR%\" >nul 2>&1
 
 echo Copying QML assets...
 xcopy /Y /S /E "%PROJECT_ROOT%apps\client\qml\*" "%STAGE_DIR%\qml\" >nul 2>&1
+
+if "%CLIENT_EXE_FOUND%"=="0" (
+    echo ERROR: Could not find rap-client.exe in %BUILD_DIR%!
+    goto FAIL
+)
 
 REM ==== 3. RUN WINDEPLOYQT ON STAGED BINARY ====
 echo [3/5] Running windeployqt on staged rap-client.exe...
