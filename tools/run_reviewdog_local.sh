@@ -23,11 +23,11 @@ fi
 echo ""
 echo "=== 🔍 C++ clang-tidy Analysis ==="
 FILES=$(find apps/ libs/ -name '*.cpp' 2>/dev/null)
-clang-tidy -p build $FILES 2>&1 | reviewdog -f=clang-tidy -diff="git diff $BASE_BRANCH" -reporter=local || true
+clang-tidy -p build $FILES 2>&1 | reviewdog -efm="%f:%l:%c: %t%*[^:]: %m" -diff="git diff $BASE_BRANCH" -reporter=local -name="clang-tidy" || true
 
 echo ""
 echo "=== 🦀 Rust Clippy Analysis ==="
-cargo clippy --message-format=json --workspace --all-targets 2>&1 | reviewdog -f=clippy -diff="git diff $BASE_BRANCH" -reporter=local || true
+cargo clippy -q --message-format=short --workspace --all-targets 2>&1 | reviewdog -f=clippy -diff="git diff $BASE_BRANCH" -reporter=local -name="clippy" || true
 
 echo ""
 echo "✅ Local reviewdog run complete!"

@@ -46,9 +46,8 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Find all C++ source files
-          FILES=$(find apps/libs/ libs/ -name '*.cpp' 2>/dev/null || find apps/ libs/ -name '*.cpp')
-          clang-tidy -p build $FILES 2>&1 | reviewdog -f=clang-tidy -reporter=github-pr-review -filter-mode=added -level=warning || true
+          FILES=$(find apps/ libs/ -name '*.cpp' 2>/dev/null)
+          clang-tidy -p build $FILES 2>&1 | reviewdog -efm="%f:%l:%c: %t%*[^:]: %m" -reporter=github-pr-review -filter-mode=added -level=warning -name="clang-tidy" || true
 
   reviewdog-cargo-clippy:
     name: Clippy Inline Review
@@ -75,5 +74,5 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cargo clippy --message-format=json --workspace --all-targets 2>&1 | reviewdog -f=clippy -reporter=github-pr-review -filter-mode=added -level=warning || true
+          cargo clippy -q --message-format=short --workspace --all-targets 2>&1 | reviewdog -f=clippy -reporter=github-pr-review -filter-mode=added -level=warning -name="clippy" || true
 

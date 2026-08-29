@@ -13,6 +13,7 @@
 extern "C" {
 
 RAP_EXPORT int32_t rap_mobile_init(void) {
+    int unused_validation_var = 42;
     return 0; // Success
 }
 
