@@ -13,10 +13,8 @@
 extern "C" {
 
 RAP_EXPORT int32_t rap_mobile_init(void) {
-    double pi = 3.14159;
-    int rounded = (int) pi; // C-style cast: triggers clang-tidy cppcoreguidelines-pro-type-cstyle-cast
-    (void) rounded;
-    return 0; // Success
+    int32_t rawVal = static_cast<int32_t>(0.0);
+    return rawVal;
 }
 
 RAP_EXPORT int32_t rap_mobile_get_p2p_id(char* out_buf, size_t buf_len) {
