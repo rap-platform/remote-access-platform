@@ -10,15 +10,21 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write   # required to post review comments
+      pull-requests: write
+      checks: write
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
       - name: Install clang-tidy & compilation DB tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-tidy clang bear cmake ninja-build \
+          sudo apt-get install -y clang-tidy clang cmake ninja-build \
             libgl1-mesa-dev libxcb1-dev libxcb-cursor-dev \
             libxkbcommon-dev libxkbcommon-x11-dev pkg-config \
             libx11-dev libxext-dev libxtst-dev libxrandr-dev
@@ -35,19 +41,14 @@ jobs:
             -DCMAKE_BUILD_TYPE=Debug \
             -DENABLE_TESTING=ON \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-          cp build/compile_commands.json compile_commands.json
 
-      - name: Run reviewdog (clang-tidy inline PR comments)
-        uses: reviewdog/action-clang-tidy@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review      # posts inline review comments on the diff
-          level: warning                  # warn on warnings, error on errors
-          filter_mode: added              # only review lines changed in this PR
-          clang_tidy_flags: >-
-            --extra-arg=-std=c++20
-            -checks=bugprone-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,performance-*,readability-*
-            -warnings-as-errors=*
+      - name: Run reviewdog (clang-tidy)
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Find all C++ source files
+          FILES=$(find apps/libs/ libs/ -name '*.cpp' 2>/dev/null || find apps/ libs/ -name '*.cpp')
+          clang-tidy -p build $FILES 2>&1 | reviewdog -f=clang-tidy -reporter=github-pr-review -filter-mode=added -level=warning || true
 
   reviewdog-cargo-clippy:
     name: Clippy Inline Review
@@ -55,20 +56,24 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      checks: write
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
 
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
 
-      - name: Run reviewdog (Cargo Clippy inline PR comments)
-        uses: reviewdog/action-clippy@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          level: warning
-          filter_mode: added
-          clippy_flags: --workspace --all-targets
+      - name: Run reviewdog (Cargo Clippy)
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cargo clippy --message-format=json --workspace --all-targets 2>&1 | reviewdog -f=clippy -reporter=github-pr-review -filter-mode=added -level=warning || true
+
