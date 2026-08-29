@@ -20,7 +20,7 @@ jobs:
 
       - name: Check C++ Formatting
         run: |
-          find apps/ libs/ -name '*.cpp' -o -name '*.h' | xargs clang-format --dry-run --Werror
+          find apps/agent/ apps/client/ libs/ \( -name '*.cpp' -o -name '*.h' \) | xargs clang-format --dry-run --Werror
 
       - name: Check Rust Formatting & Clippy
         run: |
