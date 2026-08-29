@@ -51,15 +51,15 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libxcb1-dev libxcb-cursor-dev libxkbcommon-dev libxkbcommon-x11-dev pkg-config
+          sudo apt-get install -y libgl1-mesa-dev libxcb1-dev libxcb-cursor-dev libxkbcommon-dev libxkbcommon-x11-dev pkg-config ninja-build
 
       - name: Setup Qt 6
         uses: jurplel/install-qt-action@v3
         with:
           version: '6.6.2'
 
-      - name: Setup CMake & Ninja
-        uses: ctimothee/setup-ninja@v1
+      - name: Setup Ninja
+        uses: abdes/setup-ninja@v3
 
       - name: Configure CMake (C++)
         run: |
