@@ -1,5 +1,6 @@
-#include "CryptoEngine.h"
 #include <QtTest/QtTest>
+
+#include "CryptoEngine.h"
 
 using namespace rap::security;
 

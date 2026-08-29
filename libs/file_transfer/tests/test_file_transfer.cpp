@@ -1,8 +1,9 @@
-#include "FileTransferEngine.h"
 #include <cassert>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <filesystem>
+
+#include "FileTransferEngine.h"
 
 namespace fs = std::filesystem;
 
@@ -20,7 +21,8 @@ void testDirectoryListing() {
     std::cout << "[+] Test 2: Directory Listing..." << std::endl;
     auto items = rap::file_transfer::FileTransferEngine::listDirectory(".");
     assert(!items.empty());
-    std::cout << "    Found " << items.size() << " items in workspace directory [PASSED]" << std::endl;
+    std::cout << "    Found " << items.size() << " items in workspace directory [PASSED]"
+              << std::endl;
 }
 
 void testFileChunkingAndAssembly() {
@@ -36,15 +38,19 @@ void testFileChunkingAndAssembly() {
 
     {
         std::ofstream file(tempSource, std::ios::binary);
-        file.write(reinterpret_cast<const char *>(testData.data()), testData.size());
+        file.write(reinterpret_cast<const char*>(testData.data()), testData.size());
     }
 
-    std::string sourceHash = rap::file_transfer::FileTransferEngine::calculateFileSha256(tempSource);
-    auto chunks = rap::file_transfer::FileTransferEngine::prepareFileChunks("tx-001", tempSource, 32 * 1024);
+    std::string sourceHash =
+        rap::file_transfer::FileTransferEngine::calculateFileSha256(tempSource);
+    auto chunks =
+        rap::file_transfer::FileTransferEngine::prepareFileChunks("tx-001", tempSource, 32 * 1024);
     assert(chunks.size() == 4);
 
-    for (const auto &chunk : chunks) {
-        bool ok = rap::file_transfer::FileTransferEngine::writeChunkToFile(tempDest, chunk.offset, chunk.data);
+    for (const auto& chunk : chunks) {
+        bool ok = rap::file_transfer::FileTransferEngine::writeChunkToFile(tempDest,
+                                                                           chunk.offset,
+                                                                           chunk.data);
         assert(ok);
         (void)ok;
     }
@@ -55,7 +61,8 @@ void testFileChunkingAndAssembly() {
 
     fs::remove(tempSource);
     fs::remove(tempDest);
-    std::cout << "    4 chunks of 32KB assembled and SHA-256 verified successfully [PASSED]" << std::endl;
+    std::cout << "    4 chunks of 32KB assembled and SHA-256 verified successfully [PASSED]"
+              << std::endl;
 }
 
 int main() {

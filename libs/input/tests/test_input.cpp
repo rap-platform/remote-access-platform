@@ -1,5 +1,6 @@
-#include "IInputBackend.h"
 #include <QtTest/QtTest>
+
+#include "IInputBackend.h"
 
 using namespace rap::input;
 

@@ -4,6 +4,7 @@
 #include <QQmlEngine>
 #include <QSignalSpy>
 #include <QTest>
+
 #include "../src/dev/HotReloadManager.h"
 
 class TestHotReload : public QObject {

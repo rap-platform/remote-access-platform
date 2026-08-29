@@ -1,13 +1,15 @@
 #ifndef RAP_CAPTURE_LINUX_X11_CAPTURE_H
 #define RAP_CAPTURE_LINUX_X11_CAPTURE_H
 
-#include "ICaptureBackend.h"
-#include "AdaptiveBitrateController.h"
-#include "MirrorShield.h"
 #include <atomic>
 #include <thread>
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+
+#include "AdaptiveBitrateController.h"
+#include "ICaptureBackend.h"
+#include "MirrorShield.h"
 
 namespace rap::capture {
 
@@ -25,7 +27,7 @@ public:
 
     uint32_t width() const { return width_; }
     uint32_t height() const { return height_; }
-    AdaptiveBitrateController &bitrateController() { return bitrateController_; }
+    AdaptiveBitrateController& bitrateController() { return bitrateController_; }
 
 private:
     void stopCaptureInternal();
@@ -37,7 +39,7 @@ private:
     std::atomic<bool> stopRequested_{false};
     std::thread captureThread_;
 
-    Display *display_{nullptr};
+    Display* display_{nullptr};
     Window rootWindow_{0};
     std::vector<uint8_t> prevFrameData_;
     AdaptiveBitrateController bitrateController_{8000, 60};

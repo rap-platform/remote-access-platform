@@ -1,19 +1,24 @@
 #include "HotReloadManager.h"
+
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
 
 namespace rap::client::dev {
 
-HotReloadManager::HotReloadManager(QQmlEngine *engine, QObject *parent)
+HotReloadManager::HotReloadManager(QQmlEngine* engine, QObject* parent)
     : QObject(parent), engine_(engine) {
-    connect(&watcher_, &QFileSystemWatcher::fileChanged,
-            this, &HotReloadManager::onFileOrDirectoryChanged);
-    connect(&watcher_, &QFileSystemWatcher::directoryChanged,
-            this, &HotReloadManager::onFileOrDirectoryChanged);
+    connect(&watcher_,
+            &QFileSystemWatcher::fileChanged,
+            this,
+            &HotReloadManager::onFileOrDirectoryChanged);
+    connect(&watcher_,
+            &QFileSystemWatcher::directoryChanged,
+            this,
+            &HotReloadManager::onFileOrDirectoryChanged);
 }
 
-void HotReloadManager::watchDirectory(const QString &dirPath) {
+void HotReloadManager::watchDirectory(const QString& dirPath) {
     QDir dir(dirPath);
     if (!dir.exists()) {
         return;
@@ -31,7 +36,7 @@ void HotReloadManager::watchDirectory(const QString &dirPath) {
     emit activeChanged();
 }
 
-void HotReloadManager::onFileOrDirectoryChanged(const QString &path) {
+void HotReloadManager::onFileOrDirectoryChanged(const QString& path) {
     qDebug() << "[HotReload] File/Directory modified:" << path;
     if (engine_) {
         engine_->trimComponentCache();

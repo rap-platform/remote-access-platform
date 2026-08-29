@@ -30,7 +30,6 @@ enum class PayloadType : uint16_t {
     SessionControl = 15
 };
 
-
 enum class ParseError {
     None = 0,
     InvalidMagicHeader,
@@ -61,9 +60,9 @@ public:
     static std::vector<uint8_t> encode(PayloadType type,
                                        uint64_t sequenceNumber,
                                        uint64_t timestampMs,
-                                       const std::vector<uint8_t> &payload);
+                                       const std::vector<uint8_t>& payload);
 
-    static ParseResult decode(const uint8_t *data, size_t size);
+    static ParseResult decode(const uint8_t* data, size_t size);
 };
 
 } // namespace rap::protocol

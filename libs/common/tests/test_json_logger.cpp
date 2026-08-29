@@ -3,6 +3,7 @@
 #include <QJsonObject>
 #include <QMessageLogContext>
 #include <QTest>
+
 #include "../logging/JsonLogger.h"
 #include "../logging/LogCategories.h"
 
@@ -12,8 +13,10 @@ class TestJsonLogger : public QObject {
 private slots:
     void testFormatJsonObject() {
         QMessageLogContext ctx("test_file.cpp", 42, "testFunc", "rap.transport");
-        QJsonObject json = rap::common::logging::JsonLogger::instance().formatJsonObject(
-            QtInfoMsg, ctx, "Connection established");
+        QJsonObject json =
+            rap::common::logging::JsonLogger::instance().formatJsonObject(QtInfoMsg,
+                                                                          ctx,
+                                                                          "Connection established");
 
         QCOMPARE(json["level"].toString(), QString("INFO"));
         QCOMPARE(json["category"].toString(), QString("rap.transport"));

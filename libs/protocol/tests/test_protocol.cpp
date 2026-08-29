@@ -1,4 +1,5 @@
 #include <QTest>
+
 #include "../include/ProtocolCodec.h"
 
 class TestProtocol : public QObject {
@@ -10,18 +11,21 @@ private slots:
         uint64_t seq = 1001;
         uint64_t ts = 1723890000000;
 
-        auto encoded = rap::protocol::ProtocolCodec::encode(
-            rap::protocol::PayloadType::InputEvent, seq, ts, payload);
+        auto encoded = rap::protocol::ProtocolCodec::encode(rap::protocol::PayloadType::InputEvent,
+                                                            seq,
+                                                            ts,
+                                                            payload);
 
         QCOMPARE(encoded.size(), static_cast<size_t>(28 + 8));
 
         auto decodedRes = rap::protocol::ProtocolCodec::decode(encoded.data(), encoded.size());
         QVERIFY(std::holds_alternative<rap::protocol::Packet>(decodedRes));
 
-        const auto &packet = std::get<rap::protocol::Packet>(decodedRes);
+        const auto& packet = std::get<rap::protocol::Packet>(decodedRes);
         QCOMPARE(packet.header.magic, rap::protocol::MAGIC_HEADER);
         QCOMPARE(packet.header.version, rap::protocol::PROTOCOL_VERSION);
-        QCOMPARE(static_cast<uint16_t>(packet.header.type), static_cast<uint16_t>(rap::protocol::PayloadType::InputEvent));
+        QCOMPARE(static_cast<uint16_t>(packet.header.type),
+                 static_cast<uint16_t>(rap::protocol::PayloadType::InputEvent));
         QCOMPARE(packet.header.sequenceNumber, seq);
         QCOMPARE(packet.header.timestampMs, ts);
         QCOMPARE(packet.header.payloadSize, static_cast<uint32_t>(8));
@@ -32,17 +36,18 @@ private slots:
         std::vector<uint8_t> shortData = {0x52, 0x41, 0x50};
         auto res = rap::protocol::ProtocolCodec::decode(shortData.data(), shortData.size());
         QVERIFY(std::holds_alternative<rap::protocol::ParseError>(res));
-        QCOMPARE(std::get<rap::protocol::ParseError>(res), rap::protocol::ParseError::IncompleteHeader);
+        QCOMPARE(std::get<rap::protocol::ParseError>(res),
+                 rap::protocol::ParseError::IncompleteHeader);
     }
 
     void testInvalidMagicHeader() {
-        std::vector<uint8_t> invalidMagic = {0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
-                                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                             0x00, 0x00, 0x00, 0x00};
+        std::vector<uint8_t> invalidMagic = {
+            0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         auto res = rap::protocol::ProtocolCodec::decode(invalidMagic.data(), invalidMagic.size());
         QVERIFY(std::holds_alternative<rap::protocol::ParseError>(res));
-        QCOMPARE(std::get<rap::protocol::ParseError>(res), rap::protocol::ParseError::InvalidMagicHeader);
+        QCOMPARE(std::get<rap::protocol::ParseError>(res),
+                 rap::protocol::ParseError::InvalidMagicHeader);
     }
 };
 

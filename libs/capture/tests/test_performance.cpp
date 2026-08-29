@@ -1,7 +1,8 @@
 #include <QtTest/QtTest>
+
+#include "AdaptiveBitrateController.h"
 #include "DirtyRegionDetector.h"
 #include "MirrorShield.h"
-#include "AdaptiveBitrateController.h"
 
 using namespace rap::capture;
 
@@ -28,7 +29,8 @@ void TestPerformance::testDirtyRegionDetection() {
         }
     }
 
-    DirtyRect rect = DirtyRegionDetector::detectDirtyRegion(frame1.data(), frame2.data(), width, height, bpp);
+    DirtyRect rect =
+        DirtyRegionDetector::detectDirtyRegion(frame1.data(), frame2.data(), width, height, bpp);
     QVERIFY(rect.isDirty);
     QVERIFY(rect.x <= 10);
     QVERIFY(rect.y <= 10);

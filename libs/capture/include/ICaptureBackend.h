@@ -10,12 +10,7 @@
 
 namespace rap::capture {
 
-enum class FrameFormat {
-    Unknown = 0,
-    RGBA8888 = 1,
-    BGRA8888 = 2,
-    NV12 = 3
-};
+enum class FrameFormat { Unknown = 0, RGBA8888 = 1, BGRA8888 = 2, NV12 = 3 };
 
 struct FrameData {
     uint32_t width{0};
@@ -27,7 +22,7 @@ struct FrameData {
     std::vector<uint8_t> pixelData;
 };
 
-using FrameCallback = std::function<void(const FrameData &)>;
+using FrameCallback = std::function<void(const FrameData&)>;
 
 class ICaptureBackend {
 public:

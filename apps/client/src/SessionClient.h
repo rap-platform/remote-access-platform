@@ -8,6 +8,7 @@
 #include <QImage>
 #include <QObject>
 #include <QTcpSocket>
+
 #include "VideoFrameProvider.h"
 
 namespace rap::client {
@@ -23,11 +24,12 @@ class SessionClient : public QObject {
     Q_PROPERTY(QString transferSpeed READ transferSpeed NOTIFY transferSpeedChanged)
     Q_PROPERTY(QVariantList directoryList READ directoryList NOTIFY directoryListChanged)
     Q_PROPERTY(QString currentRemotePath READ currentRemotePath NOTIFY currentRemotePathChanged)
-    Q_PROPERTY(QVariantList localDirectoryList READ localDirectoryList NOTIFY localDirectoryListChanged)
+    Q_PROPERTY(
+        QVariantList localDirectoryList READ localDirectoryList NOTIFY localDirectoryListChanged)
     Q_PROPERTY(QString currentLocalPath READ currentLocalPath NOTIFY currentLocalPathChanged)
 
 public:
-    explicit SessionClient(VideoFrameProvider *frameProvider, QObject *parent = nullptr);
+    explicit SessionClient(VideoFrameProvider* frameProvider, QObject* parent = nullptr);
     ~SessionClient() override;
 
     bool isConnected() const { return isConnected_; }
@@ -45,39 +47,45 @@ public:
 
     Q_INVOKABLE void setRenderGated(bool gated);
 
-    Q_INVOKABLE void connectByP2PId(const QString &p2pId, const QString &password = "");
-    Q_INVOKABLE void sendInputEvent(uint16_t type, int32_t x, int32_t y, uint32_t button, int32_t delta, uint32_t keycode, uint32_t modifiers);
-    Q_INVOKABLE void sendClipboardText(const QString &text);
-    Q_INVOKABLE void sendChatMessage(const QString &message);
+    Q_INVOKABLE void connectByP2PId(const QString& p2pId, const QString& password = "");
+    Q_INVOKABLE void sendInputEvent(uint16_t type,
+                                    int32_t x,
+                                    int32_t y,
+                                    uint32_t button,
+                                    int32_t delta,
+                                    uint32_t keycode,
+                                    uint32_t modifiers);
+    Q_INVOKABLE void sendClipboardText(const QString& text);
+    Q_INVOKABLE void sendChatMessage(const QString& message);
     Q_INVOKABLE void sendSessionControlAction(uint32_t actionId);
-    Q_INVOKABLE void requestDirectoryListing(const QString &path);
-    Q_INVOKABLE void requestLocalDirectoryListing(const QString &path);
-    Q_INVOKABLE void deleteLocalFile(const QString &path);
-    Q_INVOKABLE void deleteRemoteFile(const QString &path);
-    Q_INVOKABLE void startFileUpload(const QString &localPath, const QString &remotePath);
-    Q_INVOKABLE void startFileDownload(const QString &remotePath, const QString &localPath);
+    Q_INVOKABLE void requestDirectoryListing(const QString& path);
+    Q_INVOKABLE void requestLocalDirectoryListing(const QString& path);
+    Q_INVOKABLE void deleteLocalFile(const QString& path);
+    Q_INVOKABLE void deleteRemoteFile(const QString& path);
+    Q_INVOKABLE void startFileUpload(const QString& localPath, const QString& remotePath);
+    Q_INVOKABLE void startFileDownload(const QString& remotePath, const QString& localPath);
     Q_INVOKABLE void pauseFileTransfer();
     Q_INVOKABLE void resumeFileTransfer();
     Q_INVOKABLE void cancelFileTransfer();
 
 public slots:
-    void connectToHost(const QString &host, uint16_t port, const QString &password = "");
+    void connectToHost(const QString& host, uint16_t port, const QString& password = "");
     void disconnectFromHost();
 
 signals:
     void connectionStateChanged(bool connected);
-    void statusTextChanged(const QString &status);
-    void p2pIdChanged(const QString &p2pId);
+    void statusTextChanged(const QString& status);
+    void p2pIdChanged(const QString& p2pId);
     void hostAgentStateChanged(bool running);
-    void clipboardTextReceived(const QString &text);
-    void chatMessageReceived(const QString &sender, const QString &text, const QString &timestamp);
+    void clipboardTextReceived(const QString& text);
+    void chatMessageReceived(const QString& sender, const QString& text, const QString& timestamp);
     void transferProgressChanged(double progress);
-    void transferStatusChanged(const QString &status);
-    void transferSpeedChanged(const QString &speed);
-    void directoryListChanged(const QVariantList &items);
-    void currentRemotePathChanged(const QString &path);
-    void localDirectoryListChanged(const QVariantList &items);
-    void currentLocalPathChanged(const QString &path);
+    void transferStatusChanged(const QString& status);
+    void transferSpeedChanged(const QString& speed);
+    void directoryListChanged(const QVariantList& items);
+    void currentRemotePathChanged(const QString& path);
+    void localDirectoryListChanged(const QVariantList& items);
+    void currentLocalPathChanged(const QString& path);
 
 private slots:
     void onReadyRead();
@@ -87,10 +95,10 @@ private slots:
     void onClipboardChanged();
 
 private:
-    void setStatus(const QString &status);
+    void setStatus(const QString& status);
 
     QTcpSocket socket_;
-    VideoFrameProvider *frameProvider_{nullptr};
+    VideoFrameProvider* frameProvider_{nullptr};
     QByteArray receiveBuffer_;
     bool isConnected_{false};
     bool renderGated_{false};

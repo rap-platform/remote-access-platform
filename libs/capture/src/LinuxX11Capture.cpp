@@ -1,11 +1,13 @@
 #include "LinuxX11Capture.h"
+
+#include <chrono>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+
+#include "DirtyRegionDetector.h"
 #include "LinuxDrmCapture.h"
 #include "MirrorShield.h"
-#include "DirtyRegionDetector.h"
-#include <chrono>
-#include <cstring>
-#include <cstdlib>
-#include <iostream>
 
 namespace rap::capture {
 
@@ -34,9 +36,10 @@ bool LinuxX11Capture::initialize() {
 }
 
 // Fetch window title reliably across standard X11 and Extended Window Manager Hints (_NET_WM_NAME)
-[[maybe_unused]] static std::string getWindowTitle(Display *display, Window window) {
-    if (!display || !window) return "";
-    char *name = nullptr;
+[[maybe_unused]] static std::string getWindowTitle(Display* display, Window window) {
+    if (!display || !window)
+        return "";
+    char* name = nullptr;
     if (XFetchName(display, window, &name) && name) {
         std::string title(name);
         XFree(name);
@@ -47,10 +50,21 @@ bool LinuxX11Capture::initialize() {
         Atom actualType;
         int actualFormat;
         unsigned long nItems, bytesAfter;
-        unsigned char *prop = nullptr;
-        if (XGetWindowProperty(display, window, netWmName, 0, 1024, False, AnyPropertyType,
-                               &actualType, &actualFormat, &nItems, &bytesAfter, &prop) == Success && prop) {
-            std::string title(reinterpret_cast<char *>(prop));
+        unsigned char* prop = nullptr;
+        if (XGetWindowProperty(display,
+                               window,
+                               netWmName,
+                               0,
+                               1024,
+                               False,
+                               AnyPropertyType,
+                               &actualType,
+                               &actualFormat,
+                               &nItems,
+                               &bytesAfter,
+                               &prop) == Success &&
+            prop) {
+            std::string title(reinterpret_cast<char*>(prop));
             XFree(prop);
             return title;
         }
@@ -58,15 +72,27 @@ bool LinuxX11Capture::initialize() {
     return "";
 }
 
-// Recursive window tree search finding client viewer window and translating local coordinates to root desktop screen space
-[[maybe_unused]] static bool searchClientWindow(Display *display, Window rootWindow, Window currentWindow, WindowBounds &outBounds) {
+// Recursive window tree search finding client viewer window and translating local coordinates to
+// root desktop screen space
+[[maybe_unused]] static bool searchClientWindow(Display* display,
+                                                Window rootWindow,
+                                                Window currentWindow,
+                                                WindowBounds& outBounds) {
     std::string title = getWindowTitle(display, currentWindow);
     if (!title.empty() && title.find("Remote Access Platform") != std::string::npos) {
         XWindowAttributes attr;
-        if (XGetWindowAttributes(display, currentWindow, &attr) && attr.width > 100 && attr.height > 100) {
+        if (XGetWindowAttributes(display, currentWindow, &attr) && attr.width > 100 &&
+            attr.height > 100) {
             int rootX = 0, rootY = 0;
             Window childReturn;
-            XTranslateCoordinates(display, currentWindow, rootWindow, 0, 0, &rootX, &rootY, &childReturn);
+            XTranslateCoordinates(display,
+                                  currentWindow,
+                                  rootWindow,
+                                  0,
+                                  0,
+                                  &rootX,
+                                  &rootY,
+                                  &childReturn);
             outBounds.x = rootX;
             outBounds.y = rootY;
             outBounds.width = attr.width;
@@ -78,7 +104,8 @@ bool LinuxX11Capture::initialize() {
 
     Window rootReturn, parentReturn, *children = nullptr;
     unsigned int numChildren = 0;
-    if (XQueryTree(display, currentWindow, &rootReturn, &parentReturn, &children, &numChildren) && children) {
+    if (XQueryTree(display, currentWindow, &rootReturn, &parentReturn, &children, &numChildren) &&
+        children) {
         for (unsigned int i = 0; i < numChildren; ++i) {
             if (searchClientWindow(display, rootWindow, children[i], outBounds)) {
                 XFree(children);
@@ -90,9 +117,10 @@ bool LinuxX11Capture::initialize() {
     return false;
 }
 
-[[maybe_unused]] static WindowBounds findClientWindowBounds(Display *display, Window rootWindow) {
+[[maybe_unused]] static WindowBounds findClientWindowBounds(Display* display, Window rootWindow) {
     WindowBounds bounds;
-    if (!display || !rootWindow) return bounds;
+    if (!display || !rootWindow)
+        return bounds;
     searchClientWindow(display, rootWindow, rootWindow, bounds);
     return bounds;
 }
@@ -112,15 +140,16 @@ std::optional<FrameData> LinuxX11Capture::captureSingleFrame() {
     frame.pixelData.resize(bufferSize);
 
     if (display_) {
-        XImage *ximage = XGetImage(display_, rootWindow_, 0, 0, width_, height_, AllPlanes, ZPixmap);
+        XImage* ximage =
+            XGetImage(display_, rootWindow_, 0, 0, width_, height_, AllPlanes, ZPixmap);
         if (ximage) {
-            uint8_t *dst = frame.pixelData.data();
-            const uint8_t *src = reinterpret_cast<const uint8_t *>(ximage->data);
+            uint8_t* dst = frame.pixelData.data();
+            const uint8_t* src = reinterpret_cast<const uint8_t*>(ximage->data);
             int bpp = ximage->bits_per_pixel / 8;
 
             for (uint32_t y = 0; y < height_; ++y) {
-                const uint8_t *srcRow = src + (y * ximage->bytes_per_line);
-                uint8_t *dstRow = dst + (y * width_ * 4);
+                const uint8_t* srcRow = src + (y * ximage->bytes_per_line);
+                uint8_t* dstRow = dst + (y * width_ * 4);
                 for (uint32_t x = 0; x < width_; ++x) {
                     uint8_t b = srcRow[x * bpp + 0];
                     uint8_t g = srcRow[x * bpp + 1];
@@ -135,13 +164,18 @@ std::optional<FrameData> LinuxX11Capture::captureSingleFrame() {
 
             // 1. Mirror Shield disabled per configuration - capture full desktop unmasked
             // if (cachedClientBounds_.isActive) {
-            //     MirrorShield::applyMirrorShield(frame.pixelData.data(), width_, height_, cachedClientBounds_, 4);
+            //     MirrorShield::applyMirrorShield(frame.pixelData.data(), width_, height_,
+            //     cachedClientBounds_, 4);
             // }
 
-
-            // 2. Dirty Region Detection: If frame is unchanged from previous frame, skip duplicate transmission
+            // 2. Dirty Region Detection: If frame is unchanged from previous frame, skip duplicate
+            // transmission
             if (!prevFrameData_.empty() && prevFrameData_.size() == frame.pixelData.size()) {
-                DirtyRect dirty = DirtyRegionDetector::detectDirtyRegion(prevFrameData_.data(), frame.pixelData.data(), width_, height_, 4);
+                DirtyRect dirty = DirtyRegionDetector::detectDirtyRegion(prevFrameData_.data(),
+                                                                         frame.pixelData.data(),
+                                                                         width_,
+                                                                         height_,
+                                                                         4);
                 if (!dirty.isDirty) {
                     // Desktop frame is static - skip duplicate send to keep latency at 0ms!
                     return std::nullopt;
@@ -154,7 +188,7 @@ std::optional<FrameData> LinuxX11Capture::captureSingleFrame() {
     }
 
     // Software test pattern for headless CI environments
-    uint32_t *pixels = reinterpret_cast<uint32_t *>(frame.pixelData.data());
+    uint32_t* pixels = reinterpret_cast<uint32_t*>(frame.pixelData.data());
     uint32_t color = 0xFF1E1E2E;
     std::fill(pixels, pixels + (width_ * height_), color);
 
@@ -200,9 +234,11 @@ void LinuxX11Capture::stopCaptureInternal() {
 }
 
 std::unique_ptr<ICaptureBackend> CaptureBackendFactory::createDefaultBackend() {
-    const char *display = std::getenv("DISPLAY");
+    const char* display = std::getenv("DISPLAY");
     if (!display || std::strlen(display) == 0) {
-        std::cout << "[CaptureFactory] Headless/Embedded environment detected ($DISPLAY unset); instantiating Linux DRM/KMS Backend." << std::endl;
+        std::cout << "[CaptureFactory] Headless/Embedded environment detected ($DISPLAY unset); "
+                     "instantiating Linux DRM/KMS Backend."
+                  << std::endl;
         return std::make_unique<LinuxDrmCapture>();
     }
     return std::make_unique<LinuxX11Capture>();

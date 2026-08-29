@@ -1,15 +1,15 @@
 #include <QtTest>
-#include "rap_mobile_c_api.h"
+
 #include <cstring>
+
+#include "rap_mobile_c_api.h"
 
 class TestMobileCApi : public QObject {
 
     Q_OBJECT
 
 private slots:
-    void initTestCase() {
-        QCOMPARE(rap_mobile_init(), 0);
-    }
+    void initTestCase() { QCOMPARE(rap_mobile_init(), 0); }
 
     void testGetP2PId() {
         char buf[32] = {0};
@@ -24,16 +24,14 @@ private slots:
         uint8_t outBuf[256] = {0};
         size_t written = 0;
 
-        int32_t encRes = rap_mobile_encode_packet(
-            13, // AuthRequest
-            42,
-            1000,
-            payload,
-            sizeof(payload),
-            outBuf,
-            sizeof(outBuf),
-            &written
-        );
+        int32_t encRes = rap_mobile_encode_packet(13, // AuthRequest
+                                                  42,
+                                                  1000,
+                                                  payload,
+                                                  sizeof(payload),
+                                                  outBuf,
+                                                  sizeof(outBuf),
+                                                  &written);
         QCOMPARE(encRes, 0);
         QVERIFY(written > 28);
 

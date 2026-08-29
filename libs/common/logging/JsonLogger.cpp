@@ -1,13 +1,15 @@
 #include "JsonLogger.h"
+
 #include <QDateTime>
 #include <QDebug>
 #include <QJsonDocument>
 #include <QTextStream>
+
 #include <iostream>
 
 namespace rap::common::logging {
 
-JsonLogger &JsonLogger::instance() {
+JsonLogger& JsonLogger::instance() {
     static JsonLogger inst;
     return inst;
 }
@@ -18,7 +20,7 @@ JsonLogger::~JsonLogger() {
     }
 }
 
-void JsonLogger::initialize(const QString &logFilePath) {
+void JsonLogger::initialize(const QString& logFilePath) {
     QMutexLocker locker(&mutex_);
     if (initialized_) {
         return;
@@ -48,8 +50,8 @@ void JsonLogger::uninstall() {
 }
 
 QJsonObject JsonLogger::formatJsonObject(QtMsgType type,
-                                          const QMessageLogContext &context,
-                                          const QString &msg) const {
+                                         const QMessageLogContext& context,
+                                         const QString& msg) const {
     QJsonObject obj;
 
     obj["timestamp"] = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
@@ -82,8 +84,8 @@ QJsonObject JsonLogger::formatJsonObject(QtMsgType type,
 }
 
 void JsonLogger::qtMessageHandler(QtMsgType type,
-                                   const QMessageLogContext &context,
-                                   const QString &msg) {
+                                  const QMessageLogContext& context,
+                                  const QString& msg) {
     QJsonObject json = instance().formatJsonObject(type, context, msg);
     QJsonDocument doc(json);
     QString line = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
@@ -91,7 +93,7 @@ void JsonLogger::qtMessageHandler(QtMsgType type,
     instance().writeLog(line);
 }
 
-void JsonLogger::writeLog(const QString &jsonLine) {
+void JsonLogger::writeLog(const QString& jsonLine) {
     QMutexLocker locker(&mutex_);
 
     std::cout << jsonLine.toStdString() << std::endl;

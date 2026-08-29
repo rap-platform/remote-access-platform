@@ -1,10 +1,11 @@
 #ifndef RAP_CAPTURE_LINUX_DRM_CAPTURE_H
 #define RAP_CAPTURE_LINUX_DRM_CAPTURE_H
 
-#include "ICaptureBackend.h"
 #include <atomic>
-#include <thread>
 #include <mutex>
+#include <thread>
+
+#include "ICaptureBackend.h"
 
 namespace rap::capture {
 
