@@ -28,6 +28,10 @@ jobs:
           cargo fmt --check
           cargo clippy --workspace --all-targets -- -D warnings
 
+      - name: Run Architecture & Quality Gate Audit
+        run: |
+          python3 tests/agent_rules_audit.py
+
   build-and-test:
     name: Build & Test Matrix (${{ matrix.os }})
     needs: lint-and-format
