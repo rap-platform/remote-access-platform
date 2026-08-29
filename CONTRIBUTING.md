@@ -1,90 +1,89 @@
 # Contributing to Remote Access Platform
 
-Thank you for contributing! This document provides guidelines and instructions for building, testing, and submitting code to the **Remote Access Platform** repository.
+Thank you for contributing! To maintain enterprise-grade software quality, security, and repository stability, all contributors must adhere to the following branching, committing, and review standards.
 
 ---
 
-## 1. Development Environment Prerequisites
+## 1. Branch Protection & Branch Naming Standards
 
-Ensure you have the following installed on your development workstation:
+> 🛑 **IMPORTANT**: Direct pushes to `main` are strictly prohibited via GitHub Branch Protection. All changes must be introduced via a Pull Request (PR).
 
-* **C++ Compiler**: GCC 13+, Clang 16+, or MSVC 2022+ (supporting C++20 standard).
-* **CMake**: Version 3.22 or higher.
-* **Ninja**: Version 1.10 or higher.
-* **Qt 6**: Version 6.5+ (`Qt6Core`, `Qt6Gui`, `Qt6Quick`, `Qt6Test`).
-* **Rust Toolchain**: 1.80+ (`rustc`, `cargo`, `rustfmt`, `clippy`).
-* **Flutter SDK**: 3.22+ (for mobile app work in `apps/mobile`).
+### Branch Naming Convention
+
+All branches created by developers must follow the structured `<category>/<short-description>` format:
+
+| Category | Description | Example |
+|---|---|---|
+| `feature/` | New functionality or UI additions | `feature/multi-monitor-selector` |
+| `bugfix/` | Fixing a non-critical bug or issue | `bugfix/android-rotation-crash` |
+| `hotfix/` | Emergency fix for critical security or production build issues | `hotfix/tls-handshake-timeout` |
+| `refactor/` | Code restructuring without feature changes | `refactor/relay-buffer-pool` |
+| `docs/` | Documentation additions or updates | `docs/api-gateway-spec` |
+| `test/` | Adding or updating unit/integration tests | `test/file-transfer-fuzzing` |
 
 ---
 
-## 2. Building the Project
+## 2. Conventional Commit Messages
 
-### Building C++ & Qt6 Targets (Desktop Client & Libraries)
+Commit messages must follow the **Conventional Commits** standard format:
+
+```
+<type>(<scope>): <short descriptive summary in imperative mood>
+```
+
+### Allowed Types:
+* `feat`: A new feature for the user or system.
+* `fix`: A bug fix.
+* `docs`: Documentation only changes.
+* `refactor`: A code change that neither fixes a bug nor adds a feature.
+* `test`: Adding missing tests or correcting existing tests.
+* `ci`: Changes to CI build scripts or Docker containers.
+
+### Examples:
+```bash
+git commit -m "feat(client): add multi-monitor selection dropdown to Qt viewer"
+git commit -m "fix(security): resolve ECDH key exchange nonce reuse vulnerability"
+git commit -m "docs(roadmap): update sprint 1 backlog items"
+```
+
+---
+
+## 3. Pull Request (PR) & Code Review Guidelines
+
+1. **Keep PRs Focused**: Each Pull Request should address a single feature or bug. Avoid mixing unrelated changes.
+2. **Self-Review Checklist**:
+   - [ ] Code compiles cleanly with zero compiler warnings (`-Werror`).
+   - [ ] All C++ unit tests pass (`ctest --test-dir build`).
+   - [ ] All Rust unit tests pass (`cargo test --workspace`).
+   - [ ] Code formatted with `clang-format` and `cargo fmt`.
+3. **PR Approval**:
+   - All PRs require **at least 1 code review approval** from a repository maintainer before merging.
+   - Merging should use **Squash and Merge** or **Rebase and Merge** to keep the `main` git history clean and linear.
+
+---
+
+## 4. Development Environment & Build Commands
+
+### C++ & Qt6 Desktop Client
 
 ```bash
-# 1. Configure the build tree with CMake & Ninja
+# Configure build tree
 cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTING=ON
 
-# 2. Compile all targets
+# Build all binaries
 cmake --build build
-```
 
-### Building Rust Microservices (Backend Services)
-
-```bash
-# Build all Rust crates in the workspace
-cargo build --workspace
-```
-
-### Building Mobile Client (Flutter)
-
-```bash
-cd apps/mobile
-flutter pub get
-flutter build apk --debug
-```
-
----
-
-## 3. Running Tests & Static Analysis
-
-Before opening a Pull Request, verify that all test suites pass and static linters run clean:
-
-```bash
-# 1. Run C++ & Qt Quick Unit Tests
+# Execute test suite
 ctest --test-dir build --output-on-failure
+```
 
-# 2. Run Rust Unit & Integration Tests
+### Rust Microservices
+
+```bash
+# Build workspace
+cargo build --workspace
+
+# Run tests & linters
 cargo test --workspace
-
-# 3. Check Rust formatting and lints
-cargo fmt --check
 cargo clippy --workspace --all-targets -- -D warnings
 ```
-
----
-
-## 4. Git Branch & Pull Request Workflow
-
-1. **Create a Feature Branch**:
-   ```bash
-   git checkout -b feature/your-feature-name
-   # or
-   git checkout -b fix/bug-description
-   ```
-
-2. **Commit Your Changes**:
-   Follow conventional commit messages (e.g., `feat(client): add multi-monitor selector UI`, `fix(security): resolve handshake timeout`).
-
-3. **Push to Your Branch & Open a PR**:
-   ```bash
-   git push -u origin feature/your-feature-name
-   ```
-   Open a Pull Request on GitHub and request a review from project maintainers.
-
----
-
-## 5. Coding Standards & Governance
-
-* Refer to [`CODING_STANDARDS.md`](./CODING_STANDARDS.md) for C++, Rust, and QML style guidelines.
-* Refer to [`SECURITY.md`](./SECURITY.md) for security reporting and cryptographic rules.
