@@ -1,6 +1,13 @@
 #include "StunClient.h"
+
 #include <cstring>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#pragma comment(lib, "ws2_32.lib")
+#else
 #include <arpa/inet.h>
+#endif
 
 namespace rap::protocol {
 
@@ -19,7 +26,7 @@ std::vector<uint8_t> StunClient::createBindingRequest(const uint8_t transactionI
     return buf;
 }
 
-StunMappedAddress StunClient::parseBindingResponse(const uint8_t *data, size_t size) {
+StunMappedAddress StunClient::parseBindingResponse(const uint8_t* data, size_t size) {
     StunMappedAddress addr;
     if (!data || size < 20) {
         return addr;

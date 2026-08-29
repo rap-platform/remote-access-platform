@@ -1,5 +1,6 @@
 #include <QCoreApplication>
 #include <QTest>
+
 #include "../logging/LogCategories.h"
 
 class TestLogging : public QObject {
@@ -7,9 +8,12 @@ class TestLogging : public QObject {
 
 private slots:
     void testCategoryNames() {
-        QCOMPARE(QString(rap::common::logging::rapTransport().categoryName()), QString("rap.transport"));
-        QCOMPARE(QString(rap::common::logging::rapSecurity().categoryName()), QString("rap.security"));
-        QCOMPARE(QString(rap::common::logging::rapCapture().categoryName()), QString("rap.capture"));
+        QCOMPARE(QString(rap::common::logging::rapTransport().categoryName()),
+                 QString("rap.transport"));
+        QCOMPARE(QString(rap::common::logging::rapSecurity().categoryName()),
+                 QString("rap.security"));
+        QCOMPARE(QString(rap::common::logging::rapCapture().categoryName()),
+                 QString("rap.capture"));
     }
 };
 

@@ -1,16 +1,17 @@
 #include "VideoFrameProvider.h"
+
 #include <QMutexLocker>
 
 namespace rap::client {
 
-VideoFrameProvider::VideoFrameProvider()
-    : QQuickImageProvider(QQuickImageProvider::Image) {
+VideoFrameProvider::VideoFrameProvider() : QQuickImageProvider(QQuickImageProvider::Image) {
     // Default placeholder frame
     currentFrame_ = QImage(1280, 720, QImage::Format_RGB32);
     currentFrame_.fill(QColor(30, 30, 46));
 }
 
-QImage VideoFrameProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize) {
+QImage
+VideoFrameProvider::requestImage(const QString& id, QSize* size, const QSize& requestedSize) {
     Q_UNUSED(id)
     QMutexLocker locker(&mutex_);
 
@@ -25,7 +26,7 @@ QImage VideoFrameProvider::requestImage(const QString &id, QSize *size, const QS
     return currentFrame_;
 }
 
-void VideoFrameProvider::updateFrame(const QImage &image) {
+void VideoFrameProvider::updateFrame(const QImage& image) {
     {
         QMutexLocker locker(&mutex_);
         currentFrame_ = image;

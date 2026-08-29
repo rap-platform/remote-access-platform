@@ -1,10 +1,12 @@
 #include "LinuxDrmCapture.h"
+
 #include <chrono>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/mman.h>
 #include <cstring>
 #include <iostream>
+
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 namespace rap::capture {
 
@@ -33,7 +35,8 @@ bool LinuxDrmCapture::initialize() {
     if (m_drmFd >= 0) {
         std::cout << "[LinuxDRM] Successfully initialized DRM/FB capture device" << std::endl;
     } else {
-        std::cout << "[LinuxDRM] DRM device /dev/dri/card0 unavailable; using KMS framebuffer mode" << std::endl;
+        std::cout << "[LinuxDRM] DRM device /dev/dri/card0 unavailable; using KMS framebuffer mode"
+                  << std::endl;
     }
 
     m_initialized = true;
@@ -84,11 +87,12 @@ std::optional<FrameData> LinuxDrmCapture::captureSingleFrame() {
     frame.format = FrameFormat::RGBA8888;
     frame.frameNumber = ++m_frameCounter;
     frame.timestampUs = std::chrono::duration_cast<std::chrono::microseconds>(
-        std::chrono::steady_clock::now().time_since_epoch()).count();
+                            std::chrono::steady_clock::now().time_since_epoch())
+                            .count();
     frame.pixelData.resize(m_stride * m_height);
 
     // Generate valid test pattern pixel buffer if DRM hardware device node is simulated
-    uint32_t *pixels = reinterpret_cast<uint32_t*>(frame.pixelData.data());
+    uint32_t* pixels = reinterpret_cast<uint32_t*>(frame.pixelData.data());
     uint32_t color = 0xFF101010 + (m_frameCounter % 255);
     std::fill(pixels, pixels + (m_width * m_height), color);
 

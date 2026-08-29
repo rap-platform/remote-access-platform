@@ -1,18 +1,21 @@
 #include "SessionClient.h"
-#include <QDebug>
+
+#include <QCryptographicHash>
 #include <QDateTime>
+#include <QDebug>
 #include <QFileInfo>
 #include <QHostInfo>
 #include <QProcess>
-#include <QCryptographicHash>
+
 #include <cstring>
+
 #include "CryptoEngine.h"
-#include "ProtocolCodec.h"
 #include "FileTransferEngine.h"
+#include "ProtocolCodec.h"
 
 namespace rap::client {
 
-SessionClient::SessionClient(VideoFrameProvider *frameProvider, QObject *parent)
+SessionClient::SessionClient(VideoFrameProvider* frameProvider, QObject* parent)
     : QObject(parent), frameProvider_(frameProvider) {
     connect(&socket_, &QTcpSocket::readyRead, this, &SessionClient::onReadyRead);
     connect(&socket_, &QTcpSocket::connected, this, &SessionClient::onConnected);
@@ -20,7 +23,10 @@ SessionClient::SessionClient(VideoFrameProvider *frameProvider, QObject *parent)
     connect(&socket_, &QTcpSocket::errorOccurred, this, &SessionClient::onErrorOccurred);
 
     if (QGuiApplication::clipboard()) {
-        connect(QGuiApplication::clipboard(), &QClipboard::dataChanged, this, &SessionClient::onClipboardChanged);
+        connect(QGuiApplication::clipboard(),
+                &QClipboard::dataChanged,
+                this,
+                &SessionClient::onClipboardChanged);
     }
 
     // Generate persistent, globally unique 9-digit AnyDesk-style P2P Desk ID bound to hardware
@@ -31,10 +37,13 @@ SessionClient::SessionClient(VideoFrameProvider *frameProvider, QObject *parent)
         machineIdFile.close();
     }
     if (hardwareData.isEmpty()) {
-        hardwareData = (QHostInfo::localHostName() + QSysInfo::machineUniqueId() + QSysInfo::bootUniqueId()).toUtf8();
+        hardwareData =
+            (QHostInfo::localHostName() + QSysInfo::machineUniqueId() + QSysInfo::bootUniqueId())
+                .toUtf8();
     }
     QByteArray hash = QCryptographicHash::hash(hardwareData, QCryptographicHash::Sha256);
-    uint32_t num = (static_cast<uint8_t>(hash[0]) << 16) | (static_cast<uint8_t>(hash[1]) << 8) | static_cast<uint8_t>(hash[2]);
+    uint32_t num = (static_cast<uint8_t>(hash[0]) << 16) | (static_cast<uint8_t>(hash[1]) << 8) |
+                   static_cast<uint8_t>(hash[2]);
     uint32_t id9 = (num % 900000000) + 100000000;
     QString idStr = QString::number(id9);
     p2pId_ = idStr.left(3) + " " + idStr.mid(3, 3) + " " + idStr.right(3);
@@ -61,7 +70,7 @@ SessionClient::~SessionClient() {
     receiveBuffer_.clear();
 }
 
-void SessionClient::connectByP2PId(const QString &p2pIdInput, const QString &password) {
+void SessionClient::connectByP2PId(const QString& p2pIdInput, const QString& password) {
     QString cleanId = p2pIdInput;
     cleanId.remove(' ');
     qInfo() << "[Client] Connecting via P2P Desk ID:" << cleanId;
@@ -69,7 +78,7 @@ void SessionClient::connectByP2PId(const QString &p2pIdInput, const QString &pas
     connectToHost("127.0.0.1", 18443, password);
 }
 
-void SessionClient::connectToHost(const QString &host, uint16_t port, const QString &password) {
+void SessionClient::connectToHost(const QString& host, uint16_t port, const QString& password) {
     if (socket_.state() != QAbstractSocket::UnconnectedState) {
         socket_.abort();
     }
@@ -92,18 +101,22 @@ void SessionClient::disconnectFromHost() {
     }
 }
 
-void SessionClient::sendInputEvent(uint16_t type, int32_t x, int32_t y, uint32_t button, int32_t delta, uint32_t keycode, uint32_t modifiers) {
+void SessionClient::sendInputEvent(uint16_t type,
+                                   int32_t x,
+                                   int32_t y,
+                                   uint32_t button,
+                                   int32_t delta,
+                                   uint32_t keycode,
+                                   uint32_t modifiers) {
     Q_UNUSED(modifiers)
     if (!socket_.isOpen() || socket_.state() != QAbstractSocket::ConnectedState) {
         return;
     }
 
-    const std::vector<uint8_t> sessionKey = {
-        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
-        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
-        0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
-    };
+    const std::vector<uint8_t> sessionKey = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                                             0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+                                             0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+                                             0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20};
 
     std::vector<uint8_t> plaintext(24, 0);
     std::memcpy(plaintext.data() + 0, &type, 2);
@@ -117,20 +130,21 @@ void SessionClient::sendInputEvent(uint16_t type, int32_t x, int32_t y, uint32_t
     uint64_t seq = ++inputSequence_;
     std::memcpy(nonce.data(), &seq, sizeof(seq));
 
-    auto encryptedPayload = rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
+    auto encryptedPayload =
+        rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
 
-    auto encoded = rap::protocol::ProtocolCodec::encode(
-        rap::protocol::PayloadType::InputEvent,
-        seq,
-        0,
-        encryptedPayload);
+    auto encoded = rap::protocol::ProtocolCodec::encode(rap::protocol::PayloadType::InputEvent,
+                                                        seq,
+                                                        0,
+                                                        encryptedPayload);
 
-    QByteArray bytes(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size()));
+    QByteArray bytes(reinterpret_cast<const char*>(encoded.data()),
+                     static_cast<int>(encoded.size()));
     socket_.write(bytes);
     socket_.flush();
 }
 
-void SessionClient::sendClipboardText(const QString &text) {
+void SessionClient::sendClipboardText(const QString& text) {
     if (!socket_.isOpen() || socket_.state() != QAbstractSocket::ConnectedState) {
         return;
     }
@@ -140,12 +154,10 @@ void SessionClient::sendClipboardText(const QString &text) {
     }
     lastClipboardText_ = text;
 
-    const std::vector<uint8_t> sessionKey = {
-        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
-        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
-        0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
-    };
+    const std::vector<uint8_t> sessionKey = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                                             0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+                                             0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+                                             0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20};
 
     QByteArray utf8Data = text.toUtf8();
     std::vector<uint8_t> plaintext(utf8Data.constData(), utf8Data.constData() + utf8Data.size());
@@ -154,22 +166,25 @@ void SessionClient::sendClipboardText(const QString &text) {
     uint64_t seq = ++inputSequence_;
     std::memcpy(nonce.data(), &seq, sizeof(seq));
 
-    auto encryptedPayload = rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
+    auto encryptedPayload =
+        rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
 
-    auto encoded = rap::protocol::ProtocolCodec::encode(
-        rap::protocol::PayloadType::ClipboardData,
-        seq,
-        0,
-        encryptedPayload);
+    auto encoded = rap::protocol::ProtocolCodec::encode(rap::protocol::PayloadType::ClipboardData,
+                                                        seq,
+                                                        0,
+                                                        encryptedPayload);
 
-    QByteArray bytes(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size()));
+    QByteArray bytes(reinterpret_cast<const char*>(encoded.data()),
+                     static_cast<int>(encoded.size()));
     socket_.write(bytes);
     socket_.flush();
-    qInfo() << "[Client] Synchronized local clipboard text to remote host (" << text.length() << "chars)";
+    qInfo() << "[Client] Synchronized local clipboard text to remote host (" << text.length()
+            << "chars)";
 }
 
-void SessionClient::sendChatMessage(const QString &message) {
-    if (message.trimmed().isEmpty()) return;
+void SessionClient::sendChatMessage(const QString& message) {
+    if (message.trimmed().isEmpty())
+        return;
     QString cleanMsg = message.trimmed();
     QString timeStr = QTime::currentTime().toString("hh:mm A");
     sendClipboardText("CHAT:" + cleanMsg);
@@ -181,12 +196,10 @@ void SessionClient::sendSessionControlAction(uint32_t actionId) {
         return;
     }
 
-    const std::vector<uint8_t> sessionKey = {
-        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
-        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
-        0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
-    };
+    const std::vector<uint8_t> sessionKey = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                                             0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+                                             0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+                                             0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20};
 
     std::vector<uint8_t> plaintext(4, 0);
     std::memcpy(plaintext.data(), &actionId, 4);
@@ -195,15 +208,15 @@ void SessionClient::sendSessionControlAction(uint32_t actionId) {
     uint64_t seq = ++inputSequence_;
     std::memcpy(nonce.data(), &seq, sizeof(seq));
 
-    auto encryptedPayload = rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
-    auto encoded = rap::protocol::ProtocolCodec::encode(
-        rap::protocol::PayloadType::SessionControl,
-        seq,
-        0,
-        encryptedPayload
-    );
+    auto encryptedPayload =
+        rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
+    auto encoded = rap::protocol::ProtocolCodec::encode(rap::protocol::PayloadType::SessionControl,
+                                                        seq,
+                                                        0,
+                                                        encryptedPayload);
 
-    socket_.write(QByteArray(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size())));
+    socket_.write(QByteArray(reinterpret_cast<const char*>(encoded.data()),
+                             static_cast<int>(encoded.size())));
     socket_.flush();
     qInfo() << "[Client] Dispatched Session Control Action ID:" << actionId << "to remote host.";
 }
@@ -212,7 +225,7 @@ void SessionClient::onClipboardChanged() {
     if (!isConnected_) {
         return;
     }
-    QClipboard *cb = QGuiApplication::clipboard();
+    QClipboard* cb = QGuiApplication::clipboard();
     if (cb) {
         QString text = cb->text();
         if (!text.isEmpty() && text != lastClipboardText_) {
@@ -226,16 +239,15 @@ void SessionClient::onConnected() {
     receiveBuffer_.clear();
     receivedFrames_ = 0;
     inputSequence_ = 0;
-    socket_.setSocketOption(QAbstractSocket::LowDelayOption, 1); // Disable Nagle's algorithm (TCP_NODELAY)
+    socket_.setSocketOption(QAbstractSocket::LowDelayOption,
+                            1); // Disable Nagle's algorithm (TCP_NODELAY)
     qInfo() << "[Client] TCP socket connected successfully! Transmitting Authentication Request...";
 
     // Send AuthRequest to remote agent
-    const std::vector<uint8_t> sessionKey = {
-        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
-        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
-        0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
-    };
+    const std::vector<uint8_t> sessionKey = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                                             0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+                                             0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+                                             0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20};
 
     QByteArray passBytes = requestedPassword_.toUtf8();
     std::vector<uint8_t> plaintext(passBytes.constData(), passBytes.constData() + passBytes.size());
@@ -243,17 +255,18 @@ void SessionClient::onConnected() {
     uint64_t seq = ++inputSequence_;
     std::memcpy(nonce.data(), &seq, sizeof(seq));
 
-    auto encryptedPayload = rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
-    auto encoded = rap::protocol::ProtocolCodec::encode(
-        rap::protocol::PayloadType::AuthRequest,
-        seq,
-        0,
-        encryptedPayload
-    );
-    socket_.write(QByteArray(reinterpret_cast<const char *>(encoded.data()), static_cast<int>(encoded.size())));
+    auto encryptedPayload =
+        rap::security::CryptoEngine::encryptPayload(plaintext, sessionKey, nonce);
+    auto encoded = rap::protocol::ProtocolCodec::encode(rap::protocol::PayloadType::AuthRequest,
+                                                        seq,
+                                                        0,
+                                                        encryptedPayload);
+    socket_.write(QByteArray(reinterpret_cast<const char*>(encoded.data()),
+                             static_cast<int>(encoded.size())));
     socket_.flush();
 
-    setStatus("Connected to " + (lastConnectedTarget_.isEmpty() ? "Remote Desk" : lastConnectedTarget_));
+    setStatus("Connected to " +
+              (lastConnectedTarget_.isEmpty() ? "Remote Desk" : lastConnectedTarget_));
     emit connectionStateChanged(true);
 }
 
@@ -277,21 +290,20 @@ void SessionClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
 
 void SessionClient::setRenderGated(bool gated) {
     renderGated_ = gated;
-    qInfo() << "[SessionClient Optimization] Background render gating set to:" << (gated ? "ENABLED (Paused)" : "DISABLED (Active)");
+    qInfo() << "[SessionClient Optimization] Background render gating set to:"
+            << (gated ? "ENABLED (Paused)" : "DISABLED (Active)");
 }
 
 void SessionClient::onReadyRead() {
     receiveBuffer_.append(socket_.readAll());
 
-    const std::vector<uint8_t> sessionKey = {
-        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
-        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
-        0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
-    };
+    const std::vector<uint8_t> sessionKey = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                                             0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+                                             0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+                                             0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20};
 
     while (receiveBuffer_.size() >= 28) { // 28 byte protocol header
-        const uint8_t *data = reinterpret_cast<const uint8_t *>(receiveBuffer_.constData());
+        const uint8_t* data = reinterpret_cast<const uint8_t*>(receiveBuffer_.constData());
         size_t size = static_cast<size_t>(receiveBuffer_.size());
 
         auto result = rap::protocol::ProtocolCodec::decode(data, size);
@@ -307,12 +319,14 @@ void SessionClient::onReadyRead() {
             }
         }
 
-        const auto &packet = std::get<rap::protocol::Packet>(result);
+        const auto& packet = std::get<rap::protocol::Packet>(result);
         size_t totalPacketSize = 28 + packet.header.payloadSize;
 
-        if (packet.header.type == rap::protocol::PayloadType::FrameHeader && !packet.payload.empty()) {
+        if (packet.header.type == rap::protocol::PayloadType::FrameHeader &&
+            !packet.payload.empty()) {
             if (renderGated_) {
-                // Multi-session optimization: skip frame decompression and UI copy for background tabs
+                // Multi-session optimization: skip frame decompression and UI copy for background
+                // tabs
                 receiveBuffer_.remove(0, static_cast<qsizetype>(totalPacketSize));
                 continue;
             }
@@ -321,10 +335,11 @@ void SessionClient::onReadyRead() {
             uint64_t fn = packet.header.sequenceNumber;
             std::memcpy(nonce.data(), &fn, sizeof(fn));
 
-            auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
+            auto decryptedOpt =
+                rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
 
             if (decryptedOpt.has_value() && decryptedOpt->size() >= 12) {
-                const auto &decrypted = decryptedOpt.value();
+                const auto& decrypted = decryptedOpt.value();
                 uint32_t width = 0;
                 uint32_t height = 0;
                 uint32_t rawSize = 0;
@@ -332,66 +347,90 @@ void SessionClient::onReadyRead() {
                 std::memcpy(&height, decrypted.data() + 4, 4);
                 std::memcpy(&rawSize, decrypted.data() + 8, 4);
 
-                QByteArray compressedData(reinterpret_cast<const char *>(decrypted.data() + 12), static_cast<qsizetype>(decrypted.size() - 12));
+                QByteArray compressedData(reinterpret_cast<const char*>(decrypted.data() + 12),
+                                          static_cast<qsizetype>(decrypted.size() - 12));
                 QByteArray uncompressedPixels = qUncompress(compressedData);
 
-                if (uncompressedPixels.isEmpty() && decrypted.size() >= (8 + static_cast<size_t>(width) * height * 4)) {
+                if (uncompressedPixels.isEmpty() &&
+                    decrypted.size() >= (8 + static_cast<size_t>(width) * height * 4)) {
                     // Fallback uncompressed raw buffer handling
-                    uncompressedPixels = QByteArray(reinterpret_cast<const char *>(decrypted.data() + 8), static_cast<qsizetype>(width * height * 4));
+                    uncompressedPixels =
+                        QByteArray(reinterpret_cast<const char*>(decrypted.data() + 8),
+                                   static_cast<qsizetype>(width * height * 4));
                 }
 
                 if (width > 0 && height > 0 && !uncompressedPixels.isEmpty()) {
-                    QImage imgCopy = QImage(reinterpret_cast<const uchar *>(uncompressedPixels.constData()), width, height, width * 4, QImage::Format_RGBA8888).copy();
+                    QImage imgCopy =
+                        QImage(reinterpret_cast<const uchar*>(uncompressedPixels.constData()),
+                               width,
+                               height,
+                               width * 4,
+                               QImage::Format_RGBA8888)
+                            .copy();
                     if (frameProvider_) {
                         frameProvider_->updateFrame(imgCopy);
                         receivedFrames_++;
 
                         qint64 tNow = QDateTime::currentMSecsSinceEpoch();
                         qint64 e2eLatencyMs = tNow - static_cast<qint64>(packet.header.timestampMs);
-                        qInfo().noquote() << QString("[Client Latency Audit] Frame #%1 | E2E Latency: %2 ms | Received Payload: %3 KB")
-                            .arg(packet.header.sequenceNumber)
-                            .arg(e2eLatencyMs)
-                            .arg(packet.payload.size() / 1024);
+                        qInfo().noquote() << QString("[Client Latency Audit] Frame #%1 | E2E "
+                                                     "Latency: %2 ms | Received Payload: %3 KB")
+                                                 .arg(packet.header.sequenceNumber)
+                                                 .arg(e2eLatencyMs)
+                                                 .arg(packet.payload.size() / 1024);
                     }
                 }
             } else {
-                qWarning() << "[Client] E2E Crypto Authentication Failed! Dropping corrupted or tampered frame payload.";
+                qWarning() << "[Client] E2E Crypto Authentication Failed! Dropping corrupted or "
+                              "tampered frame payload.";
             }
-        } else if (packet.header.type == rap::protocol::PayloadType::ClipboardData && !packet.payload.empty()) {
+        } else if (packet.header.type == rap::protocol::PayloadType::ClipboardData &&
+                   !packet.payload.empty()) {
             std::vector<uint8_t> nonce(12, 0);
             uint64_t seq = packet.header.sequenceNumber;
             std::memcpy(nonce.data(), &seq, sizeof(seq));
 
-            auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
+            auto decryptedOpt =
+                rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
             if (decryptedOpt.has_value() && !decryptedOpt->empty()) {
-                QString text = QString::fromUtf8(reinterpret_cast<const char *>(decryptedOpt->data()), static_cast<int>(decryptedOpt->size()));
+                QString text =
+                    QString::fromUtf8(reinterpret_cast<const char*>(decryptedOpt->data()),
+                                      static_cast<int>(decryptedOpt->size()));
                 if (text.startsWith("CHAT:")) {
                     QString chatContent = text.mid(5);
                     QString timeStr = QTime::currentTime().toString("hh:mm A");
                     emit chatMessageReceived("Remote Host", chatContent, timeStr);
                 } else {
                     lastClipboardText_ = text;
-                    QClipboard *cb = QGuiApplication::clipboard();
+                    QClipboard* cb = QGuiApplication::clipboard();
                     if (cb) {
                         cb->setText(text);
                     }
                     emit clipboardTextReceived(text);
-                    qInfo() << "[Client] Received bidirectional clipboard update from remote host (" << text.length() << "chars)";
+                    qInfo() << "[Client] Received bidirectional clipboard update from remote host ("
+                            << text.length() << "chars)";
                 }
             }
-        } else if (packet.header.type == rap::protocol::PayloadType::AuthResponse && !packet.payload.empty()) {
+        } else if (packet.header.type == rap::protocol::PayloadType::AuthResponse &&
+                   !packet.payload.empty()) {
             std::vector<uint8_t> nonce(12, 0);
             uint64_t seq = packet.header.sequenceNumber;
             std::memcpy(nonce.data(), &seq, sizeof(seq));
 
-            auto decryptedOpt = rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
+            auto decryptedOpt =
+                rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
             if (decryptedOpt.has_value() && !decryptedOpt->empty()) {
                 uint8_t authCode = decryptedOpt->at(0);
                 if (authCode == 0) {
-                    qInfo() << "[Client Auth] Remote Agent verified password credentials. Access Granted!";
-                    setStatus("Connected to " + (lastConnectedTarget_.isEmpty() ? "Remote Desk" : lastConnectedTarget_) + " — Session Verified");
+                    qInfo() << "[Client Auth] Remote Agent verified password credentials. Access "
+                               "Granted!";
+                    setStatus(
+                        "Connected to " +
+                        (lastConnectedTarget_.isEmpty() ? "Remote Desk" : lastConnectedTarget_) +
+                        " — Session Verified");
                 } else {
-                    qWarning() << "[Client Auth] Remote Agent rejected password credentials. Access Denied!";
+                    qWarning() << "[Client Auth] Remote Agent rejected password credentials. "
+                                  "Access Denied!";
                     setStatus("Authentication Failed: Invalid Remote Password");
                     disconnectFromHost();
                 }
@@ -402,21 +441,22 @@ void SessionClient::onReadyRead() {
     }
 }
 
-void SessionClient::setStatus(const QString &status) {
+void SessionClient::setStatus(const QString& status) {
     if (statusText_ != status) {
         statusText_ = status;
         emit statusTextChanged(statusText_);
     }
 }
 
-void SessionClient::requestDirectoryListing(const QString &path) {
+void SessionClient::requestDirectoryListing(const QString& path) {
     currentRemotePath_ = path.isEmpty() ? "." : path;
     emit currentRemotePathChanged(currentRemotePath_);
 
     // Fast local filesystem enumeration for local/embedded host agent target
-    auto items = rap::file_transfer::FileTransferEngine::listDirectory(currentRemotePath_.toStdString());
+    auto items =
+        rap::file_transfer::FileTransferEngine::listDirectory(currentRemotePath_.toStdString());
     QVariantList list;
-    for (const auto &item : items) {
+    for (const auto& item : items) {
         QVariantMap map;
         map["name"] = QString::fromStdString(item.name);
         map["size"] = static_cast<qulonglong>(item.size);
@@ -426,12 +466,14 @@ void SessionClient::requestDirectoryListing(const QString &path) {
     }
     directoryList_ = list;
     emit directoryListChanged(directoryList_);
-    qInfo() << "[Client FileTransfer] Enumerated directory:" << currentRemotePath_ << "found" << list.size() << "items";
+    qInfo() << "[Client FileTransfer] Enumerated directory:" << currentRemotePath_ << "found"
+            << list.size() << "items";
 }
 
-void SessionClient::startFileUpload(const QString &localPath, const QString &remotePath) {
+void SessionClient::startFileUpload(const QString& localPath, const QString& remotePath) {
     Q_UNUSED(remotePath)
-    if (localPath.isEmpty()) return;
+    if (localPath.isEmpty())
+        return;
 
     transferStatus_ = "Uploading " + QFileInfo(localPath).fileName() + "...";
     emit transferStatusChanged(transferStatus_);
@@ -441,7 +483,9 @@ void SessionClient::startFileUpload(const QString &localPath, const QString &rem
 
     // Use 256 KB high-throughput zero-copy chunking for maximum transfer speed
     std::string txId = "tx-" + QString::number(QDateTime::currentMSecsSinceEpoch()).toStdString();
-    auto chunks = rap::file_transfer::FileTransferEngine::prepareFileChunks(txId, localPath.toStdString(), 256 * 1024);
+    auto chunks = rap::file_transfer::FileTransferEngine::prepareFileChunks(txId,
+                                                                            localPath.toStdString(),
+                                                                            256 * 1024);
 
     if (chunks.empty()) {
         transferStatus_ = "Error: File empty or unreadable";
@@ -453,14 +497,16 @@ void SessionClient::startFileUpload(const QString &localPath, const QString &rem
     currentTransferBytes_ = 0;
     qint64 tStart = QDateTime::currentMSecsSinceEpoch();
 
-    for (const auto &chunk : chunks) {
-        if (isTransferPaused_) break;
+    for (const auto& chunk : chunks) {
+        if (isTransferPaused_)
+            break;
 
         currentTransferBytes_ += chunk.data.size();
         transferProgress_ = static_cast<double>(currentTransferBytes_) / totalTransferBytes_;
         emit transferProgressChanged(transferProgress_);
 
-        qint64 elapsedSec = std::max<qint64>(1, (QDateTime::currentMSecsSinceEpoch() - tStart) / 1000);
+        qint64 elapsedSec =
+            std::max<qint64>(1, (QDateTime::currentMSecsSinceEpoch() - tStart) / 1000);
         double mbps = (static_cast<double>(currentTransferBytes_) / (1024.0 * 1024.0)) / elapsedSec;
         transferSpeed_ = QString::number(mbps, 'f', 2) + " MB/s";
         emit transferSpeedChanged(transferSpeed_);
@@ -471,9 +517,10 @@ void SessionClient::startFileUpload(const QString &localPath, const QString &rem
     requestDirectoryListing(currentRemotePath_);
 }
 
-void SessionClient::startFileDownload(const QString &remotePath, const QString &localPath) {
+void SessionClient::startFileDownload(const QString& remotePath, const QString& localPath) {
     Q_UNUSED(localPath)
-    if (remotePath.isEmpty()) return;
+    if (remotePath.isEmpty())
+        return;
 
     transferStatus_ = "Downloading " + QFileInfo(remotePath).fileName() + "...";
     emit transferStatusChanged(transferStatus_);
@@ -482,18 +529,23 @@ void SessionClient::startFileDownload(const QString &remotePath, const QString &
 
     qint64 tStart = QDateTime::currentMSecsSinceEpoch();
     std::string txId = "rx-" + QString::number(QDateTime::currentMSecsSinceEpoch()).toStdString();
-    auto chunks = rap::file_transfer::FileTransferEngine::prepareFileChunks(txId, remotePath.toStdString(), 256 * 1024);
+    auto chunks =
+        rap::file_transfer::FileTransferEngine::prepareFileChunks(txId,
+                                                                  remotePath.toStdString(),
+                                                                  256 * 1024);
 
     totalTransferBytes_ = chunks.empty() ? 1024 : chunks.front().totalSize;
     currentTransferBytes_ = 0;
 
-    for (const auto &chunk : chunks) {
-        if (isTransferPaused_) break;
+    for (const auto& chunk : chunks) {
+        if (isTransferPaused_)
+            break;
         currentTransferBytes_ += chunk.data.size();
         transferProgress_ = static_cast<double>(currentTransferBytes_) / totalTransferBytes_;
         emit transferProgressChanged(transferProgress_);
 
-        qint64 elapsedSec = std::max<qint64>(1, (QDateTime::currentMSecsSinceEpoch() - tStart) / 1000);
+        qint64 elapsedSec =
+            std::max<qint64>(1, (QDateTime::currentMSecsSinceEpoch() - tStart) / 1000);
         double mbps = (static_cast<double>(currentTransferBytes_) / (1024.0 * 1024.0)) / elapsedSec;
         transferSpeed_ = QString::number(mbps, 'f', 2) + " MB/s";
         emit transferSpeedChanged(transferSpeed_);
@@ -524,13 +576,14 @@ void SessionClient::cancelFileTransfer() {
     emit transferProgressChanged(0.0);
 }
 
-void SessionClient::requestLocalDirectoryListing(const QString &path) {
+void SessionClient::requestLocalDirectoryListing(const QString& path) {
     currentLocalPath_ = path.isEmpty() ? "." : path;
     emit currentLocalPathChanged(currentLocalPath_);
 
-    auto items = rap::file_transfer::FileTransferEngine::listDirectory(currentLocalPath_.toStdString());
+    auto items =
+        rap::file_transfer::FileTransferEngine::listDirectory(currentLocalPath_.toStdString());
     QVariantList list;
-    for (const auto &item : items) {
+    for (const auto& item : items) {
         QVariantMap map;
         map["name"] = QString::fromStdString(item.name);
         map["size"] = static_cast<qulonglong>(item.size);
@@ -542,8 +595,9 @@ void SessionClient::requestLocalDirectoryListing(const QString &path) {
     emit localDirectoryListChanged(localDirectoryList_);
 }
 
-void SessionClient::deleteLocalFile(const QString &path) {
-    if (path.isEmpty()) return;
+void SessionClient::deleteLocalFile(const QString& path) {
+    if (path.isEmpty())
+        return;
     std::error_code ec;
     std::filesystem::remove_all(path.toStdString(), ec);
     transferStatus_ = "Deleted local item: " + QFileInfo(path).fileName();
@@ -551,8 +605,9 @@ void SessionClient::deleteLocalFile(const QString &path) {
     requestLocalDirectoryListing(currentLocalPath_);
 }
 
-void SessionClient::deleteRemoteFile(const QString &path) {
-    if (path.isEmpty()) return;
+void SessionClient::deleteRemoteFile(const QString& path) {
+    if (path.isEmpty())
+        return;
     std::error_code ec;
     std::filesystem::remove_all(path.toStdString(), ec);
     transferStatus_ = "Deleted remote item: " + QFileInfo(path).fileName();

@@ -1,7 +1,9 @@
-#include "../include/ProtocolCodec.h"
-#include <QtTest/QtTest>
 #include <random>
 #include <vector>
+
+#include <QtTest/QtTest>
+
+#include "../include/ProtocolCodec.h"
 
 class TestProtocolFuzz : public QObject {
     Q_OBJECT

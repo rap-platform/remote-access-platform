@@ -4,6 +4,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QUrl>
+
 #include "SessionClient.h"
 #include "ThemeManager.h"
 #include "VideoFrameProvider.h"
@@ -13,7 +14,7 @@
 #include "dev/HotReloadManager.h"
 #endif
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     QGuiApplication app(argc, argv);
     app.setApplicationName("rap-client");
     app.setApplicationVersion("0.1.0");
@@ -35,15 +36,13 @@ int main(int argc, char *argv[]) {
 
     // Resolve QML Main.qml location robustly
     QString appDir = app.applicationDirPath();
-    QStringList candidates = {
-        appDir + "/qml/Main.qml",
-        appDir + "/../../apps/client/qml/Main.qml",
-        QDir::currentPath() + "/apps/client/qml/Main.qml",
-        QDir::currentPath() + "/qml/Main.qml"
-    };
+    QStringList candidates = {appDir + "/qml/Main.qml",
+                              appDir + "/../../apps/client/qml/Main.qml",
+                              QDir::currentPath() + "/apps/client/qml/Main.qml",
+                              QDir::currentPath() + "/qml/Main.qml"};
 
     QString resolvedPath;
-    for (const QString &path : candidates) {
+    for (const QString& path : candidates) {
         if (QFileInfo::exists(path)) {
             resolvedPath = QFileInfo(path).absoluteFilePath();
             break;

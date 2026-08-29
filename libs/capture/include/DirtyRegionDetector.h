@@ -1,9 +1,8 @@
 #ifndef RAP_CAPTURE_DIRTY_REGION_DETECTOR_H
 #define RAP_CAPTURE_DIRTY_REGION_DETECTOR_H
 
-#include <cstdint>
 #include <cstddef>
-
+#include <cstdint>
 
 namespace rap::capture {
 
@@ -17,8 +16,8 @@ struct DirtyRect {
 
 class DirtyRegionDetector {
 public:
-    static DirtyRect detectDirtyRegion(const uint8_t *prevFrame,
-                                       const uint8_t *currFrame,
+    static DirtyRect detectDirtyRegion(const uint8_t* prevFrame,
+                                       const uint8_t* currFrame,
                                        int width,
                                        int height,
                                        int bytesPerPixel = 4);

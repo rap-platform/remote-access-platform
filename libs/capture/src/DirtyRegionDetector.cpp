@@ -1,14 +1,15 @@
 #include "DirtyRegionDetector.h"
+
 #include <algorithm>
 #include <cstring>
 
 namespace rap::capture {
 
-DirtyRect DirtyRegionDetector::detectDirtyRegion(const uint8_t *prevFrame,
-                                                   const uint8_t *currFrame,
-                                                   int width,
-                                                   int height,
-                                                   int bytesPerPixel) {
+DirtyRect DirtyRegionDetector::detectDirtyRegion(const uint8_t* prevFrame,
+                                                 const uint8_t* currFrame,
+                                                 int width,
+                                                 int height,
+                                                 int bytesPerPixel) {
     DirtyRect rect;
     if (!currFrame || width <= 0 || height <= 0) {
         return rect;
@@ -31,8 +32,8 @@ DirtyRect DirtyRegionDetector::detectDirtyRegion(const uint8_t *prevFrame,
     const int stride = width * bytesPerPixel;
 
     for (int y = 0; y < height; ++y) {
-        const uint8_t *prevRow = prevFrame + (y * stride);
-        const uint8_t *currRow = currFrame + (y * stride);
+        const uint8_t* prevRow = prevFrame + (y * stride);
+        const uint8_t* currRow = currFrame + (y * stride);
 
         if (std::memcmp(prevRow, currRow, stride) != 0) {
             minY = std::min(minY, y);

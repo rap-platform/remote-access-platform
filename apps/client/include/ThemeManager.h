@@ -25,7 +25,7 @@ class ThemeManager : public QObject {
     Q_PROPERTY(QColor transparent READ transparent CONSTANT)
 
 public:
-    explicit ThemeManager(QObject *parent = nullptr);
+    explicit ThemeManager(QObject* parent = nullptr);
 
     int currentTheme() const { return currentTheme_; }
     QString currentThemeName() const { return currentThemeName_; }

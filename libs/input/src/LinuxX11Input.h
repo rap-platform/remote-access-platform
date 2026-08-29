@@ -1,9 +1,10 @@
 #ifndef RAP_INPUT_LINUX_X11_INPUT_H
 #define RAP_INPUT_LINUX_X11_INPUT_H
 
-#include "IInputBackend.h"
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
+
+#include "IInputBackend.h"
 
 namespace rap::input {
 
@@ -13,11 +14,11 @@ public:
     ~LinuxX11Input() override;
 
     bool initialize() override;
-    bool injectEvent(const InputEvent &event) override;
+    bool injectEvent(const InputEvent& event) override;
     std::string backendName() const override { return "Linux X11 Input Injection Backend"; }
 
 private:
-    Display *display_{nullptr};
+    Display* display_{nullptr};
     bool xtestSupported_{false};
 };
 

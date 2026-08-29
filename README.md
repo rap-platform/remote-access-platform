@@ -114,12 +114,15 @@ cargo clippy --workspace --all-targets -- -D warnings
 
 ## 6. Live Documentation & Architecture Specs
 
+- **Project Roadmap & Feature Matrix**: [`ROADMAP.md`](./ROADMAP.md)
+- **Developer Onboarding & Contributing Guide**: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 - **Architecture Blueprint**: [`docs/REMOTE-DESKTOP-ARCHITECTURE.md`](./docs/REMOTE-DESKTOP-ARCHITECTURE.md)
 - **Live Implementation Log**: [`docs/IMPLEMENTATION_LOG.md`](./docs/IMPLEMENTATION_LOG.md) *(Continuously updated for every milestone)*
 - **Implementation Plan & Checklist**: [`docs/architecture_and_implementation_plan.md`](./docs/architecture_and_implementation_plan.md)
 - **Testing Strategy**: [`docs/testing-strategy.md`](./docs/testing-strategy.md)
 - **Coding Standards**: [`CODING_STANDARDS.md`](./CODING_STANDARDS.md)
 - **Security Policy**: [`SECURITY.md`](./SECURITY.md)
+
 
 ---
 

@@ -20,13 +20,17 @@ jobs:
 
       - name: Check C++ Formatting
         run: |
-          find apps/ libs/ -name '*.cpp' -o -name '*.h' | xargs clang-format --dry-run --Werror
+          find apps/agent/ apps/client/ libs/ \( -name '*.cpp' -o -name '*.h' \) | xargs clang-format --dry-run --Werror
 
       - name: Check Rust Formatting & Clippy
         run: |
           rustup component add rustfmt clippy
           cargo fmt --check
           cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Run Architecture & Quality Gate Audit
+        run: |
+          python3 tests/agent_rules_audit.py
 
   build-and-test:
     name: Build & Test Matrix (${{ matrix.os }})
@@ -35,7 +39,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            qt_arch: gcc_64
+          - os: windows-latest
+            qt_arch: win64_msvc2019_64
+          - os: macos-latest
+            qt_arch: clang_64
 
     steps:
       - uses: actions/checkout@v4
@@ -43,26 +53,54 @@ jobs:
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install System Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libxcb1-dev libxcb-cursor-dev libxkbcommon-dev libxkbcommon-x11-dev pkg-config ninja-build libx11-dev libxext-dev libxtst-dev libxrandr-dev libxfixes-dev libxdamage-dev
+
       - name: Setup Qt 6
         uses: jurplel/install-qt-action@v3
         with:
           version: '6.6.2'
-          arch: 'gcc_64'
+          arch: ${{ matrix.qt_arch }}
 
-      - name: Setup CMake & Ninja
-        uses: jmillikin/setup-ninja@v1
+      - name: Install Ninja (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y ninja-build
+
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Create AGL framework stub (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # Qt 6.6.x prebuilt macOS binaries reference AGL which was removed in macOS 14.
+          # We create a minimal stub dylib so the linker can satisfy the reference at build time.
+          echo 'void AGL_stub(void){}' | clang -dynamiclib -o /tmp/AGL -x c -
+          sudo mkdir -p /Library/Frameworks/AGL.framework/Versions/A/Headers
+          sudo cp /tmp/AGL /Library/Frameworks/AGL.framework/Versions/A/AGL
+          sudo ln -sf A /Library/Frameworks/AGL.framework/Versions/Current
+          sudo ln -sf Versions/Current/AGL /Library/Frameworks/AGL.framework/AGL
+
+      - name: Install Ninja (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ninja --no-progress -y
 
       - name: Configure CMake (C++)
         run: |
-          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTING=ON
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTING=ON
 
       - name: Build C++ Targets
         run: |
-          cmake --build build
+          cmake --build build --config Debug
 
       - name: Run C++ Unit Tests (CTest)
+        env:
+          QT_QPA_PLATFORM: offscreen
         run: |
-          ctest --test-dir build --output-on-failure
+          ctest --test-dir build -C Debug --output-on-failure
 
       - name: Run Rust Cargo Tests
         run: |

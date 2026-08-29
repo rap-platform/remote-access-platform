@@ -11,28 +11,26 @@ namespace rap::common::logging {
 
 class JsonLogger {
 public:
-    static JsonLogger &instance();
+    static JsonLogger& instance();
 
-    void initialize(const QString &logFilePath = QString());
+    void initialize(const QString& logFilePath = QString());
     void install();
     void uninstall();
 
-    static void qtMessageHandler(QtMsgType type,
-                                 const QMessageLogContext &context,
-                                 const QString &msg);
+    static void
+    qtMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
 
-    QJsonObject formatJsonObject(QtMsgType type,
-                                 const QMessageLogContext &context,
-                                 const QString &msg) const;
+    QJsonObject
+    formatJsonObject(QtMsgType type, const QMessageLogContext& context, const QString& msg) const;
 
 private:
     JsonLogger() = default;
     ~JsonLogger();
 
-    JsonLogger(const JsonLogger &) = delete;
-    JsonLogger &operator=(const JsonLogger &) = delete;
+    JsonLogger(const JsonLogger&) = delete;
+    JsonLogger& operator=(const JsonLogger&) = delete;
 
-    void writeLog(const QString &jsonLine);
+    void writeLog(const QString& jsonLine);
 
     QMutex mutex_;
     QFile logFile_;

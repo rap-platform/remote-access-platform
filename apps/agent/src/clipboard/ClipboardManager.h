@@ -11,15 +11,15 @@ namespace rap::agent {
 class ClipboardManager : public QObject {
     Q_OBJECT
 public:
-    explicit ClipboardManager(QObject *parent = nullptr) : QObject(parent) {}
+    explicit ClipboardManager(QObject* parent = nullptr) : QObject(parent) {}
 
     static QString getSystemClipboardText() {
-        QClipboard *cb = QGuiApplication::clipboard();
+        QClipboard* cb = QGuiApplication::clipboard();
         return cb ? cb->text() : QString();
     }
 
-    static void setSystemClipboardText(const QString &text) {
-        QClipboard *cb = QGuiApplication::clipboard();
+    static void setSystemClipboardText(const QString& text) {
+        QClipboard* cb = QGuiApplication::clipboard();
         if (cb) {
             cb->setText(text);
         }

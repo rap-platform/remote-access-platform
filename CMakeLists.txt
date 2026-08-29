@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
 
+# Use modern OpenGL preference — prevents macOS linker from pulling in the
+# deprecated/removed AGL framework on macOS 14+ (Sonoma and later).
+if(POLICY CMP0072)
+    cmake_policy(SET CMP0072 NEW)
+endif()
+
 project(RemoteDesktopPlatform
     VERSION 0.1.0
     LANGUAGES CXX C

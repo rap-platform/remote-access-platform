@@ -1,4 +1,5 @@
 #include "LinuxX11Input.h"
+
 #include <cstdlib>
 #include <iostream>
 
@@ -15,12 +16,13 @@ bool LinuxX11Input::initialize() {
     display_ = XOpenDisplay(nullptr);
     if (display_) {
         int eventBase, errorBase, majorVersion, minorVersion;
-        xtestSupported_ = XTestQueryExtension(display_, &eventBase, &errorBase, &majorVersion, &minorVersion);
+        xtestSupported_ =
+            XTestQueryExtension(display_, &eventBase, &errorBase, &majorVersion, &minorVersion);
     }
     return true;
 }
 
-bool LinuxX11Input::injectEvent(const InputEvent &event) {
+bool LinuxX11Input::injectEvent(const InputEvent& event) {
     if (std::getenv("RAP_DISABLE_X11_INJECTION") || std::getenv("RAP_TEST_MODE")) {
         return true;
     }

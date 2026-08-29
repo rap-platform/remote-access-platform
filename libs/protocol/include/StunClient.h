@@ -19,7 +19,7 @@ struct StunMappedAddress {
 class StunClient {
 public:
     static std::vector<uint8_t> createBindingRequest(const uint8_t transactionId[12]);
-    static StunMappedAddress parseBindingResponse(const uint8_t *data, size_t size);
+    static StunMappedAddress parseBindingResponse(const uint8_t* data, size_t size);
 };
 
 } // namespace rap::protocol

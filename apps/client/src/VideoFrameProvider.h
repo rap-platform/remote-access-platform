@@ -13,10 +13,10 @@ class VideoFrameProvider : public QQuickImageProvider {
 public:
     VideoFrameProvider();
 
-    QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
+    QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize) override;
 
 public slots:
-    void updateFrame(const QImage &image);
+    void updateFrame(const QImage& image);
 
 signals:
     void frameReady();

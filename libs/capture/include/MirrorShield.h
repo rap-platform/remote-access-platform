@@ -15,11 +15,11 @@ struct WindowBounds {
 
 class MirrorShield {
 public:
-    static bool applyMirrorShield(uint8_t *frameBuffer,
-                                 int frameWidth,
-                                 int frameHeight,
-                                 const WindowBounds &clientBounds,
-                                 int bytesPerPixel = 4);
+    static bool applyMirrorShield(uint8_t* frameBuffer,
+                                  int frameWidth,
+                                  int frameHeight,
+                                  const WindowBounds& clientBounds,
+                                  int bytesPerPixel = 4);
 };
 
 } // namespace rap::capture

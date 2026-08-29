@@ -1,9 +1,11 @@
 #include "AdaptiveBitrateController.h"
+
 #include <algorithm>
 
 namespace rap::capture {
 
-AdaptiveBitrateController::AdaptiveBitrateController(uint32_t initialBitrateKbps, uint32_t initialFps) {
+AdaptiveBitrateController::AdaptiveBitrateController(uint32_t initialBitrateKbps,
+                                                     uint32_t initialFps) {
     m_settings.targetBitrateKbps = initialBitrateKbps;
     m_settings.targetFps = initialFps;
     m_settings.enableHardwareAcceleration = true;

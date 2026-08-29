@@ -24,28 +24,24 @@ struct FileChunk {
     bool isLastChunk{false};
 };
 
-enum class TransferControlAction {
-    Pause = 1,
-    Resume = 2,
-    Cancel = 3
-};
+enum class TransferControlAction { Pause = 1, Resume = 2, Cancel = 3 };
 
 class FileTransferEngine {
 public:
-    static std::string calculateSha256(const std::vector<uint8_t> &data);
-    static std::string calculateFileSha256(const std::string &filePath);
+    static std::string calculateSha256(const std::vector<uint8_t>& data);
+    static std::string calculateFileSha256(const std::string& filePath);
 
-    static std::vector<DirectoryItem> listDirectory(const std::string &dirPath);
+    static std::vector<DirectoryItem> listDirectory(const std::string& dirPath);
 
-    static std::vector<FileChunk> prepareFileChunks(const std::string &transferId,
-                                                    const std::string &filePath,
+    static std::vector<FileChunk> prepareFileChunks(const std::string& transferId,
+                                                    const std::string& filePath,
                                                     size_t chunkSize = 65536);
 
-    static bool writeChunkToFile(const std::string &filePath,
+    static bool writeChunkToFile(const std::string& filePath,
                                  uint64_t offset,
-                                 const std::vector<uint8_t> &data);
+                                 const std::vector<uint8_t>& data);
 
-    static bool verifyIntegrity(const std::string &filePath, const std::string &expectedSha256);
+    static bool verifyIntegrity(const std::string& filePath, const std::string& expectedSha256);
 };
 
 } // namespace rap::file_transfer

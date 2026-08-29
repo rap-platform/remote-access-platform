@@ -13,9 +13,9 @@ class HotReloadManager : public QObject {
     Q_PROPERTY(bool active READ isActive NOTIFY activeChanged)
 
 public:
-    explicit HotReloadManager(QQmlEngine *engine, QObject *parent = nullptr);
+    explicit HotReloadManager(QQmlEngine* engine, QObject* parent = nullptr);
 
-    void watchDirectory(const QString &dirPath);
+    void watchDirectory(const QString& dirPath);
     bool isActive() const { return watcher_.directories().count() > 0; }
 
 signals:
@@ -23,10 +23,10 @@ signals:
     void qmlReloaded();
 
 private slots:
-    void onFileOrDirectoryChanged(const QString &path);
+    void onFileOrDirectoryChanged(const QString& path);
 
 private:
-    QQmlEngine *engine_{nullptr};
+    QQmlEngine* engine_{nullptr};
     QFileSystemWatcher watcher_;
 };
 
