@@ -1,0 +1,79 @@
+name: Code Review Bot (Reviewdog)
+
+on:
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  reviewdog-clang-tidy:
+    name: clang-tidy Inline Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      - name: Install clang-tidy & compilation DB tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy clang cmake ninja-build \
+            libgl1-mesa-dev libxcb1-dev libxcb-cursor-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev pkg-config \
+            libx11-dev libxext-dev libxtst-dev libxrandr-dev
+
+      - name: Setup Qt 6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.6.2'
+          arch: 'gcc_64'
+
+      - name: Generate compile_commands.json
+        run: |
+          cmake -B build -S . \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_TESTING=ON \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Run reviewdog (clang-tidy)
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Find all C++ source files
+          FILES=$(find apps/libs/ libs/ -name '*.cpp' 2>/dev/null || find apps/ libs/ -name '*.cpp')
+          clang-tidy -p build $FILES 2>&1 | reviewdog -f=clang-tidy -reporter=github-pr-review -filter-mode=added -level=warning || true
+
+  reviewdog-cargo-clippy:
+    name: Clippy Inline Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Run reviewdog (Cargo Clippy)
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cargo clippy --message-format=json --workspace --all-targets 2>&1 | reviewdog -f=clippy -reporter=github-pr-review -filter-mode=added -level=warning || true
+
