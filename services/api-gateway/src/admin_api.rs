@@ -2,6 +2,7 @@
 
 pub struct AdminApiRouter;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FleetDeviceSummary {
     pub device_id: String,
     pub hostname: String,
@@ -36,7 +37,25 @@ impl AdminApiRouter {
 
     /// Enforce remote access policy on host agent.
     pub fn enforce_device_policy(device_id: &str, allow_clipboard: bool, allow_file_transfer: bool) -> bool {
-        println!("[Admin API] Policy updated for device {}: clipboard={}, file_transfer={}", device_id, allow_clipboard, allow_file_transfer);
+        println!(
+            "[Admin API] Policy updated for device {}: clipboard={}, file_transfer={}",
+            device_id, allow_clipboard, allow_file_transfer
+        );
         true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_admin_fleet_api() {
+        let fleet = AdminApiRouter::list_fleet_devices();
+        assert_eq!(fleet.len(), 2);
+        assert_eq!(fleet[0].device_id, "106794028");
+
+        let ok = AdminApiRouter::enforce_device_policy("106794028", true, false);
+        assert!(ok);
     }
 }

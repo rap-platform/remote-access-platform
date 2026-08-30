@@ -44,3 +44,18 @@ impl ServiceMetrics {
 }
 
 pub static METRICS: ServiceMetrics = ServiceMetrics::new();
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_metrics_collection_and_prometheus_export() {
+        let metrics = ServiceMetrics::new();
+        metrics.record_handshake();
+        metrics.record_bytes(1024);
+        let output = metrics.export_prometheus_format();
+        assert!(output.contains("rap_relay_bytes_relayed_total 1024"));
+        assert!(output.contains("rap_signaling_handshakes_total 1"));
+    }
+}
