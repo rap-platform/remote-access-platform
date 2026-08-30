@@ -41,6 +41,12 @@ class SessionClient : public QObject {
     Q_PROPERTY(double bitrate READ bitrate NOTIFY bitrateChanged)
     Q_PROPERTY(QString codec READ codec NOTIFY codecChanged)
 
+    // Sprint 3: Auto-reconnect, Connection History & Privacy Screen properties
+    Q_PROPERTY(bool isReconnecting READ isReconnecting NOTIFY isReconnectingChanged)
+    Q_PROPERTY(int reconnectAttempts READ reconnectAttempts NOTIFY reconnectAttemptsChanged)
+    Q_PROPERTY(QVariantList connectionHistory READ connectionHistory NOTIFY connectionHistoryChanged)
+    Q_PROPERTY(bool privacyMode READ privacyMode NOTIFY privacyModeChanged)
+
 public:
     explicit SessionClient(VideoFrameProvider* frameProvider, QObject* parent = nullptr);
     ~SessionClient() override;
@@ -69,6 +75,12 @@ public:
     double bitrate() const { return bitrate_; }
     QString codec() const { return codec_; }
 
+    // Sprint 3 getters
+    bool isReconnecting() const { return isReconnecting_; }
+    int reconnectAttempts() const { return reconnectAttempts_; }
+    QVariantList connectionHistory() const { return connectionHistory_; }
+    bool privacyMode() const { return privacyMode_; }
+
     Q_INVOKABLE void setRenderGated(bool gated);
 
     Q_INVOKABLE void connectByP2PId(const QString& p2pId, const QString& password = "");
@@ -93,6 +105,11 @@ public:
     Q_INVOKABLE void cancelFileTransfer();
     Q_INVOKABLE void selectMonitor(int monitorId);
     Q_INVOKABLE void captureScreenshot();
+
+    // Sprint 3 methods
+    Q_INVOKABLE void cancelReconnect();
+    Q_INVOKABLE void clearConnectionHistory();
+    Q_INVOKABLE void togglePrivacyMode();
 
 public slots:
     void connectToHost(const QString& host, uint16_t port, const QString& password = "");
@@ -124,6 +141,12 @@ signals:
     void bitrateChanged(double bitrate);
     void codecChanged(const QString& codec);
 
+    // Sprint 3 signals
+    void isReconnectingChanged(bool reconnecting);
+    void reconnectAttemptsChanged(int attempts);
+    void connectionHistoryChanged(const QVariantList& history);
+    void privacyModeChanged(bool privacyMode);
+
 private slots:
     void onReadyRead();
     void onConnected();
@@ -131,6 +154,7 @@ private slots:
     void onErrorOccurred(QAbstractSocket::SocketError socketError);
     void onClipboardChanged();
     void updateTelemetry();
+    void attemptReconnect();
 
 private:
     void setStatus(const QString& status);
@@ -175,8 +199,29 @@ private:
     uint64_t lastByteCount_{0};
     uint64_t heartbeatSendTimestamp_{0};
     uint64_t totalBytesReceived_{0};
+
+    // Sprint 3: Auto-reconnect state
+    QTimer reconnectTimer_;
+    bool isReconnecting_{false};
+    int reconnectAttempts_{0};
+    const int maxReconnectAttempts_{5};
+    bool userInitiatedDisconnect_{false};
+    QString lastHost_;
+    uint16_t lastPort_{18443};
+
+    // Sprint 3: Connection history state
+    QVariantList connectionHistory_;
+    qint64 sessionStartTimeMs_{0};
+
+    // Sprint 3: Privacy screen state
+    bool privacyMode_{false};
+
+    void loadConnectionHistory();
+    void saveConnectionHistory();
+    void addHistoryRecord(const QString& target, const QString& status, qint64 durationSec, const QString& disconnectReason);
 };
 
 } // namespace rap::client
 
 #endif // RAP_CLIENT_SESSION_CLIENT_H
+

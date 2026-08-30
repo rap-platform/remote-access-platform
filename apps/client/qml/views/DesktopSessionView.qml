@@ -328,6 +328,31 @@ Rectangle {
                         border.color: themePalette.border
                     }
                 }
+
+                // Privacy Screen Toggle Button (Sprint 3)
+                Button {
+                    text: sessionClient.privacyMode ? "🕶️ Privacy Active" : "🕶️ Privacy"
+                    Layout.preferredHeight: 30
+                    visible: desktopSessionView.isCurrentTabConnected
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightBold
+                    ToolTip.visible: hovered
+                    ToolTip.text: sessionClient.privacyMode ? "Disable Blank Host Screen" : "Blank Remote Host Display (Privacy Screen)"
+                    onClicked: sessionClient.togglePrivacyMode()
+                    background: Rectangle {
+                        color: sessionClient.privacyMode ? themePalette.primary : (parent.hovered ? themePalette.surfaceVariant : themePalette.surface)
+                        radius: Metrics.radiusSm
+                        border.color: sessionClient.privacyMode ? themePalette.primary : themePalette.border
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: sessionClient.privacyMode ? "#FFFFFF" : themePalette.textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
             }
         }
 
@@ -335,6 +360,53 @@ Rectangle {
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
+
+            // Auto-Reconnect Alert Banner (Sprint 3)
+            Rectangle {
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 42
+                color: themePalette.warning || "#FFC107"
+                visible: sessionClient.isReconnecting
+                z: 200
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: Metrics.spacingLg
+                    anchors.rightMargin: Metrics.spacingLg
+                    spacing: Metrics.spacingMd
+
+                    Text {
+                        text: "⚠️ Connection Lost — " + sessionClient.statusText
+                        font.family: Typography.fontFamily
+                        font.pixelSize: Typography.fontBody
+                        font.weight: Typography.weightBold
+                        color: "#000000"
+                        Layout.fillWidth: true
+                    }
+
+                    Button {
+                        text: "Cancel Reconnect"
+                        Layout.preferredHeight: 28
+                        font.family: Typography.fontFamily
+                        font.pixelSize: Typography.fontCaption
+                        font.weight: Typography.weightBold
+                        onClicked: sessionClient.cancelReconnect()
+                        background: Rectangle {
+                            color: "#000000"
+                            radius: Metrics.radiusSm
+                        }
+                        contentItem: Text {
+                            text: parent.text
+                            font: parent.font
+                            color: "#FFFFFF"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                }
+            }
 
             // Live Remote Viewport Container (Shown when connected and active tab selected)
             Item {

@@ -1,11 +1,15 @@
 #include "SessionClient.h"
 
-#include <QCryptographicHash>
 #include <QDateTime>
 #include <QDebug>
+#include <QDir>
 #include <QFileInfo>
 #include <QHostInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QProcess>
+#include <QStandardPaths>
 
 #include <cstring>
 #include <filesystem>
@@ -85,6 +89,13 @@ SessionClient::SessionClient(VideoFrameProvider* frameProvider, QObject* parent)
     secondary["isPrimary"] = false;
     availableMonitors_ = {primary, secondary};
     emit availableMonitorsChanged(availableMonitors_);
+
+    // Initialize Auto-Reconnect timer
+    connect(&reconnectTimer_, &QTimer::timeout, this, &SessionClient::attemptReconnect);
+    reconnectTimer_.setSingleShot(true);
+
+    // Load persisted connection history
+    loadConnectionHistory();
 }
 
 SessionClient::~SessionClient() {
@@ -110,6 +121,9 @@ void SessionClient::connectToHost(const QString& host, uint16_t port, const QStr
     }
 
     requestedPassword_ = password;
+    lastHost_ = host;
+    lastPort_ = port;
+    userInitiatedDisconnect_ = false;
 
     if (lastConnectedTarget_.isEmpty()) {
         lastConnectedTarget_ = host + ":" + QString::number(port);
@@ -121,6 +135,13 @@ void SessionClient::connectToHost(const QString& host, uint16_t port, const QStr
 }
 
 void SessionClient::disconnectFromHost() {
+    userInitiatedDisconnect_ = true;
+    reconnectTimer_.stop();
+    if (isReconnecting_) {
+        isReconnecting_ = false;
+        emit isReconnectingChanged(false);
+    }
+
     if (socket_.isOpen()) {
         qInfo() << "[Client] Disconnecting TCP socket from host...";
         socket_.disconnectFromHost();
@@ -265,6 +286,15 @@ void SessionClient::onConnected() {
     receiveBuffer_.clear();
     receivedFrames_ = 0;
     inputSequence_ = 0;
+    reconnectAttempts_ = 0;
+    sessionStartTimeMs_ = QDateTime::currentMSecsSinceEpoch();
+
+    if (isReconnecting_) {
+        isReconnecting_ = false;
+        emit isReconnectingChanged(false);
+    }
+    emit reconnectAttemptsChanged(0);
+
     socket_.setSocketOption(QAbstractSocket::LowDelayOption,
                             1); // Disable Nagle's algorithm (TCP_NODELAY)
     qInfo() << "[Client] TCP socket connected successfully! Transmitting Authentication Request...";
@@ -297,12 +327,50 @@ void SessionClient::onConnected() {
 }
 
 void SessionClient::onDisconnected() {
+    bool wasConnected = isConnected_;
     isConnected_ = false;
     receiveBuffer_.clear();
-    lastConnectedTarget_ = "";
+
     qInfo() << "[Client] TCP socket disconnected.";
-    setStatus("Disconnected");
     emit connectionStateChanged(false);
+
+    // Calculate session duration if previously connected
+    qint64 durationSec = 0;
+    if (sessionStartTimeMs_ > 0) {
+        durationSec = std::max<qint64>(0, (QDateTime::currentMSecsSinceEpoch() - sessionStartTimeMs_) / 1000);
+        sessionStartTimeMs_ = 0;
+    }
+
+    QString reason = userInitiatedDisconnect_ ? "User Initiated" : "Network Disconnect";
+    if (wasConnected && !lastConnectedTarget_.isEmpty()) {
+        addHistoryRecord(lastConnectedTarget_, "Disconnected", durationSec, reason);
+    }
+
+    // Auto-Reconnect with Exponential Backoff (1s, 2s, 4s, 8s, 16s, max 30s)
+    if (!userInitiatedDisconnect_ && !lastHost_.isEmpty() && reconnectAttempts_ < maxReconnectAttempts_) {
+        reconnectAttempts_++;
+        isReconnecting_ = true;
+        emit reconnectAttemptsChanged(reconnectAttempts_);
+        emit isReconnectingChanged(true);
+
+        int delayMs = std::min(30000, 1000 * (1 << (reconnectAttempts_ - 1)));
+        qInfo() << "[Client Auto-Reconnect] Scheduling attempt" << reconnectAttempts_
+                << "/" << maxReconnectAttempts_ << "in" << delayMs << "ms";
+        
+        setStatus(QString("Connection lost. Reconnecting in %1s (Attempt %2/%3)...")
+                      .arg(delayMs / 1000)
+                      .arg(reconnectAttempts_)
+                      .arg(maxReconnectAttempts_));
+
+        reconnectTimer_.start(delayMs);
+    } else {
+        if (isReconnecting_) {
+            isReconnecting_ = false;
+            emit isReconnectingChanged(false);
+        }
+        lastConnectedTarget_ = "";
+        setStatus("Disconnected");
+    }
 }
 
 void SessionClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
@@ -310,8 +378,11 @@ void SessionClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     isConnected_ = false;
     receiveBuffer_.clear();
     qWarning() << "[Client] Socket Error:" << socket_.errorString();
-    setStatus("Socket Error: " + socket_.errorString());
-    emit connectionStateChanged(false);
+    
+    if (!isReconnecting_) {
+        setStatus("Socket Error: " + socket_.errorString());
+        emit connectionStateChanged(false);
+    }
 }
 
 void SessionClient::setRenderGated(bool gated) {
@@ -717,5 +788,135 @@ void SessionClient::updateTelemetry() {
     }
 }
 
+// ─── Sprint 3: Auto-Reconnect Implementation ───────────────────────────
+void SessionClient::attemptReconnect() {
+    if (userInitiatedDisconnect_ || lastHost_.isEmpty()) return;
+    qInfo() << "[Client Auto-Reconnect] Executing attempt" << reconnectAttempts_ << "to" << lastHost_;
+    setStatus(QString("Reconnecting to %1 (Attempt %2/%3)...")
+                  .arg(lastConnectedTarget_)
+                  .arg(reconnectAttempts_)
+                  .arg(maxReconnectAttempts_));
+    socket_.connectToHost(lastHost_, lastPort_);
+}
+
+void SessionClient::cancelReconnect() {
+    userInitiatedDisconnect_ = true;
+    reconnectTimer_.stop();
+    if (isReconnecting_) {
+        isReconnecting_ = false;
+        emit isReconnectingChanged(false);
+    }
+    reconnectAttempts_ = 0;
+    emit reconnectAttemptsChanged(0);
+    lastConnectedTarget_ = "";
+    setStatus("Reconnection Canceled by User");
+    qInfo() << "[Client Auto-Reconnect] Reconnection canceled by user.";
+}
+
+// ─── Sprint 3: Privacy Screen Implementation ───────────────────────────
+void SessionClient::togglePrivacyMode() {
+    privacyMode_ = !privacyMode_;
+    emit privacyModeChanged(privacyMode_);
+
+    // Action 4 = Blank Host Screen (Enable), Action 5 = Unblank Host Screen (Disable)
+    sendSessionControlAction(privacyMode_ ? 4 : 5);
+    qInfo() << "[Client] Privacy Screen Mode set to:" << (privacyMode_ ? "ENABLED" : "DISABLED");
+}
+
+// ─── Sprint 3: Connection History Persistence ─────────────────────────
+void SessionClient::loadConnectionHistory() {
+    QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir().mkpath(appDataDir);
+    QString filePath = appDataDir + "/connection_history.json";
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        // Populate default demo history if no file exists
+        QVariantMap sample1;
+        sample1["target"] = "Local Linux Agent (127.0.0.1:18443)";
+        sample1["timestamp"] = QDateTime::currentDateTime().addDays(-1).toString("yyyy-MM-dd HH:mm");
+        sample1["duration"] = "45 mins";
+        sample1["reason"] = "User Disconnect";
+        sample1["status"] = "Success";
+
+        QVariantMap sample2;
+        sample2["target"] = "Dev Workstation (10.0.0.15:18443)";
+        sample2["timestamp"] = QDateTime::currentDateTime().addDays(-2).toString("yyyy-MM-dd HH:mm");
+        sample2["duration"] = "12 mins";
+        sample2["reason"] = "Network Timeout";
+        sample2["status"] = "Success";
+
+        connectionHistory_ = {sample1, sample2};
+        emit connectionHistoryChanged(connectionHistory_);
+        saveConnectionHistory();
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (!doc.isArray()) return;
+
+    QVariantList history;
+    QJsonArray array = doc.array();
+    for (const auto& val : array) {
+        if (val.isObject()) {
+            history.append(val.toObject().toVariantMap());
+        }
+    }
+    connectionHistory_ = history;
+    emit connectionHistoryChanged(connectionHistory_);
+    qInfo() << "[Client History] Loaded" << history.size() << "connection history records.";
+}
+
+void SessionClient::saveConnectionHistory() {
+    QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir().mkpath(appDataDir);
+    QString filePath = appDataDir + "/connection_history.json";
+
+    QJsonArray array;
+    for (const auto& var : connectionHistory_) {
+        array.append(QJsonObject::fromVariantMap(var.toMap()));
+    }
+
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(QJsonDocument(array).toJson(QJsonDocument::Indented));
+        file.close();
+    }
+}
+
+void SessionClient::addHistoryRecord(const QString& target, const QString& status, qint64 durationSec, const QString& disconnectReason) {
+    QVariantMap record;
+    record["target"] = target;
+    record["timestamp"] = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm");
+    
+    if (durationSec >= 60) {
+        record["duration"] = QString::number(durationSec / 60) + " mins";
+    } else {
+        record["duration"] = QString::number(durationSec) + " secs";
+    }
+    record["status"] = status;
+    record["reason"] = disconnectReason;
+
+    connectionHistory_.prepend(record);
+    // Keep max 50 records
+    while (connectionHistory_.size() > 50) {
+        connectionHistory_.removeLast();
+    }
+    emit connectionHistoryChanged(connectionHistory_);
+    saveConnectionHistory();
+    qInfo() << "[Client History] Recorded connection to:" << target << "Duration:" << record["duration"].toString();
+}
+
+void SessionClient::clearConnectionHistory() {
+    connectionHistory_.clear();
+    emit connectionHistoryChanged(connectionHistory_);
+    saveConnectionHistory();
+    qInfo() << "[Client History] Connection history cleared.";
+}
+
 } // namespace rap::client
+
 

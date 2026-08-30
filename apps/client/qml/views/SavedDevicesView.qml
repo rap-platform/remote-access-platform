@@ -29,9 +29,10 @@ Rectangle {
             color: themePalette.textSecondary
         }
 
+        // Saved Devices Card Container
         Rectangle {
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.preferredHeight: 210
             color: themePalette.surface
             radius: Metrics.radiusSm
             border.color: themePalette.border
@@ -49,7 +50,7 @@ Rectangle {
                 delegate: Rectangle {
                     id: deviceCard
                     width: ListView.view.width
-                    height: 68
+                    height: 52
                     color: cardHover.hovered ? themePalette.surfaceVariant : themePalette.surface
                     radius: Metrics.radiusSm
                     border.color: themePalette.border
@@ -108,7 +109,7 @@ Rectangle {
                             id: btnConnectDevice
                             text: "Connect"
                             Layout.preferredWidth: 90
-                            Layout.preferredHeight: 34
+                            Layout.preferredHeight: 30
                             enabled: modelData.status === "Online"
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontCaption
@@ -136,5 +137,146 @@ Rectangle {
                 }
             }
         }
+
+        // Section Title: Recent Connection History Log
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Metrics.spacingSm
+
+            Label {
+                text: "📜 Recent Connection Audit Log"
+                font.family: Typography.fontFamily
+                font.pixelSize: Typography.fontSubheader
+                font.weight: Typography.weightBold
+                color: themePalette.textPrimary
+            }
+
+            Item { Layout.fillWidth: true }
+
+            Button {
+                text: "🗑️ Clear Log"
+                Layout.preferredHeight: 28
+                font.family: Typography.fontFamily
+                font.pixelSize: Typography.fontCaption
+                onClicked: sessionClient.clearConnectionHistory()
+                background: Rectangle {
+                    color: parent.hovered ? themePalette.surfaceVariant : themePalette.surface
+                    radius: Metrics.radiusSm
+                    border.color: themePalette.border
+                }
+            }
+        }
+
+        // Connection History Table Container
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            color: themePalette.surface
+            radius: Metrics.radiusSm
+            border.color: themePalette.border
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: Metrics.spacingSm
+                spacing: Metrics.spacingXs
+
+                // Table Header
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 28
+                    color: themePalette.surfaceVariant
+                    radius: Metrics.radiusSm
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: Metrics.spacingMd
+                        anchors.rightMargin: Metrics.spacingMd
+
+                        Label { text: "Timestamp"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.preferredWidth: 140 }
+                        Label { text: "Remote Target"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.fillWidth: true }
+                        Label { text: "Duration"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.preferredWidth: 90 }
+                        Label { text: "Disconnect Reason"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.preferredWidth: 160 }
+                        Label { text: "Action"; font.weight: Typography.weightBold; color: themePalette.textSecondary; Layout.preferredWidth: 90 }
+                    }
+                }
+
+                // Table Rows
+                ListView {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    model: sessionClient.connectionHistory
+
+                    delegate: Rectangle {
+                        width: ListView.view.width
+                        height: 38
+                        color: index % 2 === 0 ? themePalette.surface : themePalette.surfaceVariant
+                        border.color: themePalette.border
+                        border.width: 0.5
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: Metrics.spacingMd
+                            anchors.rightMargin: Metrics.spacingMd
+
+                            Label {
+                                text: modelData.timestamp
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontCaption
+                                color: themePalette.textSecondary
+                                Layout.preferredWidth: 140
+                            }
+
+                            Label {
+                                text: modelData.target
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontCaption
+                                font.weight: Typography.weightBold
+                                color: themePalette.textPrimary
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                            }
+
+                            Label {
+                                text: modelData.duration
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontCaption
+                                color: themePalette.textSecondary
+                                Layout.preferredWidth: 90
+                            }
+
+                            Label {
+                                text: modelData.reason
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontCaption
+                                color: modelData.reason.includes("Network") ? themePalette.warning || "#FFC107" : themePalette.textSecondary
+                                Layout.preferredWidth: 160
+                            }
+
+                            Button {
+                                text: "Reconnect"
+                                Layout.preferredWidth: 80
+                                Layout.preferredHeight: 26
+                                font.family: Typography.fontFamily
+                                font.pixelSize: 11
+                                onClicked: sessionClient.connectToHost("127.0.0.1", 18443)
+                                background: Rectangle {
+                                    color: themePalette.primary
+                                    radius: Metrics.radiusSm
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    font: parent.font
+                                    color: "#FFFFFF"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
+
