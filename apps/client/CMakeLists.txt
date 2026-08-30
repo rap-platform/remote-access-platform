@@ -28,6 +28,21 @@ add_executable(rap-client
     src/SessionClient.h
     src/theme/ThemeManager.cpp
     include/ThemeManager.h
+
+    # QML Interface Sources (Visible in Qt Creator Project Tree & Indexed for Search)
+    qml/Main.qml
+    qml/components/HeaderBar.qml
+    qml/components/IncomingConnectionDialog.qml
+    qml/components/SidebarNav.qml
+    qml/components/StatusBar.qml
+    qml/theme/Metrics.qml
+    qml/theme/Tokens.qml
+    qml/theme/Typography.qml
+    qml/theme/qmldir
+    qml/views/DesktopSessionView.qml
+    qml/views/FileTransferView.qml
+    qml/views/SavedDevicesView.qml
+    qml/views/SecurityKeysView.qml
 )
 
 # Copy QML directory to output build folder for standalone execution
