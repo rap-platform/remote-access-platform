@@ -195,6 +195,46 @@ Rectangle {
                     Layout.fillWidth: true
                 }
             }
+        // View 5: Remote PTY Terminal Shell
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            radius: Metrics.radiusSm
+            color: navHover5.hovered ? themePalette.surfaceVariant : (sidebarNav.currentViewIndex === 5 ? themePalette.surfaceVariant : themePalette.surface)
+            border.color: sidebarNav.currentViewIndex === 5 ? themePalette.primary : "transparent"
+            border.width: 1
+
+            HoverHandler {
+                id: navHover5
+                cursorShape: Qt.PointingHandCursor
+            }
+
+            TapHandler {
+                onTapped: sidebarNav.navigateTo(5)
+            }
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Metrics.spacingSm
+                anchors.rightMargin: Metrics.spacingSm
+                spacing: Metrics.spacingSm
+
+                Rectangle {
+                    width: 3
+                    Layout.fillHeight: true
+                    color: sidebarNav.currentViewIndex === 5 ? themePalette.primary : "transparent"
+                    radius: 2
+                }
+
+                Label {
+                    text: "🖥️ Terminal Shell"
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontBody
+                    font.weight: sidebarNav.currentViewIndex === 5 ? Typography.weightBold : Typography.weightMedium
+                    color: sidebarNav.currentViewIndex === 5 ? themePalette.primary : themePalette.textSecondary
+                    Layout.fillWidth: true
+                }
+            }
         }
 
         Item { Layout.fillHeight: true }

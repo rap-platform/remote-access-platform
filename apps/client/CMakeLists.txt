@@ -45,6 +45,7 @@ add_executable(rap-client
     qml/views/SavedDevicesView.qml
     qml/views/SecurityKeysView.qml
     qml/views/SettingsView.qml
+    qml/views/TerminalView.qml
 )
 
 # Copy QML directory to output build folder for standalone execution

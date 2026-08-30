@@ -18,6 +18,8 @@ enum PayloadType {
     PAYLOAD_TYPE_DIR_LIST_REQ = 11;
     PAYLOAD_TYPE_DIR_LIST_RESP = 12;
     PAYLOAD_TYPE_SELECT_MONITOR = 13;
+    PAYLOAD_TYPE_AUDIO_FRAME = 14;
+    PAYLOAD_TYPE_TERMINAL_DATA = 15;
 }
 
 // Video Codec identifier enumeration
@@ -140,4 +142,22 @@ message Heartbeat {
     uint64 agent_timestamp_ms = 2;
     bool is_reply = 3;
 }
+
+// Audio Frame payload for Opus audio streaming
+message AudioFrame {
+    uint64 sequence_number = 1;
+    uint64 timestamp_ms = 2;
+    uint32 sample_rate = 3;
+    uint32 channels = 4;
+    bytes pcm_or_opus_data = 5;
+}
+
+// Terminal Data payload for remote shell/PTY session
+message TerminalData {
+    uint32 session_id = 1;
+    bytes data = 2;
+    uint32 rows = 3;
+    uint32 cols = 4;
+}
+
 

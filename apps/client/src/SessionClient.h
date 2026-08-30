@@ -47,6 +47,14 @@ class SessionClient : public QObject {
     Q_PROPERTY(QVariantList connectionHistory READ connectionHistory NOTIFY connectionHistoryChanged)
     Q_PROPERTY(bool privacyMode READ privacyMode NOTIFY privacyModeChanged)
 
+    // Sprint 4: Premium Features properties
+    Q_PROPERTY(bool audioMuted READ isAudioMuted NOTIFY audioMutedChanged)
+    Q_PROPERTY(double audioVolume READ audioVolume NOTIFY audioVolumeChanged)
+    Q_PROPERTY(bool isRecording READ isRecording NOTIFY isRecordingChanged)
+    Q_PROPERTY(int recordingDurationSec READ recordingDurationSec NOTIFY recordingDurationSecChanged)
+    Q_PROPERTY(QString terminalOutput READ terminalOutput NOTIFY terminalOutputChanged)
+    Q_PROPERTY(bool isPipMode READ isPipMode NOTIFY isPipModeChanged)
+
 public:
     explicit SessionClient(VideoFrameProvider* frameProvider, QObject* parent = nullptr);
     ~SessionClient() override;
@@ -81,6 +89,14 @@ public:
     QVariantList connectionHistory() const { return connectionHistory_; }
     bool privacyMode() const { return privacyMode_; }
 
+    // Sprint 4 getters
+    bool isAudioMuted() const { return audioMuted_; }
+    double audioVolume() const { return audioVolume_; }
+    bool isRecording() const { return isRecording_; }
+    int recordingDurationSec() const { return recordingDurationSec_; }
+    QString terminalOutput() const { return terminalOutput_; }
+    bool isPipMode() const { return isPipMode_; }
+
     Q_INVOKABLE void setRenderGated(bool gated);
 
     Q_INVOKABLE void connectByP2PId(const QString& p2pId, const QString& password = "");
@@ -110,6 +126,14 @@ public:
     Q_INVOKABLE void cancelReconnect();
     Q_INVOKABLE void clearConnectionHistory();
     Q_INVOKABLE void togglePrivacyMode();
+
+    // Sprint 4 methods
+    Q_INVOKABLE void toggleAudioMute();
+    Q_INVOKABLE void setAudioVolume(double volume);
+    Q_INVOKABLE void toggleSessionRecording();
+    Q_INVOKABLE void sendTerminalInput(const QString& command);
+    Q_INVOKABLE void clearTerminal();
+    Q_INVOKABLE void togglePipMode();
 
 public slots:
     void connectToHost(const QString& host, uint16_t port, const QString& password = "");
@@ -147,6 +171,15 @@ signals:
     void connectionHistoryChanged(const QVariantList& history);
     void privacyModeChanged(bool privacyMode);
 
+    // Sprint 4 signals
+    void audioMutedChanged(bool muted);
+    void audioVolumeChanged(double volume);
+    void isRecordingChanged(bool recording);
+    void recordingDurationSecChanged(int durationSec);
+    void terminalOutputChanged(const QString& output);
+    void terminalOutputReceived(const QString& text);
+    void isPipModeChanged(bool pipMode);
+
 private slots:
     void onReadyRead();
     void onConnected();
@@ -155,6 +188,7 @@ private slots:
     void onClipboardChanged();
     void updateTelemetry();
     void attemptReconnect();
+    void updateRecordingTimer();
 
 private:
     void setStatus(const QString& status);
@@ -216,6 +250,15 @@ private:
     // Sprint 3: Privacy screen state
     bool privacyMode_{false};
 
+    // Sprint 4: Premium Features state
+    bool audioMuted_{false};
+    double audioVolume_{0.8};
+    bool isRecording_{false};
+    int recordingDurationSec_{0};
+    QTimer recordingTimer_;
+    QString terminalOutput_;
+    bool isPipMode_{false};
+
     void loadConnectionHistory();
     void saveConnectionHistory();
     void addHistoryRecord(const QString& target, const QString& status, qint64 durationSec, const QString& disconnectReason);
@@ -224,4 +267,5 @@ private:
 } // namespace rap::client
 
 #endif // RAP_CLIENT_SESSION_CLIENT_H
+
 

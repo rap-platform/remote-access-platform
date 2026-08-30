@@ -353,6 +353,83 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                     }
                 }
+
+                // Audio Mute Toggle Button (Sprint 4)
+                Button {
+                    text: sessionClient.audioMuted ? "🔇 Muted" : "🔊 Audio"
+                    Layout.preferredHeight: 30
+                    visible: desktopSessionView.isCurrentTabConnected
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightBold
+                    ToolTip.visible: hovered
+                    ToolTip.text: sessionClient.audioMuted ? "Unmute Session Audio" : "Mute Session Audio"
+                    onClicked: sessionClient.toggleAudioMute()
+                    background: Rectangle {
+                        color: sessionClient.audioMuted ? themePalette.error : (parent.hovered ? themePalette.surfaceVariant : themePalette.surface)
+                        radius: Metrics.radiusSm
+                        border.color: themePalette.border
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: sessionClient.audioMuted ? "#FFFFFF" : themePalette.textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+
+                // Session Recording Button (Sprint 4)
+                Button {
+                    property int sec: sessionClient.recordingDurationSec
+                    property string durationStr: Math.floor(sec / 60).toString().padStart(2, '0') + ":" + (sec % 60).toString().padStart(2, '0')
+                    text: sessionClient.isRecording ? "🔴 REC " + durationStr : "⏺️ Record"
+                    Layout.preferredHeight: 30
+                    visible: desktopSessionView.isCurrentTabConnected
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightBold
+                    ToolTip.visible: hovered
+                    ToolTip.text: sessionClient.isRecording ? "Stop Session Recording" : "Start Session Recording (.mp4)"
+                    onClicked: sessionClient.toggleSessionRecording()
+                    background: Rectangle {
+                        color: sessionClient.isRecording ? "#F44336" : (parent.hovered ? themePalette.surfaceVariant : themePalette.surface)
+                        radius: Metrics.radiusSm
+                        border.color: sessionClient.isRecording ? "#F44336" : themePalette.border
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: sessionClient.isRecording ? "#FFFFFF" : themePalette.textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+
+                // Picture-in-Picture (PiP) Toggle Button (Sprint 4)
+                Button {
+                    text: sessionClient.isPipMode ? "🖼️ PiP Active" : "🖼️ PiP"
+                    Layout.preferredHeight: 30
+                    visible: desktopSessionView.isCurrentTabConnected
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightBold
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Toggle Picture-in-Picture Floating Window"
+                    onClicked: sessionClient.togglePipMode()
+                    background: Rectangle {
+                        color: sessionClient.isPipMode ? themePalette.primary : (parent.hovered ? themePalette.surfaceVariant : themePalette.surface)
+                        radius: Metrics.radiusSm
+                        border.color: themePalette.border
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: sessionClient.isPipMode ? "#FFFFFF" : themePalette.textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
             }
         }
 
@@ -541,6 +618,71 @@ Rectangle {
                 Shortcut {
                     sequence: "Ctrl+Shift+P"
                     onActivated: desktopSessionView.performanceHudVisible = !desktopSessionView.performanceHudVisible
+                }
+
+                // Floating Picture-in-Picture (PiP) Window Card (Sprint 4)
+                Rectangle {
+                    id: pipWindow
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.margins: Metrics.spacingLg
+                    width: 320
+                    height: 180
+                    color: "#000000"
+                    radius: Metrics.radiusMd
+                    border.color: themePalette.primary
+                    border.width: 2
+                    visible: sessionClient.isPipMode && sessionClient.isConnected
+                    z: 500
+
+                    // Drag Handler for moving PiP window freely around screen
+                    DragHandler {
+                        target: pipWindow
+                    }
+
+                    Image {
+                        anchors.fill: parent
+                        anchors.margins: 2
+                        fillMode: Image.PreserveAspectFit
+                        source: videoSurface.source
+                    }
+
+                    // PiP Header Overlay
+                    Rectangle {
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        height: 28
+                        color: Qt.rgba(0, 0, 0, 0.7)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: Metrics.spacingSm
+                            anchors.rightMargin: Metrics.spacingSm
+
+                            Text {
+                                text: "🖼️ PiP Stream"
+                                font.family: Typography.fontFamily
+                                font.pixelSize: 11
+                                font.weight: Font.Bold
+                                color: "#FFFFFF"
+                                Layout.fillWidth: true
+                            }
+
+                            Text {
+                                text: "✕"
+                                font.pixelSize: 12
+                                font.weight: Font.Bold
+                                color: "#FFFFFF"
+                                MouseArea {
+                                    anchors.fill: parent
+                                    anchors.margins: -4
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: sessionClient.togglePipMode()
+                                }
+                            }
+                        }
+                    }
                 }
 
                 Rectangle {
