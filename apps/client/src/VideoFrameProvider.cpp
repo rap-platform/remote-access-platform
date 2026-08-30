@@ -1,4 +1,4 @@
-#include "VideoFrameProvider.h"
+﻿#include "VideoFrameProvider.h"
 
 #include <QMutexLocker>
 

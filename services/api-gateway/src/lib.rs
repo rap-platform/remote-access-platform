@@ -1,4 +1,4 @@
-//! API Gateway service crate providing Axum REST & WebSocket routes.
+﻿//! API Gateway service crate providing Axum REST & WebSocket routes.
 #![forbid(unsafe_code)]
 
 pub mod admin_api;

@@ -1,4 +1,4 @@
-#ifndef RAP_CLIENT_SESSION_CLIENT_H
+﻿#ifndef RAP_CLIENT_SESSION_CLIENT_H
 #define RAP_CLIENT_SESSION_CLIENT_H
 
 #include <QByteArray>

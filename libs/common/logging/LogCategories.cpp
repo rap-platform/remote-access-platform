@@ -1,4 +1,4 @@
-#include "LogCategories.h"
+﻿#include "LogCategories.h"
 
 namespace rap::common::logging {
 

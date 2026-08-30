@@ -1,4 +1,4 @@
-//! ICE-lite UDP hole punching and fallback connection state machine.
+﻿//! ICE-lite UDP hole punching and fallback connection state machine.
 #![forbid(unsafe_code)]
 
 use serde::{Deserialize, Serialize};

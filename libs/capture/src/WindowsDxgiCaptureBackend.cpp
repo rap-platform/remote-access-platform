@@ -1,4 +1,4 @@
-#include "../include/WindowsDxgiCaptureBackend.h"
+﻿#include "../include/WindowsDxgiCaptureBackend.h"
 
 #include <chrono>
 #include <iostream>

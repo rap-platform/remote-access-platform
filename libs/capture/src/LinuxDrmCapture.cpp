@@ -1,4 +1,4 @@
-#include "LinuxDrmCapture.h"
+﻿#include "LinuxDrmCapture.h"
 
 #include <chrono>
 #include <cstring>

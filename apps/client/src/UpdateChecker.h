@@ -1,4 +1,4 @@
-#ifndef RAP_CLIENT_UPDATE_CHECKER_H
+﻿#ifndef RAP_CLIENT_UPDATE_CHECKER_H
 #define RAP_CLIENT_UPDATE_CHECKER_H
 
 #include <QObject>

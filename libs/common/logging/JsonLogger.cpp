@@ -1,4 +1,4 @@
-#include "JsonLogger.h"
+﻿#include "JsonLogger.h"
 
 #include <QDateTime>
 #include <QDebug>

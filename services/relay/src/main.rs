@@ -1,4 +1,4 @@
-//! Stateless Relay Microservice executable binary entry point.
+﻿//! Stateless Relay Microservice executable binary entry point.
 use rap_relay::RelayServer;
 
 #[tokio::main]

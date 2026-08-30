@@ -1,4 +1,4 @@
-//! Binary framing protocol codec implementation matching C++ `ProtocolCodec`.
+﻿//! Binary framing protocol codec implementation matching C++ `ProtocolCodec`.
 
 use serde::{Deserialize, Serialize};
 

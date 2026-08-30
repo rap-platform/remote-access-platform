@@ -1,4 +1,4 @@
-# 📱 Implementation Plan: Mobile Cross-Platform Packaging & Installer Pipeline
+﻿# 📱 Implementation Plan: Mobile Cross-Platform Packaging & Installer Pipeline
 
 This plan outlines the architecture, directory structure, keystore/certificate configurations, and build/packaging scripts required to create release packages for the **Mobile Cross-Platform Application** (`apps/mobile`), including **Android APKs/AAB App Bundles** and **iOS IPA Archives**.
 

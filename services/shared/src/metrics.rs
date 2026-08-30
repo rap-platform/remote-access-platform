@@ -1,4 +1,4 @@
-//! Prometheus Metrics Exporter & Observability Registry
+﻿//! Prometheus Metrics Exporter & Observability Registry
 
 use std::sync::atomic::{AtomicU64, Ordering};
 

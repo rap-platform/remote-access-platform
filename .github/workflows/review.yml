@@ -1,4 +1,4 @@
-name: Code Review Bot (Reviewdog)
+﻿name: Code Review Bot (Reviewdog)
 
 on:
   pull_request:

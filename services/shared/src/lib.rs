@@ -1,4 +1,4 @@
-//! `rap-shared`: Shared types, error definitions, and utility abstractions for Rust backend services.
+﻿//! `rap-shared`: Shared types, error definitions, and utility abstractions for Rust backend services.
 
 #![forbid(unsafe_code)]
 

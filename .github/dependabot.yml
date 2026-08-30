@@ -1,4 +1,4 @@
-version: 2
+﻿version: 2
 updates:
   # Keep Rust crate dependencies up to date
   - package-ecosystem: "cargo"

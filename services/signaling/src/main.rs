@@ -1,4 +1,4 @@
-//! Rendezvous & Signaling Service executable binary entry point.
+﻿//! Rendezvous & Signaling Service executable binary entry point.
 use rap_signaling::SignalingServer;
 
 #[tokio::main]

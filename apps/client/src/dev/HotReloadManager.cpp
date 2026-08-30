@@ -1,4 +1,4 @@
-#include "HotReloadManager.h"
+﻿#include "HotReloadManager.h"
 
 #include <QDebug>
 #include <QDir>

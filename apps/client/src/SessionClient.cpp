@@ -1,4 +1,4 @@
-#include "SessionClient.h"
+﻿#include "SessionClient.h"
 
 #include <QCryptographicHash>
 #include <QDateTime>

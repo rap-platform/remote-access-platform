@@ -1,4 +1,4 @@
-#include <QSignalSpy>
+﻿#include <QSignalSpy>
 #include <QTest>
 
 #include "../include/ICaptureBackend.h"

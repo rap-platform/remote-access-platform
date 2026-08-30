@@ -1,4 +1,4 @@
-# Testing Strategy & Assurance Architecture
+﻿# Testing Strategy & Assurance Architecture
 
 > **Project:** Enterprise Cross-Platform Remote Access Platform  
 > **Source of Truth:** [`docs/REMOTE-DESKTOP-ARCHITECTURE.md`](./REMOTE-DESKTOP-ARCHITECTURE.md) (§6)

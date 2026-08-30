@@ -1,4 +1,4 @@
-//! Device identity and registration service crate.
+﻿//! Device identity and registration service crate.
 #![forbid(unsafe_code)]
 
 pub mod totp;

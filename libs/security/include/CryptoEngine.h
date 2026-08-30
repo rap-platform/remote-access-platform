@@ -1,4 +1,4 @@
-#ifndef RAP_SECURITY_CRYPTO_ENGINE_H
+﻿#ifndef RAP_SECURITY_CRYPTO_ENGINE_H
 #define RAP_SECURITY_CRYPTO_ENGINE_H
 
 #include <cstdint>

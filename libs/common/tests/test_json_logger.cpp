@@ -1,4 +1,4 @@
-#include <QCoreApplication>
+﻿#include <QCoreApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMessageLogContext>

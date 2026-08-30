@@ -1,4 +1,4 @@
-# 🍎 Implementation Plan: macOS Desktop Packaging & DMG Pipeline
+﻿# 🍎 Implementation Plan: macOS Desktop Packaging & DMG Pipeline
 
 This plan outlines the architecture, directory structure, toolchain configurations, and build/packaging scripts required to create release packages for the **macOS Desktop Client** (`rap-client`) and **Host Agent Service** (`rap-agent`), including standalone `.app` bundles and `.dmg` disk image installers.
 

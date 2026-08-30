@@ -1,4 +1,4 @@
-//! TOTP (RFC 6238) Two-Factor Authentication Engine
+﻿//! TOTP (RFC 6238) Two-Factor Authentication Engine
 
 use std::time::{SystemTime, UNIX_EPOCH};
 

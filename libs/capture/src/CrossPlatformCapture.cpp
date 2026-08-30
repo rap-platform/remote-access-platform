@@ -1,4 +1,4 @@
-// Cross-platform stub capture backend for Windows and macOS.
+﻿// Cross-platform stub capture backend for Windows and macOS.
 // On Linux, the real X11/DRM backends in LinuxX11Capture.cpp are used instead.
 #ifndef __linux__
 

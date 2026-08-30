@@ -1,4 +1,4 @@
-# Live Technical Implementation Log & Architecture Audit
+﻿# Live Technical Implementation Log & Architecture Audit
 
 > **Project:** Enterprise Cross-Platform Remote Access Platform  
 > **Source of Truth:** [`docs/REMOTE-DESKTOP-ARCHITECTURE.md`](./REMOTE-DESKTOP-ARCHITECTURE.md)  

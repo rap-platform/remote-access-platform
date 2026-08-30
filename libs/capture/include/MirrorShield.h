@@ -1,4 +1,4 @@
-#ifndef RAP_CAPTURE_MIRROR_SHIELD_H
+﻿#ifndef RAP_CAPTURE_MIRROR_SHIELD_H
 #define RAP_CAPTURE_MIRROR_SHIELD_H
 
 #include <cstdint>

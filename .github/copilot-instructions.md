@@ -1,4 +1,4 @@
-# GitHub Copilot Custom Instructions
+﻿# GitHub Copilot Custom Instructions
 
 Source of Truth: `docs/REMOTE-DESKTOP-ARCHITECTURE.md` (v4.0) and `AGENT_RULES.md`.
 

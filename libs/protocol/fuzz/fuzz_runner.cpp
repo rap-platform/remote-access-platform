@@ -1,4 +1,4 @@
-#include <random>
+﻿#include <random>
 #include <vector>
 
 #include <QtTest/QtTest>

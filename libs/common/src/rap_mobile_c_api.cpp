@@ -1,4 +1,4 @@
-#include "rap_mobile_c_api.h"
+﻿#include "rap_mobile_c_api.h"
 
 #include <QCryptographicHash>
 #include <QHostInfo>

@@ -1,4 +1,4 @@
-#include "FileTransferEngine.h"
+﻿#include "FileTransferEngine.h"
 
 #include <algorithm>
 #include <filesystem>

@@ -1,4 +1,4 @@
-# Cross-Platform Remote Access Platform — Software Architecture & Implementation Plan
+﻿# Cross-Platform Remote Access Platform — Software Architecture & Implementation Plan
 
 ## Executive Summary & Document Analysis
 

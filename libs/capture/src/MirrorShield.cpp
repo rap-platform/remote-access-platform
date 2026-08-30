@@ -1,4 +1,4 @@
-#include "MirrorShield.h"
+﻿#include "MirrorShield.h"
 
 #include <algorithm>
 #include <cstring>

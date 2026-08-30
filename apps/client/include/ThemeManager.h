@@ -1,4 +1,4 @@
-#ifndef RAP_CLIENT_THEME_MANAGER_H
+﻿#ifndef RAP_CLIENT_THEME_MANAGER_H
 #define RAP_CLIENT_THEME_MANAGER_H
 
 #include <QColor>

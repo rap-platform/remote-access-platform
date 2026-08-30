@@ -1,4 +1,4 @@
-name: Continuous Integration Matrix
+﻿name: Continuous Integration Matrix
 
 on:
   push:

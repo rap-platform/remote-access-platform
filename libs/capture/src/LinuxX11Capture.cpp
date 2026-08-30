@@ -1,4 +1,4 @@
-#include "LinuxX11Capture.h"
+﻿#include "LinuxX11Capture.h"
 
 #include <chrono>
 #include <cstdlib>

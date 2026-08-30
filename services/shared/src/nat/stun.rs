@@ -1,4 +1,4 @@
-//! RFC 5389 STUN protocol implementation for public IP & mapped port discovery.
+﻿//! RFC 5389 STUN protocol implementation for public IP & mapped port discovery.
 #![forbid(unsafe_code)]
 
 use serde::{Deserialize, Serialize};

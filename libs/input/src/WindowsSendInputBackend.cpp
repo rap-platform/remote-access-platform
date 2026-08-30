@@ -1,4 +1,4 @@
-#include "../include/WindowsSendInputBackend.h"
+﻿#include "../include/WindowsSendInputBackend.h"
 
 #ifdef _WIN32
 #include <windows.h>
