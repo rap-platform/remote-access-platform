@@ -90,10 +90,14 @@ jobs:
                 } catch (e) { /* label already exists, ignore */ }
               }
 
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                labels,
-              });
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.pull_request.number,
+                  labels,
+                });
+              } catch (e) {
+                console.log("Skipping auto-labeling due to fork PR token scope restrictions");
+              }
             }
