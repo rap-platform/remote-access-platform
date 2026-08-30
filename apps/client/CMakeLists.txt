@@ -35,6 +35,7 @@ add_executable(rap-client
     qml/components/IncomingConnectionDialog.qml
     qml/components/SidebarNav.qml
     qml/components/StatusBar.qml
+    qml/components/ToastNotification.qml
     qml/theme/Metrics.qml
     qml/theme/Tokens.qml
     qml/theme/Typography.qml

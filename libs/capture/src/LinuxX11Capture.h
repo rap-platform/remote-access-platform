@@ -25,6 +25,10 @@ public:
     std::optional<FrameData> captureSingleFrame() override;
     std::string backendName() const override { return "Linux X11 Capture Backend"; }
 
+    std::vector<MonitorInfo> enumerateMonitors() override;
+    bool selectMonitor(uint32_t monitorId) override;
+    uint32_t currentMonitorId() const override { return activeMonitorId_; }
+
     uint32_t width() const { return width_; }
     uint32_t height() const { return height_; }
     AdaptiveBitrateController& bitrateController() { return bitrateController_; }
@@ -44,6 +48,7 @@ private:
     std::vector<uint8_t> prevFrameData_;
     AdaptiveBitrateController bitrateController_{8000, 60};
     WindowBounds cachedClientBounds_;
+    uint32_t activeMonitorId_{0};
 };
 
 } // namespace rap::capture

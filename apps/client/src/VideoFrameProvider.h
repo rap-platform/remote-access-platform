@@ -14,6 +14,7 @@ public:
     VideoFrameProvider();
 
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize) override;
+    QImage currentFrame() const;
 
 public slots:
     void updateFrame(const QImage& image);

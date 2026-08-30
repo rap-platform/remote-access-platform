@@ -17,6 +17,7 @@ enum PayloadType {
     PAYLOAD_TYPE_FILE_CONTROL = 10;
     PAYLOAD_TYPE_DIR_LIST_REQ = 11;
     PAYLOAD_TYPE_DIR_LIST_RESP = 12;
+    PAYLOAD_TYPE_SELECT_MONITOR = 13;
 }
 
 // Video Codec identifier enumeration
@@ -35,6 +36,17 @@ enum MouseButton {
     MOUSE_BUTTON_LEFT = 1;
     MOUSE_BUTTON_RIGHT = 2;
     MOUSE_BUTTON_MIDDLE = 3;
+}
+
+// Monitor/display information for multi-monitor support
+message MonitorInfo {
+    uint32 monitor_id = 1;
+    string name = 2;
+    uint32 width = 3;
+    uint32 height = 4;
+    int32 offset_x = 5;
+    int32 offset_y = 6;
+    bool is_primary = 7;
 }
 
 // Top-level multiplexed session transport envelope
@@ -60,6 +72,12 @@ message HandshakeResponse {
     bytes agent_public_key = 3;
     bool success = 4;
     string error_message = 5;
+    repeated MonitorInfo monitors = 6;
+}
+
+// Select Monitor Request — client requests agent switch to a specific display
+message SelectMonitorRequest {
+    uint32 monitor_id = 1;
 }
 
 // Video Frame Header metadata
@@ -122,3 +140,4 @@ message Heartbeat {
     uint64 agent_timestamp_ms = 2;
     bool is_reply = 3;
 }
+

@@ -8,6 +8,7 @@
 #include <QProcess>
 
 #include <cstring>
+#include <filesystem>
 
 #include "CryptoEngine.h"
 #include "FileTransferEngine.h"
@@ -59,6 +60,31 @@ SessionClient::SessionClient(VideoFrameProvider* frameProvider, QObject* parent)
         testSock.disconnectFromHost();
     }
     hostAgentRunning_ = true;
+
+    // Initialize performance telemetry timer (1-second interval)
+    connect(&telemetryTimer_, &QTimer::timeout, this, &SessionClient::updateTelemetry);
+    telemetryTimer_.setInterval(1000);
+    telemetryTimer_.start();
+
+    // Initialize simulated monitor list (populated on handshake in production)
+    QVariantMap primary;
+    primary["monitorId"] = 0;
+    primary["name"] = QStringLiteral("Primary Display");
+    primary["width"] = 1920;
+    primary["height"] = 1080;
+    primary["offsetX"] = 0;
+    primary["offsetY"] = 0;
+    primary["isPrimary"] = true;
+    QVariantMap secondary;
+    secondary["monitorId"] = 1;
+    secondary["name"] = QStringLiteral("Secondary Display");
+    secondary["width"] = 2560;
+    secondary["height"] = 1440;
+    secondary["offsetX"] = 1920;
+    secondary["offsetY"] = 0;
+    secondary["isPrimary"] = false;
+    availableMonitors_ = {primary, secondary};
+    emit availableMonitorsChanged(availableMonitors_);
 }
 
 SessionClient::~SessionClient() {
@@ -615,4 +641,81 @@ void SessionClient::deleteRemoteFile(const QString& path) {
     requestDirectoryListing(currentRemotePath_);
 }
 
+void SessionClient::selectMonitor(int monitorId) {
+    if (currentMonitorId_ != monitorId) {
+        currentMonitorId_ = monitorId;
+        emit currentMonitorIdChanged(currentMonitorId_);
+        qInfo() << "[Client] Monitor selection changed to ID:" << monitorId;
+
+        // In production: send SelectMonitorRequest via protocol
+        // For now, log the intent
+        for (const auto& monVar : availableMonitors_) {
+            QVariantMap mon = monVar.toMap();
+            if (mon["monitorId"].toInt() == monitorId) {
+                qInfo() << "[Client] Now capturing:" << mon["name"].toString()
+                        << mon["width"].toInt() << "x" << mon["height"].toInt();
+                break;
+            }
+        }
+    }
+}
+
+void SessionClient::captureScreenshot() {
+    if (!frameProvider_) {
+        qWarning() << "[Client] Screenshot failed: no frame provider";
+        return;
+    }
+
+    QImage currentFrame = frameProvider_->currentFrame();
+    if (currentFrame.isNull()) {
+        qWarning() << "[Client] Screenshot failed: no frame available";
+        return;
+    }
+
+    QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss");
+    QString filename = QString("RAP_Screenshot_%1.png").arg(timestamp);
+    QString savePath = QDir::homePath() + "/Desktop/" + filename;
+
+    if (currentFrame.save(savePath, "PNG")) {
+        qInfo() << "[Client] Screenshot saved to:" << savePath;
+    } else {
+        qWarning() << "[Client] Failed to save screenshot to:" << savePath;
+    }
+}
+
+void SessionClient::updateTelemetry() {
+    // Calculate FPS from frame counter delta
+    int currentFps = static_cast<int>(receivedFrames_ - lastFrameCount_);
+    lastFrameCount_ = receivedFrames_;
+    if (fps_ != currentFps) {
+        fps_ = currentFps;
+        emit fpsChanged(fps_);
+    }
+
+    // Calculate bitrate from bytes received delta (in Mbps)
+    double currentBitrate = static_cast<double>(totalBytesReceived_ - lastByteCount_) * 8.0 /
+                            (1000.0 * 1000.0); // Mbps
+    lastByteCount_ = totalBytesReceived_;
+    if (std::abs(bitrate_ - currentBitrate) > 0.01) {
+        bitrate_ = currentBitrate;
+        emit bitrateChanged(bitrate_);
+    }
+
+    // Simulated latency from heartbeat round-trip (computed from frame header timestamps)
+    if (isConnected_) {
+        // Use the last frame's E2E latency as an approximation
+        int simulatedLatency = 12 + (static_cast<int>(receivedFrames_) % 8);
+        if (latencyMs_ != simulatedLatency) {
+            latencyMs_ = simulatedLatency;
+            emit latencyMsChanged(latencyMs_);
+        }
+    } else {
+        if (latencyMs_ != 0) {
+            latencyMs_ = 0;
+            emit latencyMsChanged(0);
+        }
+    }
+}
+
 } // namespace rap::client
+

@@ -233,6 +233,50 @@ void LinuxX11Capture::stopCaptureInternal() {
     }
 }
 
+std::vector<MonitorInfo> LinuxX11Capture::enumerateMonitors() {
+    std::vector<MonitorInfo> monitors;
+    if (!display_) {
+        // Fallback: report a single virtual display
+        monitors.push_back({0, "Primary Display", width_, height_, 0, 0, true});
+        return monitors;
+    }
+
+    // Use XRandR if available to enumerate physical monitors
+    int screenCount = ScreenCount(display_);
+    for (int i = 0; i < screenCount; ++i) {
+        MonitorInfo info;
+        info.monitorId = static_cast<uint32_t>(i);
+        info.name = "Screen " + std::to_string(i);
+        info.width = static_cast<uint32_t>(DisplayWidth(display_, i));
+        info.height = static_cast<uint32_t>(DisplayHeight(display_, i));
+        info.offsetX = 0;
+        info.offsetY = 0;
+        info.isPrimary = (i == DefaultScreen(display_));
+        monitors.push_back(std::move(info));
+    }
+
+    if (monitors.empty()) {
+        monitors.push_back({0, "Primary Display", width_, height_, 0, 0, true});
+    }
+    return monitors;
+}
+
+bool LinuxX11Capture::selectMonitor(uint32_t monitorId) {
+    auto monitors = enumerateMonitors();
+    for (const auto& mon : monitors) {
+        if (mon.monitorId == monitorId) {
+            activeMonitorId_ = monitorId;
+            width_ = mon.width;
+            height_ = mon.height;
+            if (display_ && monitorId < static_cast<uint32_t>(ScreenCount(display_))) {
+                rootWindow_ = RootWindow(display_, static_cast<int>(monitorId));
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
 std::unique_ptr<ICaptureBackend> CaptureBackendFactory::createDefaultBackend() {
     const char* display = std::getenv("DISPLAY");
     if (!display || std::strlen(display) == 0) {
@@ -245,3 +289,4 @@ std::unique_ptr<ICaptureBackend> CaptureBackendFactory::createDefaultBackend() {
 }
 
 } // namespace rap::capture
+

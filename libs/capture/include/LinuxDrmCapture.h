@@ -26,6 +26,10 @@ public:
     std::optional<FrameData> captureSingleFrame() override;
     std::string backendName() const override { return "LinuxDRM/KMS Framebuffer"; }
 
+    std::vector<MonitorInfo> enumerateMonitors() override;
+    bool selectMonitor(uint32_t monitorId) override;
+    uint32_t currentMonitorId() const override { return activeMonitorId_; }
+
 private:
     void captureThreadLoop();
 
@@ -40,6 +44,7 @@ private:
     uint64_t m_frameCounter{0};
     int m_drmFd{-1};
     mutable std::mutex m_mutex;
+    uint32_t activeMonitorId_{0};
 };
 
 } // namespace rap::capture

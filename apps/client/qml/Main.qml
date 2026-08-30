@@ -71,4 +71,31 @@ ApplicationWindow {
             visible: !mainWindow.isFullScreen
         }
     }
+
+    // Global Toast Notification System
+    ToastNotification {
+        id: toastManager
+    }
+
+    // Global convenience function for showing toasts from any component
+    function showToast(message, type) {
+        toastManager.showToast(message, type || "info")
+    }
+
+    // Show welcome toast on first load
+    Component.onCompleted: {
+        showToast("Remote Access Platform loaded successfully", "success")
+    }
+
+    // React to connection state changes with toast notifications
+    Connections {
+        target: sessionClient
+        function onConnectionStateChanged(connected) {
+            if (connected) {
+                showToast("Connected to remote host — session active", "success")
+            } else {
+                showToast("Disconnected from remote host", "warning")
+            }
+        }
+    }
 }
