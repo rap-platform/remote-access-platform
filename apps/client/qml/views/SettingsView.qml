@@ -71,7 +71,7 @@ Rectangle {
                 spacing: Metrics.spacingSm
                 visible: settingsView.activeCategory === 0
 
-                // Setting Card: Language
+                // Setting Card: Language Selection
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 60
@@ -82,12 +82,50 @@ Rectangle {
                     RowLayout {
                         anchors.fill: parent
                         anchors.margins: Metrics.spacingMd
-                        Label { text: "🌐 Language"; font.family: Typography.fontFamily; font.pixelSize: Typography.fontBody; color: themePalette.textPrimary; Layout.fillWidth: true }
+                        Label { text: "🌐 Application Language"; font.family: Typography.fontFamily; font.pixelSize: Typography.fontBody; color: themePalette.textPrimary; Layout.fillWidth: true }
                         ComboBox {
+                            id: languageCombo
                             model: ["English", "German", "French", "Spanish", "Japanese", "Hindi"]
                             Layout.preferredWidth: 180
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontCaption
+                            currentIndex: model.indexOf(sessionClient.currentLanguage) >= 0 ? model.indexOf(sessionClient.currentLanguage) : 0
+                            onActivated: (index) => {
+                                let selectedLang = model[index]
+                                sessionClient.setLanguage(selectedLang)
+                                if (typeof mainWindow !== "undefined" && typeof mainWindow.showToast === "function") {
+                                    mainWindow.showToast("Language changed to " + selectedLang, "success")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Setting Card: Theme Selection
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 60
+                    color: themePalette.surface
+                    radius: Metrics.radiusSm
+                    border.color: themePalette.border
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: Metrics.spacingMd
+                        Label { text: "🎨 Application Color Theme"; font.family: Typography.fontFamily; font.pixelSize: Typography.fontBody; color: themePalette.textPrimary; Layout.fillWidth: true }
+                        ComboBox {
+                            id: themeCombo
+                            model: ["Catppuccin Dark", "Tokyo Night", "Nord Dark", "Enterprise Light", "High Contrast"]
+                            Layout.preferredWidth: 180
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            currentIndex: themePalette.currentTheme
+                            onActivated: (index) => {
+                                themePalette.setTheme(index)
+                                if (typeof mainWindow !== "undefined" && typeof mainWindow.showToast === "function") {
+                                    mainWindow.showToast("Theme changed to " + model[index], "info")
+                                }
+                            }
                         }
                     }
                 }

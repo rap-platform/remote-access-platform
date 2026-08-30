@@ -54,6 +54,7 @@ class SessionClient : public QObject {
     Q_PROPERTY(int recordingDurationSec READ recordingDurationSec NOTIFY recordingDurationSecChanged)
     Q_PROPERTY(QString terminalOutput READ terminalOutput NOTIFY terminalOutputChanged)
     Q_PROPERTY(bool isPipMode READ isPipMode NOTIFY isPipModeChanged)
+    Q_PROPERTY(QString currentLanguage READ currentLanguage NOTIFY currentLanguageChanged)
 
 public:
     explicit SessionClient(VideoFrameProvider* frameProvider, QObject* parent = nullptr);
@@ -96,6 +97,7 @@ public:
     int recordingDurationSec() const { return recordingDurationSec_; }
     QString terminalOutput() const { return terminalOutput_; }
     bool isPipMode() const { return isPipMode_; }
+    QString currentLanguage() const { return currentLanguage_; }
 
     Q_INVOKABLE void setRenderGated(bool gated);
 
@@ -134,6 +136,7 @@ public:
     Q_INVOKABLE void sendTerminalInput(const QString& command);
     Q_INVOKABLE void clearTerminal();
     Q_INVOKABLE void togglePipMode();
+    Q_INVOKABLE void setLanguage(const QString& language);
 
 public slots:
     void connectToHost(const QString& host, uint16_t port, const QString& password = "");
@@ -179,6 +182,7 @@ signals:
     void terminalOutputChanged(const QString& output);
     void terminalOutputReceived(const QString& text);
     void isPipModeChanged(bool pipMode);
+    void currentLanguageChanged(const QString& language);
 
 private slots:
     void onReadyRead();
@@ -258,6 +262,7 @@ private:
     QTimer recordingTimer_;
     QString terminalOutput_;
     bool isPipMode_{false};
+    QString currentLanguage_{"English"};
 
     void loadConnectionHistory();
     void saveConnectionHistory();

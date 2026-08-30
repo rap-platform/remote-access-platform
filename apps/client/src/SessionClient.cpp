@@ -1023,6 +1023,14 @@ void SessionClient::togglePipMode() {
     qInfo() << "[Client PiP] Picture-in-Picture mode set to:" << (isPipMode_ ? "ENABLED" : "DISABLED");
 }
 
+void SessionClient::setLanguage(const QString& language) {
+    if (currentLanguage_ != language) {
+        currentLanguage_ = language;
+        emit currentLanguageChanged(currentLanguage_);
+        qInfo() << "[Client i18n] Active application language set to:" << currentLanguage_;
+    }
+}
+
 } // namespace rap::client
 
 
