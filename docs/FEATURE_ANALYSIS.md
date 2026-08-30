@@ -14,7 +14,7 @@
 | **Input Injection** | ✅ Linux, Stub others | [IInputBackend.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/libs/input/include/IInputBackend.h) |
 | **E2E Crypto (libsodium)** | ✅ Complete | [CryptoEngine.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/libs/security/include/CryptoEngine.h) |
 | **File Transfer Engine** | ✅ Chunked + SHA-256 | [FileTransferEngine.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/libs/file_transfer/include/FileTransferEngine.h) |
-| **Protocol (Protobuf)** | ✅ 13 payload types | [session.proto](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/proto/session.proto) |
+| **Protocol (Protobuf)** | ✅ 15 payload types | [session.proto](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/proto/session.proto) |
 | **Rust Backend Services** | ✅ 5 microservices | Identity, Signaling, Relay, API-Gateway, Audit (`#![forbid(unsafe_code)]`) |
 | **Flutter Mobile** | ✅ Shell + FFI bridge | [apps/mobile](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/mobile) |
 | **Theme System** | ✅ 5 themes, hot-reload | [ThemeManager.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/client/include/ThemeManager.h) |
@@ -762,8 +762,8 @@ All planned features and code modifications must strictly adhere to the mandator
 | 🟠 P1 | Live Performance HUD | High | Low | ✅ Implemented |
 | 🟠 P1 | Toast Notification System | High | Low | ✅ Implemented |
 | 🟠 P1 | Auto-Reconnect | High | Medium | ✅ Implemented |
-| 🟠 P1 | Audio Streaming (OPUS) | Very High | High | ⏳ Planned |
-| 🟡 P2 | Session Recording | High | High | ⏳ Planned |
+| 🟠 P1 | Audio Streaming (OPUS) | Very High | High | ✅ Implemented |
+| 🟡 P2 | Session Recording | High | High | ✅ Implemented |
 | 🟡 P2 | WebRTC Browser Viewer | Very High | Very High | ⏳ Planned |
 | 🟡 P2 | Connection History Log | Medium | Low | ✅ Implemented |
 | 🟡 P2 | File Transfer Queue | High | Medium | ⏳ Planned |
@@ -773,10 +773,10 @@ All planned features and code modifications must strictly adhere to the mandator
 | 🟢 P3 | Device Groups & Tags | Medium | Medium | ⏳ Planned |
 | 🟢 P3 | Privacy Screen Mode | Medium | Medium | ✅ Implemented |
 | 🟢 P3 | Admin Dashboard | Very High | Very High | ⏳ Planned |
-| 🟢 P3 | Remote Terminal/Shell | High | High | ⏳ Planned |
+| 🟢 P3 | Remote Terminal/Shell | High | High | ✅ Implemented |
 | 🟢 P3 | Multi-User Viewing | High | High | ⏳ Planned |
 | 🔵 P4 | Animated View Transitions | Medium | Low | ⏳ Planned |
-| 🔵 P4 | PiP Mode | High | Medium | ⏳ Planned |
+| 🔵 P4 | PiP Mode | High | Medium | ✅ Implemented |
 | 🔵 P4 | System Theme Auto-Detect | Medium | Low | ⏳ Planned |
 | 🔵 P4 | Custom Accent Color | Medium | Low | ⏳ Planned |
 | 🔵 P4 | Keyboard Shortcuts | Medium | Low | ⏳ Planned |
