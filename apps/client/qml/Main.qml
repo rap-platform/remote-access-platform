@@ -58,6 +58,7 @@ ApplicationWindow {
     }
 
     ToastNotification { id: toastManager }
+    OnboardingOverlay { id: onboardingTour }
 
     function showToast(message, type) { toastManager.showToast(message, type || "info") }
 

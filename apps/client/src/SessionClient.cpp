@@ -11,6 +11,7 @@
 #include <QJsonObject>
 #include <QProcess>
 #include <QStandardPaths>
+#include <QUdpSocket>
 
 #include <cstring>
 #include <filesystem>
@@ -1028,6 +1029,72 @@ void SessionClient::setLanguage(const QString& language) {
         currentLanguage_ = language;
         emit currentLanguageChanged(currentLanguage_);
         qInfo() << "[Client i18n] Active application language set to:" << currentLanguage_;
+    }
+}
+
+void SessionClient::enQueueTransfer(const QString& localPath, const QString& remotePath, bool isUpload) {
+    QVariantMap item;
+    item["fileName"] = QFileInfo(isUpload ? localPath : remotePath).fileName();
+    item["localPath"] = localPath;
+    item["remotePath"] = remotePath;
+    item["isUpload"] = isUpload;
+    item["status"] = "Queued";
+    item["progress"] = 0.0;
+
+    transferQueue_.append(item);
+    emit transferQueueChanged();
+    qInfo() << "[Client Queue] Enqueued file transfer:" << item["fileName"].toString();
+
+    if (transferQueue_.size() == 1) {
+        if (isUpload) {
+            startFileUpload(localPath, remotePath);
+        } else {
+            startFileDownload(remotePath, localPath);
+        }
+    }
+}
+
+void SessionClient::cancelQueueItem(int index) {
+    if (index >= 0 && index < transferQueue_.size()) {
+        QString name = transferQueue_[index].toMap()["fileName"].toString();
+        transferQueue_.removeAt(index);
+        emit transferQueueChanged();
+        qInfo() << "[Client Queue] Canceled queue item at index:" << index << name;
+    }
+}
+
+void SessionClient::clearQueue() {
+    transferQueue_.clear();
+    emit transferQueueChanged();
+    qInfo() << "[Client Queue] Cleared file transfer queue";
+}
+
+void SessionClient::sendWakeOnLan(const QString& macAddress) {
+    QString cleanMac = macAddress;
+    cleanMac.remove(':').remove('-').remove(' ');
+    if (cleanMac.length() != 12) {
+        qWarning() << "[Client WoL] Invalid MAC address format:" << macAddress;
+        return;
+    }
+
+    QByteArray packet;
+    packet.fill(static_cast<char>(0xFF), 6);
+
+    QByteArray macBytes = QByteArray::fromHex(cleanMac.toLatin1());
+    for (int i = 0; i < 16; ++i) {
+        packet.append(macBytes);
+    }
+
+    QUdpSocket socket;
+    socket.writeDatagram(packet, QHostAddress::Broadcast, 9);
+    qInfo() << "[Client WoL] Sent Wake-on-LAN magic packet to MAC:" << macAddress;
+}
+
+void SessionClient::setBandwidthCapMbps(double capMbps) {
+    if (bandwidthCapMbps_ != capMbps) {
+        bandwidthCapMbps_ = capMbps;
+        emit bandwidthCapChanged();
+        qInfo() << "[Client Bandwidth] Bandwidth limiter set to:" << bandwidthCapMbps_ << "Mbps";
     }
 }
 

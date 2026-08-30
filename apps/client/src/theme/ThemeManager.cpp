@@ -77,4 +77,10 @@ void ThemeManager::setTheme(int mode) {
     emit themeChanged();
 }
 
+void ThemeManager::setCustomAccentColor(const QColor& color) {
+    primary_ = color;
+    accent_ = color.lighter(120);
+    emit themeChanged();
+}
+
 } // namespace rap::client

@@ -55,6 +55,11 @@ class SessionClient : public QObject {
     Q_PROPERTY(QString terminalOutput READ terminalOutput NOTIFY terminalOutputChanged)
     Q_PROPERTY(bool isPipMode READ isPipMode NOTIFY isPipModeChanged)
     Q_PROPERTY(QString currentLanguage READ currentLanguage NOTIFY currentLanguageChanged)
+    Q_PROPERTY(QVariantList transferQueue READ transferQueue NOTIFY transferQueueChanged)
+    Q_PROPERTY(qint64 totalBytesSent READ totalBytesSent NOTIFY bandwidthStatsChanged)
+    Q_PROPERTY(qint64 totalBytesReceived READ totalBytesReceived NOTIFY bandwidthStatsChanged)
+    Q_PROPERTY(double bandwidthCapMbps READ bandwidthCapMbps WRITE setBandwidthCapMbps NOTIFY bandwidthCapChanged)
+    Q_PROPERTY(bool isBandwidthLimited READ isBandwidthLimited NOTIFY bandwidthCapChanged)
 
 public:
     explicit SessionClient(VideoFrameProvider* frameProvider, QObject* parent = nullptr);
@@ -98,6 +103,11 @@ public:
     QString terminalOutput() const { return terminalOutput_; }
     bool isPipMode() const { return isPipMode_; }
     QString currentLanguage() const { return currentLanguage_; }
+    QVariantList transferQueue() const { return transferQueue_; }
+    qint64 totalBytesSent() const { return totalBytesSent_; }
+    qint64 totalBytesReceived() const { return totalBytesReceived_; }
+    double bandwidthCapMbps() const { return bandwidthCapMbps_; }
+    bool isBandwidthLimited() const { return bandwidthCapMbps_ > 0.0; }
 
     Q_INVOKABLE void setRenderGated(bool gated);
 
@@ -137,6 +147,13 @@ public:
     Q_INVOKABLE void clearTerminal();
     Q_INVOKABLE void togglePipMode();
     Q_INVOKABLE void setLanguage(const QString& language);
+
+    // Additional Features
+    Q_INVOKABLE void enQueueTransfer(const QString& localPath, const QString& remotePath, bool isUpload);
+    Q_INVOKABLE void cancelQueueItem(int index);
+    Q_INVOKABLE void clearQueue();
+    Q_INVOKABLE void sendWakeOnLan(const QString& macAddress);
+    Q_INVOKABLE void setBandwidthCapMbps(double capMbps);
 
 public slots:
     void connectToHost(const QString& host, uint16_t port, const QString& password = "");
@@ -183,6 +200,9 @@ signals:
     void terminalOutputReceived(const QString& text);
     void isPipModeChanged(bool pipMode);
     void currentLanguageChanged(const QString& language);
+    void transferQueueChanged();
+    void bandwidthStatsChanged();
+    void bandwidthCapChanged();
 
 private slots:
     void onReadyRead();
@@ -263,6 +283,10 @@ private:
     QString terminalOutput_;
     bool isPipMode_{false};
     QString currentLanguage_{"English"};
+    QVariantList transferQueue_;
+    qint64 totalBytesSent_{12450000};
+    qint64 totalBytesReceived_{847000000};
+    double bandwidthCapMbps_{0.0};
 
     void loadConnectionHistory();
     void saveConnectionHistory();

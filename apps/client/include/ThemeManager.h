@@ -46,6 +46,7 @@ public:
     QColor transparent() const { return QColor(0, 0, 0, 0); }
 
     Q_INVOKABLE void setTheme(int mode);
+    Q_INVOKABLE void setCustomAccentColor(const QColor& color);
 
 signals:
     void themeChanged();

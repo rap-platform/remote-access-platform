@@ -40,7 +40,9 @@ else()
         src/MirrorShield.cpp
         src/AdaptiveBitrateController.cpp
         src/CrossPlatformCapture.cpp
+        src/WindowsDxgiCaptureBackend.cpp
         include/ICaptureBackend.h
+        include/WindowsDxgiCaptureBackend.h
         include/DirtyRegionDetector.h
         include/MirrorShield.h
         include/AdaptiveBitrateController.h

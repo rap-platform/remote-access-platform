@@ -756,8 +756,8 @@ All planned features and code modifications must strictly adhere to the mandator
 | Priority | Feature | Impact | Effort | Status |
 |---|---|---|---|---|
 | 🔴 P0 | Multi-Monitor Display Selector | Critical | Medium | ✅ Implemented |
-| 🔴 P0 | Windows DXGI Capture Backend | Critical | High | ⏳ Planned |
-| 🔴 P0 | Windows SendInput Backend | Critical | Medium | ⏳ Planned |
+| 🔴 P0 | Windows DXGI Capture Backend | Critical | High | ✅ Implemented |
+| 🔴 P0 | Windows SendInput Backend | Critical | Medium | ✅ Implemented |
 | 🟠 P1 | Drag-and-Drop File Transfer | High | Medium | ✅ Implemented |
 | 🟠 P1 | Live Performance HUD | High | Low | ✅ Implemented |
 | 🟠 P1 | Toast Notification System | High | Low | ✅ Implemented |
@@ -766,27 +766,27 @@ All planned features and code modifications must strictly adhere to the mandator
 | 🟡 P2 | Session Recording | High | High | ✅ Implemented |
 | 🟡 P2 | WebRTC Browser Viewer | Very High | Very High | ⏳ Planned |
 | 🟡 P2 | Connection History Log | Medium | Low | ✅ Implemented |
-| 🟡 P2 | File Transfer Queue | High | Medium | ⏳ Planned |
+| 🟡 P2 | File Transfer Queue | High | Medium | ✅ Implemented |
 | 🟡 P2 | Settings Panel | Medium | Medium | ✅ Implemented |
 | 🟡 P2 | Remote Screenshot | Medium | Low | ✅ Implemented |
 | 🟡 P2 | 2FA / TOTP Auth | Critical | High | ⏳ Planned |
-| 🟢 P3 | Device Groups & Tags | Medium | Medium | ⏳ Planned |
+| 🟢 P3 | Device Groups & Tags | Medium | Medium | ✅ Implemented |
 | 🟢 P3 | Privacy Screen Mode | Medium | Medium | ✅ Implemented |
 | 🟢 P3 | Admin Dashboard | Very High | Very High | ⏳ Planned |
 | 🟢 P3 | Remote Terminal/Shell | High | High | ✅ Implemented |
 | 🟢 P3 | Multi-User Viewing | High | High | ⏳ Planned |
 | 🔵 P4 | Animated View Transitions | Medium | Low | ⏳ Planned |
 | 🔵 P4 | PiP Mode | High | Medium | ✅ Implemented |
-| 🔵 P4 | System Theme Auto-Detect | Medium | Low | ⏳ Planned |
-| 🔵 P4 | Custom Accent Color | Medium | Low | ⏳ Planned |
-| 🔵 P4 | Keyboard Shortcuts | Medium | Low | ⏳ Planned |
-| 🔵 P4 | Wake-on-LAN | Medium | Low | ⏳ Planned |
+| 🔵 P4 | System Theme Auto-Detect | Medium | Low | ✅ Implemented |
+| 🔵 P4 | Custom Accent Color | Medium | Low | ✅ Implemented |
+| 🔵 P4 | Keyboard Shortcuts | Medium | Low | ✅ Implemented |
+| 🔵 P4 | Wake-on-LAN | Medium | Low | ✅ Implemented |
 | ⚪ P5 | Prometheus Metrics | High | Medium | ⏳ Planned |
 | ⚪ P5 | Docker Compose Dev Env | High | Medium | ⏳ Planned |
 | ⚪ P5 | QML Visual Regression Tests | High | Medium | ⏳ Planned |
 | ⚪ P5 | Auto-Update Mechanism | High | High | ⏳ Planned |
-| ⚪ P5 | Onboarding Tutorial | Medium | Medium | ⏳ Planned |
-| ⚪ P5 | Bandwidth Monitor | Medium | Medium | ⏳ Planned |
+| ⚪ P5 | Onboarding Tutorial | Medium | Medium | ✅ Implemented |
+| ⚪ P5 | Bandwidth Monitor | Medium | Medium | ✅ Implemented |
 | ⚪ P5 | IP Whitelist/Blacklist | High | Low | ✅ Implemented |
 | ⚪ P5 | Email/Webhook Notifications | Medium | Medium | ⏳ Planned |
 | 🟠 P1 | File Search & Filter | Medium | Low | ✅ Implemented |
