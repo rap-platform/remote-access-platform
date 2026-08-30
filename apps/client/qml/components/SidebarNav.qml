@@ -195,6 +195,8 @@ Rectangle {
                     Layout.fillWidth: true
                 }
             }
+        }
+
         // View 5: Remote PTY Terminal Shell
         Rectangle {
             Layout.fillWidth: true
