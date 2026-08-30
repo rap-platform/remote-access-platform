@@ -14,6 +14,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
         string(REGEX REPLACE "^AppVersion=" "" APP_VERSION "${VERSION_LINE}")
         string(STRIP "${APP_VERSION}" APP_VERSION)
     endif()
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
 endif()
 
 project(RemoteDesktopPlatform
