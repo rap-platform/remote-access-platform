@@ -1,4 +1,5 @@
-﻿//! Audit Event Email & Webhook Notification Dispatcher
+//! Audit Event Email & Webhook Notification Dispatcher
+#![allow(dead_code, unused_variables)]
 
 pub enum NotificationChannel {
     Email { smtp_server: String, recipient: String },

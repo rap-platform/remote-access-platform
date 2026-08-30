@@ -30,7 +30,7 @@ jobs:
             perf
             build
           requireScope: false
-          validateCommits: false
+          ignoreCommits: true
           subjectPattern: ^(?![A-Z]).+$
           subjectPatternError: |
             The PR title must start with a lowercase letter.

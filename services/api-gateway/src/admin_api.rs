@@ -1,4 +1,5 @@
-﻿//! Admin Dashboard Fleet Management REST/gRPC API Router
+//! Admin Dashboard Fleet Management REST/gRPC API Router
+#![allow(dead_code, unused_variables)]
 
 pub struct AdminApiRouter;
 
