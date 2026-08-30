@@ -24,7 +24,7 @@ signals:
 
 private:
     QImage currentFrame_;
-    QMutex mutex_;
+    mutable QMutex mutex_;
 };
 
 } // namespace rap::client

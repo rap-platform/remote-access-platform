@@ -1,5 +1,6 @@
 #include "SessionClient.h"
 
+#include <QCryptographicHash>
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
@@ -540,7 +541,7 @@ void SessionClient::onReadyRead() {
                     disconnectFromHost();
                 }
             }
-        } else if (packet.header.type == rap::protocol::PayloadType::PAYLOAD_TYPE_TERMINAL_DATA &&
+        } else if (packet.header.type == rap::protocol::PayloadType::TerminalData &&
                    !packet.payload.empty()) {
             std::vector<uint8_t> nonce(12, 0);
             uint64_t seq = packet.header.sequenceNumber;
@@ -555,7 +556,7 @@ void SessionClient::onReadyRead() {
                 emit terminalOutputChanged(terminalOutput_);
                 emit terminalOutputReceived(text);
             }
-        } else if (packet.header.type == rap::protocol::PayloadType::PAYLOAD_TYPE_AUDIO_FRAME &&
+        } else if (packet.header.type == rap::protocol::PayloadType::AudioFrame &&
                    !packet.payload.empty()) {
             // Audio packet received (OPUS/PCM)
             if (!audioMuted_) {
