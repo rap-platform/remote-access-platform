@@ -761,17 +761,17 @@ All planned features and code modifications must strictly adhere to the mandator
 | 🟠 P1 | Drag-and-Drop File Transfer | High | Medium | ✅ Implemented |
 | 🟠 P1 | Live Performance HUD | High | Low | ✅ Implemented |
 | 🟠 P1 | Toast Notification System | High | Low | ✅ Implemented |
-| 🟠 P1 | Auto-Reconnect | High | Medium | ⏳ Planned |
+| 🟠 P1 | Auto-Reconnect | High | Medium | ✅ Implemented |
 | 🟠 P1 | Audio Streaming (OPUS) | Very High | High | ⏳ Planned |
 | 🟡 P2 | Session Recording | High | High | ⏳ Planned |
 | 🟡 P2 | WebRTC Browser Viewer | Very High | Very High | ⏳ Planned |
-| 🟡 P2 | Connection History Log | Medium | Low | ⏳ Planned |
+| 🟡 P2 | Connection History Log | Medium | Low | ✅ Implemented |
 | 🟡 P2 | File Transfer Queue | High | Medium | ⏳ Planned |
 | 🟡 P2 | Settings Panel | Medium | Medium | ✅ Implemented |
 | 🟡 P2 | Remote Screenshot | Medium | Low | ✅ Implemented |
 | 🟡 P2 | 2FA / TOTP Auth | Critical | High | ⏳ Planned |
 | 🟢 P3 | Device Groups & Tags | Medium | Medium | ⏳ Planned |
-| 🟢 P3 | Privacy Screen Mode | Medium | Medium | ⏳ Planned |
+| 🟢 P3 | Privacy Screen Mode | Medium | Medium | ✅ Implemented |
 | 🟢 P3 | Admin Dashboard | Very High | Very High | ⏳ Planned |
 | 🟢 P3 | Remote Terminal/Shell | High | High | ⏳ Planned |
 | 🟢 P3 | Multi-User Viewing | High | High | ⏳ Planned |
@@ -787,7 +787,7 @@ All planned features and code modifications must strictly adhere to the mandator
 | ⚪ P5 | Auto-Update Mechanism | High | High | ⏳ Planned |
 | ⚪ P5 | Onboarding Tutorial | Medium | Medium | ⏳ Planned |
 | ⚪ P5 | Bandwidth Monitor | Medium | Medium | ⏳ Planned |
-| ⚪ P5 | IP Whitelist/Blacklist | High | Low | ⏳ Planned |
+| ⚪ P5 | IP Whitelist/Blacklist | High | Low | ✅ Implemented |
 | ⚪ P5 | Email/Webhook Notifications | Medium | Medium | ⏳ Planned |
 | 🟠 P1 | File Search & Filter | Medium | Low | ✅ Implemented |
 
