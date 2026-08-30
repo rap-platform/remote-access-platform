@@ -15,7 +15,7 @@ ApplicationWindow {
     title: "Remote Access Platform — Enterprise Desktop Viewer"
     color: themePalette.background
 
-    property int currentViewIndex: 0 // 0: Desktop Session, 1: Saved Devices, 2: Security & Keys, 3: File Transfer
+    property int currentViewIndex: 0 // 0: Desktop Session, 1: Saved Devices, 2: Security & Keys, 3: File Transfer, 4: Settings
     property bool isFullScreen: false
 
     visibility: isFullScreen ? Window.FullScreen : Window.Windowed
@@ -62,6 +62,7 @@ ApplicationWindow {
                 SavedDevicesView { id: savedDevicesView }
                 SecurityKeysView { id: securityKeysView }
                 FileTransferView { id: fileTransferView }
+                SettingsView { id: settingsView }
             }
         }
 

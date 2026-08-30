@@ -198,5 +198,47 @@ Rectangle {
         }
 
         Item { Layout.fillHeight: true }
+
+        // View 4: Settings & Preferences (anchored to bottom)
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            radius: Metrics.radiusSm
+            color: navHover4.hovered ? themePalette.surfaceVariant : (sidebarNav.currentViewIndex === 4 ? themePalette.surfaceVariant : themePalette.surface)
+            border.color: sidebarNav.currentViewIndex === 4 ? themePalette.primary : "transparent"
+            border.width: 1
+
+            HoverHandler {
+                id: navHover4
+                cursorShape: Qt.PointingHandCursor
+            }
+
+            TapHandler {
+                onTapped: sidebarNav.navigateTo(4)
+            }
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Metrics.spacingSm
+                anchors.rightMargin: Metrics.spacingSm
+                spacing: Metrics.spacingSm
+
+                Rectangle {
+                    width: 3
+                    Layout.fillHeight: true
+                    color: sidebarNav.currentViewIndex === 4 ? themePalette.primary : "transparent"
+                    radius: 2
+                }
+
+                Label {
+                    text: "⚙️ Settings"
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontBody
+                    font.weight: sidebarNav.currentViewIndex === 4 ? Typography.weightBold : Typography.weightMedium
+                    color: sidebarNav.currentViewIndex === 4 ? themePalette.primary : themePalette.textSecondary
+                    Layout.fillWidth: true
+                }
+            }
+        }
     }
 }
