@@ -6,18 +6,36 @@
 
 ## 📊 Current Architecture Snapshot
 
-| Layer | Status | Key Files |
+| Layer | Status | Key Files / References |
 |---|---|---|
-| **Desktop Client (Qt6/QML)** | ✅ Functional | [Main.qml](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/client/qml/Main.qml), [SessionClient.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/client/src/SessionClient.h) |
-| **Host Agent (C++20)** | ✅ Functional | [AgentPacketHandler.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/agent/src/AgentPacketHandler.h) |
+| **Desktop Client (Qt6/QML)** | ✅ Functional | [Main.qml](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/client/qml/Main.qml), [SessionClient.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/client/src/SessionClient.h), [apps/client/CMakeLists.txt](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/client/CMakeLists.txt) |
+| **Host Agent (C++20 Qt-Free)** | ✅ Functional | [AgentPacketHandler.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/agent/src/AgentPacketHandler.h), [main.cpp](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/agent/src/main.cpp) |
 | **Capture Library** | ✅ Linux (X11/DRM) | [ICaptureBackend.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/libs/capture/include/ICaptureBackend.h) |
 | **Input Injection** | ✅ Linux, Stub others | [IInputBackend.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/libs/input/include/IInputBackend.h) |
 | **E2E Crypto (libsodium)** | ✅ Complete | [CryptoEngine.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/libs/security/include/CryptoEngine.h) |
 | **File Transfer Engine** | ✅ Chunked + SHA-256 | [FileTransferEngine.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/libs/file_transfer/include/FileTransferEngine.h) |
 | **Protocol (Protobuf)** | ✅ 12 payload types | [session.proto](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/proto/session.proto) |
-| **Rust Backend Services** | ✅ 5 microservices | Identity, Signaling, Relay, API-Gateway, Audit |
+| **Rust Backend Services** | ✅ 5 microservices | Identity, Signaling, Relay, API-Gateway, Audit (`#![forbid(unsafe_code)]`) |
 | **Flutter Mobile** | ✅ Shell + FFI bridge | [apps/mobile](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/mobile) |
 | **Theme System** | ✅ 5 themes, hot-reload | [ThemeManager.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/client/include/ThemeManager.h) |
+| **Dynamic Versioning** | ✅ Centralized | [VERSION](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/VERSION), [CMakeLists.txt](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/CMakeLists.txt) (`CMAKE_CONFIGURE_DEPENDS`) |
+| **Packaging & Installers** | ✅ 5 Platforms | `build_and_package.bat` (Win), `package-appimage.sh` (Lin), `package-macos.sh` (Mac), `package-android.sh` (Android), `package-ios.sh` (iOS) |
+
+---
+
+## 📐 Architectural Governance & Quality Rules (.cursorrules Compliance)
+
+All planned features and code modifications must strictly adhere to the mandatory architecture blueprint in [.cursorrules](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/.cursorrules) and [REMOTE-DESKTOP-ARCHITECTURE.md](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/docs/REMOTE-DESKTOP-ARCHITECTURE.md):
+
+1. **Rule 0 — Live Documentation Sync**: Continuously maintain `docs/IMPLEMENTATION_LOG.md` detailing implementation decisions, standards, and verification results. Update `docs/architecture_and_implementation_plan.md` as features progress.
+2. **Rule 1 — Quality Gate & Script Automation (`tools/`)**: Execute static analysis (`cppcheck`, `clang-tidy`, `clippy`, `rustfmt`), compile cleanly, and run test suites (`ctest`, `cargo test`) before any release artifact is declared ready.
+3. **Rule 2 — Backend Memory Safety (Rust Only)**: All backend services (`services/`) are written exclusively in Rust with `#![forbid(unsafe_code)]` at crate root.
+4. **Rule 3 — LGPLv3 Compliance**: Desktop UI uses Qt 6 with **LGPLv3 dynamic linking only**. Static linking of Qt is prohibited. Never use GPL-only modules (`Qt Charts`, `Qt Data Visualization`).
+5. **Rule 4 — Qt-Free Headless Agent**: Core Host Agent (`apps/agent`) must remain **100% Qt-free** C++20 for lightweight, headless background service execution.
+6. **Rule 5 — Strict Platform Abstraction Isolation**: OS-specific code must sit behind abstract interfaces (`ICaptureBackend`, `IInputBackend`, `IEncoderBackend`). No `#ifdef _WIN32` / `#ifdef __linux__` / `#ifdef __APPLE__` outside `platform/<os>/` subdirectories.
+7. **Rule 6 — QML Structural Rules**: Declare `id` as the very first property in QML components. Enforce relative sizing via `Metrics.*` and colors via `themePalette`. Maintain **zero business logic in QML**.
+8. **Rule 7 — Logging & Security**: Use `QLoggingCategory` (C++) and `tracing` (Rust). Never log credentials, session keys, OTP passcodes, clipboard payloads, or frame buffers.
+9. **Rule 8 — Git Commit Hygiene**: Enforce Conventional Commits (`feat:`, `fix:`, `sec:`, `refactor:`, `test:`, `docs:`, `ci:`).
 
 ---
 
