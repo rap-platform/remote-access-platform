@@ -16,7 +16,7 @@
 #endif
 
 int main(int argc, char* argv[]) {
-    QQuickStyle::setStyle("Basic");
+    QQuickStyle::setStyle("Fusion");
 
 #ifndef APP_VERSION
 #define APP_VERSION "0.3.0"
