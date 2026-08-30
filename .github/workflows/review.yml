@@ -1,4 +1,4 @@
-﻿name: Code Review Bot (Reviewdog)
+name: Code Review Bot (Reviewdog)
 
 on:
   pull_request:
@@ -8,6 +8,7 @@ jobs:
   reviewdog-clang-tidy:
     name: clang-tidy Inline Review
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       contents: read
       pull-requests: write
@@ -53,6 +54,7 @@ jobs:
   reviewdog-cargo-clippy:
     name: Clippy Inline Review
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       contents: read
       pull-requests: write

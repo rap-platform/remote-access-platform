@@ -46,7 +46,7 @@ IncludeCategories:
 NamespaceIndentation: None
 PointerAlignment: Left
 ReflowComments: true
-SortIncludes: CaseSensitive
+SortIncludes: Never
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterTemplateKeyword: true

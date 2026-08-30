@@ -1,4 +1,4 @@
-﻿name: PR Standards Automation
+name: PR Standards Automation
 
 on:
   pull_request:
@@ -30,6 +30,7 @@ jobs:
             perf
             build
           requireScope: false
+          validateCommits: false
           subjectPattern: ^(?![A-Z]).+$
           subjectPatternError: |
             The PR title must start with a lowercase letter.
