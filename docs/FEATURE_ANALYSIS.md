@@ -14,7 +14,7 @@
 | **Input Injection** | ✅ Linux, Stub others | [IInputBackend.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/libs/input/include/IInputBackend.h) |
 | **E2E Crypto (libsodium)** | ✅ Complete | [CryptoEngine.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/libs/security/include/CryptoEngine.h) |
 | **File Transfer Engine** | ✅ Chunked + SHA-256 | [FileTransferEngine.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/libs/file_transfer/include/FileTransferEngine.h) |
-| **Protocol (Protobuf)** | ✅ 12 payload types | [session.proto](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/proto/session.proto) |
+| **Protocol (Protobuf)** | ✅ 13 payload types | [session.proto](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/proto/session.proto) |
 | **Rust Backend Services** | ✅ 5 microservices | Identity, Signaling, Relay, API-Gateway, Audit (`#![forbid(unsafe_code)]`) |
 | **Flutter Mobile** | ✅ Shell + FFI bridge | [apps/mobile](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/mobile) |
 | **Theme System** | ✅ 5 themes, hot-reload | [ThemeManager.h](file:///c:/Users/TECQNIO/Documents/GitClone/remote-access-platform/apps/client/include/ThemeManager.h) |
@@ -753,42 +753,43 @@ All planned features and code modifications must strictly adhere to the mandator
 
 ## 📋 Priority Matrix Summary
 
-| Priority | Feature | Impact | Effort | Category |
+| Priority | Feature | Impact | Effort | Status |
 |---|---|---|---|---|
-| 🔴 P0 | Multi-Monitor Display Selector | Critical | Medium | Core |
-| 🔴 P0 | Windows DXGI Capture Backend | Critical | High | Core |
-| 🔴 P0 | Windows SendInput Backend | Critical | Medium | Core |
-| 🟠 P1 | Drag-and-Drop File Transfer | High | Medium | UX |
-| 🟠 P1 | Live Performance HUD | High | Low | UX |
-| 🟠 P1 | Toast Notification System | High | Low | UX |
-| 🟠 P1 | Auto-Reconnect | High | Medium | Reliability |
-| 🟠 P1 | Audio Streaming (OPUS) | Very High | High | Core |
-| 🟡 P2 | Session Recording | High | High | Enterprise |
-| 🟡 P2 | WebRTC Browser Viewer | Very High | Very High | Platform |
-| 🟡 P2 | Connection History Log | Medium | Low | UX |
-| 🟡 P2 | File Transfer Queue | High | Medium | UX |
-| 🟡 P2 | Settings Panel | Medium | Medium | UX |
-| 🟡 P2 | Remote Screenshot | Medium | Low | UX |
-| 🟡 P2 | 2FA / TOTP Auth | Critical | High | Security |
-| 🟢 P3 | Device Groups & Tags | Medium | Medium | Enterprise |
-| 🟢 P3 | Privacy Screen Mode | Medium | Medium | Security |
-| 🟢 P3 | Admin Dashboard | Very High | Very High | Enterprise |
-| 🟢 P3 | Remote Terminal/Shell | High | High | Advanced |
-| 🟢 P3 | Multi-User Viewing | High | High | Enterprise |
-| 🔵 P4 | Animated View Transitions | Medium | Low | Polish |
-| 🔵 P4 | PiP Mode | High | Medium | UX |
-| 🔵 P4 | System Theme Auto-Detect | Medium | Low | Polish |
-| 🔵 P4 | Custom Accent Color | Medium | Low | Polish |
-| 🔵 P4 | Keyboard Shortcuts | Medium | Low | UX |
-| 🔵 P4 | Wake-on-LAN | Medium | Low | Utility |
-| ⚪ P5 | Prometheus Metrics | High | Medium | DevOps |
-| ⚪ P5 | Docker Compose Dev Env | High | Medium | DevOps |
-| ⚪ P5 | QML Visual Regression Tests | High | Medium | Quality |
-| ⚪ P5 | Auto-Update Mechanism | High | High | Distribution |
-| ⚪ P5 | Onboarding Tutorial | Medium | Medium | UX |
-| ⚪ P5 | Bandwidth Monitor | Medium | Medium | Utility |
-| ⚪ P5 | IP Whitelist/Blacklist | High | Low | Security |
-| ⚪ P5 | Email/Webhook Notifications | Medium | Medium | Enterprise |
+| 🔴 P0 | Multi-Monitor Display Selector | Critical | Medium | ✅ Implemented |
+| 🔴 P0 | Windows DXGI Capture Backend | Critical | High | ⏳ Planned |
+| 🔴 P0 | Windows SendInput Backend | Critical | Medium | ⏳ Planned |
+| 🟠 P1 | Drag-and-Drop File Transfer | High | Medium | ✅ Implemented |
+| 🟠 P1 | Live Performance HUD | High | Low | ✅ Implemented |
+| 🟠 P1 | Toast Notification System | High | Low | ✅ Implemented |
+| 🟠 P1 | Auto-Reconnect | High | Medium | ⏳ Planned |
+| 🟠 P1 | Audio Streaming (OPUS) | Very High | High | ⏳ Planned |
+| 🟡 P2 | Session Recording | High | High | ⏳ Planned |
+| 🟡 P2 | WebRTC Browser Viewer | Very High | Very High | ⏳ Planned |
+| 🟡 P2 | Connection History Log | Medium | Low | ⏳ Planned |
+| 🟡 P2 | File Transfer Queue | High | Medium | ⏳ Planned |
+| 🟡 P2 | Settings Panel | Medium | Medium | ✅ Implemented |
+| 🟡 P2 | Remote Screenshot | Medium | Low | ✅ Implemented |
+| 🟡 P2 | 2FA / TOTP Auth | Critical | High | ⏳ Planned |
+| 🟢 P3 | Device Groups & Tags | Medium | Medium | ⏳ Planned |
+| 🟢 P3 | Privacy Screen Mode | Medium | Medium | ⏳ Planned |
+| 🟢 P3 | Admin Dashboard | Very High | Very High | ⏳ Planned |
+| 🟢 P3 | Remote Terminal/Shell | High | High | ⏳ Planned |
+| 🟢 P3 | Multi-User Viewing | High | High | ⏳ Planned |
+| 🔵 P4 | Animated View Transitions | Medium | Low | ⏳ Planned |
+| 🔵 P4 | PiP Mode | High | Medium | ⏳ Planned |
+| 🔵 P4 | System Theme Auto-Detect | Medium | Low | ⏳ Planned |
+| 🔵 P4 | Custom Accent Color | Medium | Low | ⏳ Planned |
+| 🔵 P4 | Keyboard Shortcuts | Medium | Low | ⏳ Planned |
+| 🔵 P4 | Wake-on-LAN | Medium | Low | ⏳ Planned |
+| ⚪ P5 | Prometheus Metrics | High | Medium | ⏳ Planned |
+| ⚪ P5 | Docker Compose Dev Env | High | Medium | ⏳ Planned |
+| ⚪ P5 | QML Visual Regression Tests | High | Medium | ⏳ Planned |
+| ⚪ P5 | Auto-Update Mechanism | High | High | ⏳ Planned |
+| ⚪ P5 | Onboarding Tutorial | Medium | Medium | ⏳ Planned |
+| ⚪ P5 | Bandwidth Monitor | Medium | Medium | ⏳ Planned |
+| ⚪ P5 | IP Whitelist/Blacklist | High | Low | ⏳ Planned |
+| ⚪ P5 | Email/Webhook Notifications | Medium | Medium | ⏳ Planned |
+| 🟠 P1 | File Search & Filter | Medium | Low | ✅ Implemented |
 
 ---
 
