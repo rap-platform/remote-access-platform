@@ -1,38 +1,93 @@
 version: '3.8'
 
 services:
-  signaling-server:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.signaling
-    container_name: rap-signaling-server
-    ports:
-      - "8080:8080"
+  postgres:
+    image: postgres:15-alpine
+    container_name: rap-postgres
     environment:
-      - RUST_LOG=info
-      - PORT=8080
-    restart: unless-stopped
-
-  relay-server:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.relay
-    container_name: rap-relay-server
+      POSTGRES_DB: rap_db
+      POSTGRES_USER: rap_user
+      POSTGRES_PASSWORD: rap_password
     ports:
-      - "8443:8443"
-    environment:
-      - RUST_LOG=info
-      - PORT=8443
-    restart: unless-stopped
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rap_user -d rap_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  audit-gateway:
+  redis:
+    image: redis:7-alpine
+    container_name: rap-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  identity-service:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile.gateway
-    container_name: rap-audit-gateway
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: identity
+    container_name: rap-identity
+    environment:
+      DATABASE_URL: postgres://rap_user:rap_password@postgres:5432/rap_db
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  signaling-service:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: signaling
+    container_name: rap-signaling
+    environment:
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8082:8082"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  relay-service:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
+      args:
+        SERVICE_NAME: relay
+    container_name: rap-relay
+    ports:
+      - "18443:18443/udp"
+      - "18443:18443/tcp"
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: rap-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: rap-grafana
     ports:
       - "3000:3000"
-    environment:
-      - RUST_LOG=info
-      - PORT=3000
-    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+volumes:
+  pgdata:

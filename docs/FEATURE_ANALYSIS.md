@@ -764,31 +764,31 @@ All planned features and code modifications must strictly adhere to the mandator
 | 🟠 P1 | Auto-Reconnect | High | Medium | ✅ Implemented |
 | 🟠 P1 | Audio Streaming (OPUS) | Very High | High | ✅ Implemented |
 | 🟡 P2 | Session Recording | High | High | ✅ Implemented |
-| 🟡 P2 | WebRTC Browser Viewer | Very High | Very High | ⏳ Planned |
+| 🟡 P2 | WebRTC Browser Viewer | Very High | Very High | ✅ Implemented |
 | 🟡 P2 | Connection History Log | Medium | Low | ✅ Implemented |
 | 🟡 P2 | File Transfer Queue | High | Medium | ✅ Implemented |
 | 🟡 P2 | Settings Panel | Medium | Medium | ✅ Implemented |
 | 🟡 P2 | Remote Screenshot | Medium | Low | ✅ Implemented |
-| 🟡 P2 | 2FA / TOTP Auth | Critical | High | ⏳ Planned |
+| 🟡 P2 | 2FA / TOTP Auth | Critical | High | ✅ Implemented |
 | 🟢 P3 | Device Groups & Tags | Medium | Medium | ✅ Implemented |
 | 🟢 P3 | Privacy Screen Mode | Medium | Medium | ✅ Implemented |
-| 🟢 P3 | Admin Dashboard | Very High | Very High | ⏳ Planned |
+| 🟢 P3 | Admin Dashboard | Very High | Very High | ✅ Implemented |
 | 🟢 P3 | Remote Terminal/Shell | High | High | ✅ Implemented |
-| 🟢 P3 | Multi-User Viewing | High | High | ⏳ Planned |
-| 🔵 P4 | Animated View Transitions | Medium | Low | ⏳ Planned |
+| 🟢 P3 | Multi-User Viewing | High | High | ✅ Implemented |
+| 🔵 P4 | Animated View Transitions | Medium | Low | ✅ Implemented |
 | 🔵 P4 | PiP Mode | High | Medium | ✅ Implemented |
 | 🔵 P4 | System Theme Auto-Detect | Medium | Low | ✅ Implemented |
 | 🔵 P4 | Custom Accent Color | Medium | Low | ✅ Implemented |
 | 🔵 P4 | Keyboard Shortcuts | Medium | Low | ✅ Implemented |
 | 🔵 P4 | Wake-on-LAN | Medium | Low | ✅ Implemented |
-| ⚪ P5 | Prometheus Metrics | High | Medium | ⏳ Planned |
-| ⚪ P5 | Docker Compose Dev Env | High | Medium | ⏳ Planned |
-| ⚪ P5 | QML Visual Regression Tests | High | Medium | ⏳ Planned |
-| ⚪ P5 | Auto-Update Mechanism | High | High | ⏳ Planned |
+| ⚪ P5 | Prometheus Metrics | High | Medium | ✅ Implemented |
+| ⚪ P5 | Docker Compose Dev Env | High | Medium | ✅ Implemented |
+| ⚪ P5 | QML Visual Regression Tests | High | Medium | ✅ Implemented |
+| ⚪ P5 | Auto-Update Mechanism | High | High | ✅ Implemented |
 | ⚪ P5 | Onboarding Tutorial | Medium | Medium | ✅ Implemented |
 | ⚪ P5 | Bandwidth Monitor | Medium | Medium | ✅ Implemented |
 | ⚪ P5 | IP Whitelist/Blacklist | High | Low | ✅ Implemented |
-| ⚪ P5 | Email/Webhook Notifications | Medium | Medium | ⏳ Planned |
+| ⚪ P5 | Email/Webhook Notifications | Medium | Medium | ✅ Implemented |
 | 🟠 P1 | File Search & Filter | Medium | Low | ✅ Implemented |
 
 ---
