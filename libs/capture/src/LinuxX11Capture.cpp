@@ -289,4 +289,3 @@ std::unique_ptr<ICaptureBackend> CaptureBackendFactory::createDefaultBackend() {
 }
 
 } // namespace rap::capture
-

@@ -19,18 +19,23 @@ class MultiUserSessionManager {
 public:
     MultiUserSessionManager() = default;
 
-    void addObserver(const std::string& observerId, const std::string& ipAddress, bool isController = false) {
+    void addObserver(const std::string& observerId,
+                     const std::string& ipAddress,
+                     bool isController = false) {
         std::lock_guard<std::mutex> lock(mutex_);
         observers_.push_back({observerId, ipAddress, isController});
-        std::cout << "[Agent MultiUser] Observer connected: " << observerId << " (" << ipAddress << ")" << std::endl;
+        std::cout << "[Agent MultiUser] Observer connected: " << observerId << " (" << ipAddress
+                  << ")" << std::endl;
     }
 
     void removeObserver(const std::string& observerId) {
         std::lock_guard<std::mutex> lock(mutex_);
-        observers_.erase(
-            std::remove_if(observers_.begin(), observers_.end(),
-                           [&](const SessionObserver& obs) { return obs.observerId == observerId; }),
-            observers_.end());
+        observers_.erase(std::remove_if(observers_.begin(),
+                                        observers_.end(),
+                                        [&](const SessionObserver& obs) {
+                                            return obs.observerId == observerId;
+                                        }),
+                         observers_.end());
     }
 
     size_t observerCount() const {

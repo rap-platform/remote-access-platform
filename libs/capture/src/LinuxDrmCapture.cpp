@@ -123,4 +123,3 @@ bool LinuxDrmCapture::selectMonitor(uint32_t monitorId) {
 }
 
 } // namespace rap::capture
-

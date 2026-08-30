@@ -40,4 +40,3 @@ QImage VideoFrameProvider::currentFrame() const {
 }
 
 } // namespace rap::client
-

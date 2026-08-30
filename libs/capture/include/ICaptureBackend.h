@@ -64,4 +64,3 @@ public:
 } // namespace rap::capture
 
 #endif // RAP_CAPTURE_I_CAPTURE_BACKEND_H
-

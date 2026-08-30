@@ -3,6 +3,8 @@
 
 #![forbid(unsafe_code)]
 
+pub mod notifications;
+
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};

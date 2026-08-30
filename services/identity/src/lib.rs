@@ -1,6 +1,8 @@
 //! Device identity and registration service crate.
 #![forbid(unsafe_code)]
 
+pub mod totp;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;

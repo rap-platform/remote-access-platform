@@ -44,21 +44,24 @@ class SessionClient : public QObject {
     // Sprint 3: Auto-reconnect, Connection History & Privacy Screen properties
     Q_PROPERTY(bool isReconnecting READ isReconnecting NOTIFY isReconnectingChanged)
     Q_PROPERTY(int reconnectAttempts READ reconnectAttempts NOTIFY reconnectAttemptsChanged)
-    Q_PROPERTY(QVariantList connectionHistory READ connectionHistory NOTIFY connectionHistoryChanged)
+    Q_PROPERTY(
+        QVariantList connectionHistory READ connectionHistory NOTIFY connectionHistoryChanged)
     Q_PROPERTY(bool privacyMode READ privacyMode NOTIFY privacyModeChanged)
 
     // Sprint 4: Premium Features properties
     Q_PROPERTY(bool audioMuted READ isAudioMuted NOTIFY audioMutedChanged)
     Q_PROPERTY(double audioVolume READ audioVolume NOTIFY audioVolumeChanged)
     Q_PROPERTY(bool isRecording READ isRecording NOTIFY isRecordingChanged)
-    Q_PROPERTY(int recordingDurationSec READ recordingDurationSec NOTIFY recordingDurationSecChanged)
+    Q_PROPERTY(
+        int recordingDurationSec READ recordingDurationSec NOTIFY recordingDurationSecChanged)
     Q_PROPERTY(QString terminalOutput READ terminalOutput NOTIFY terminalOutputChanged)
     Q_PROPERTY(bool isPipMode READ isPipMode NOTIFY isPipModeChanged)
     Q_PROPERTY(QString currentLanguage READ currentLanguage NOTIFY currentLanguageChanged)
     Q_PROPERTY(QVariantList transferQueue READ transferQueue NOTIFY transferQueueChanged)
     Q_PROPERTY(qint64 totalBytesSent READ totalBytesSent NOTIFY bandwidthStatsChanged)
     Q_PROPERTY(qint64 totalBytesReceived READ totalBytesReceived NOTIFY bandwidthStatsChanged)
-    Q_PROPERTY(double bandwidthCapMbps READ bandwidthCapMbps WRITE setBandwidthCapMbps NOTIFY bandwidthCapChanged)
+    Q_PROPERTY(double bandwidthCapMbps READ bandwidthCapMbps WRITE setBandwidthCapMbps NOTIFY
+                   bandwidthCapChanged)
     Q_PROPERTY(bool isBandwidthLimited READ isBandwidthLimited NOTIFY bandwidthCapChanged)
 
 public:
@@ -149,7 +152,8 @@ public:
     Q_INVOKABLE void setLanguage(const QString& language);
 
     // Additional Features
-    Q_INVOKABLE void enQueueTransfer(const QString& localPath, const QString& remotePath, bool isUpload);
+    Q_INVOKABLE void
+    enQueueTransfer(const QString& localPath, const QString& remotePath, bool isUpload);
     Q_INVOKABLE void cancelQueueItem(int index);
     Q_INVOKABLE void clearQueue();
     Q_INVOKABLE void sendWakeOnLan(const QString& macAddress);
@@ -289,11 +293,12 @@ private:
 
     void loadConnectionHistory();
     void saveConnectionHistory();
-    void addHistoryRecord(const QString& target, const QString& status, qint64 durationSec, const QString& disconnectReason);
+    void addHistoryRecord(const QString& target,
+                          const QString& status,
+                          qint64 durationSec,
+                          const QString& disconnectReason);
 };
 
 } // namespace rap::client
 
 #endif // RAP_CLIENT_SESSION_CLIENT_H
-
-

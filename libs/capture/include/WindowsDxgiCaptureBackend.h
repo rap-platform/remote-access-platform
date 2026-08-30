@@ -1,12 +1,12 @@
 #ifndef RAP_CAPTURE_WINDOWS_DXGI_CAPTURE_BACKEND_H
 #define RAP_CAPTURE_WINDOWS_DXGI_CAPTURE_BACKEND_H
 
-#include "ICaptureBackend.h"
-
 #include <atomic>
 #include <mutex>
 #include <thread>
 #include <vector>
+
+#include "ICaptureBackend.h"
 
 namespace rap::capture {
 

@@ -4,9 +4,9 @@
 #include <iostream>
 
 #ifdef _WIN32
-#include <windows.h>
 #include <d3d11.h>
 #include <dxgi1_2.h>
+#include <windows.h>
 #endif
 
 namespace rap::capture {
@@ -69,7 +69,8 @@ bool WindowsDxgiCaptureBackend::selectMonitor(uint32_t monitorId) {
 
 bool WindowsDxgiCaptureBackend::startCapture(FrameCallback callback) {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (isCapturing_) return true;
+    if (isCapturing_)
+        return true;
 
     frameCallback_ = callback;
     isCapturing_ = true;
@@ -80,7 +81,8 @@ bool WindowsDxgiCaptureBackend::startCapture(FrameCallback callback) {
 void WindowsDxgiCaptureBackend::stopCapture() {
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (!isCapturing_) return;
+        if (!isCapturing_)
+            return;
         isCapturing_ = false;
     }
     if (captureThread_.joinable()) {
@@ -100,7 +102,8 @@ std::optional<FrameData> WindowsDxgiCaptureBackend::captureSingleFrame() {
     frame.format = FrameFormat::RGBA8888;
     frame.frameNumber = ++frameCounter_;
     frame.timestampUs = std::chrono::duration_cast<std::chrono::microseconds>(
-                            std::chrono::steady_clock::now().time_since_epoch()).count();
+                            std::chrono::steady_clock::now().time_since_epoch())
+                            .count();
     frame.pixelData.resize(frame.stride * frame.height, 0x1E);
     return frame;
 }

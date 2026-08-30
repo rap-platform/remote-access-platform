@@ -104,7 +104,9 @@ SessionClient::SessionClient(VideoFrameProvider* frameProvider, QObject* parent)
     recordingTimer_.setInterval(1000);
 
     // Initial terminal banner
-    terminalOutput_ = "Remote Access Platform PTY Terminal Subsystem v0.3.1\nConnected to host environment (127.0.0.1:18443)\nType 'help' or any Linux shell command to execute.\n\n$ ";
+    terminalOutput_ =
+        "Remote Access Platform PTY Terminal Subsystem v0.3.1\nConnected to host environment "
+        "(127.0.0.1:18443)\nType 'help' or any Linux shell command to execute.\n\n$ ";
     emit terminalOutputChanged(terminalOutput_);
 }
 
@@ -347,7 +349,8 @@ void SessionClient::onDisconnected() {
     // Calculate session duration if previously connected
     qint64 durationSec = 0;
     if (sessionStartTimeMs_ > 0) {
-        durationSec = std::max<qint64>(0, (QDateTime::currentMSecsSinceEpoch() - sessionStartTimeMs_) / 1000);
+        durationSec =
+            std::max<qint64>(0, (QDateTime::currentMSecsSinceEpoch() - sessionStartTimeMs_) / 1000);
         sessionStartTimeMs_ = 0;
     }
 
@@ -357,16 +360,17 @@ void SessionClient::onDisconnected() {
     }
 
     // Auto-Reconnect with Exponential Backoff (1s, 2s, 4s, 8s, 16s, max 30s)
-    if (!userInitiatedDisconnect_ && !lastHost_.isEmpty() && reconnectAttempts_ < maxReconnectAttempts_) {
+    if (!userInitiatedDisconnect_ && !lastHost_.isEmpty() &&
+        reconnectAttempts_ < maxReconnectAttempts_) {
         reconnectAttempts_++;
         isReconnecting_ = true;
         emit reconnectAttemptsChanged(reconnectAttempts_);
         emit isReconnectingChanged(true);
 
         int delayMs = std::min(30000, 1000 * (1 << (reconnectAttempts_ - 1)));
-        qInfo() << "[Client Auto-Reconnect] Scheduling attempt" << reconnectAttempts_
-                << "/" << maxReconnectAttempts_ << "in" << delayMs << "ms";
-        
+        qInfo() << "[Client Auto-Reconnect] Scheduling attempt" << reconnectAttempts_ << "/"
+                << maxReconnectAttempts_ << "in" << delayMs << "ms";
+
         setStatus(QString("Connection lost. Reconnecting in %1s (Attempt %2/%3)...")
                       .arg(delayMs / 1000)
                       .arg(reconnectAttempts_)
@@ -388,7 +392,7 @@ void SessionClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     isConnected_ = false;
     receiveBuffer_.clear();
     qWarning() << "[Client] Socket Error:" << socket_.errorString();
-    
+
     if (!isReconnecting_) {
         setStatus("Socket Error: " + socket_.errorString());
         emit connectionStateChanged(false);
@@ -551,8 +555,9 @@ void SessionClient::onReadyRead() {
             auto decryptedOpt =
                 rap::security::CryptoEngine::decryptPayload(packet.payload, sessionKey, nonce);
             if (decryptedOpt.has_value() && !decryptedOpt->empty()) {
-                QString text = QString::fromUtf8(reinterpret_cast<const char*>(decryptedOpt->data()),
-                                               static_cast<int>(decryptedOpt->size()));
+                QString text =
+                    QString::fromUtf8(reinterpret_cast<const char*>(decryptedOpt->data()),
+                                      static_cast<int>(decryptedOpt->size()));
                 terminalOutput_ += text;
                 emit terminalOutputChanged(terminalOutput_);
                 emit terminalOutputReceived(text);
@@ -561,7 +566,8 @@ void SessionClient::onReadyRead() {
                    !packet.payload.empty()) {
             // Audio packet received (OPUS/PCM)
             if (!audioMuted_) {
-                qInfo() << "[Client Audio] Playing back audio packet size:" << packet.payload.size();
+                qInfo() << "[Client Audio] Playing back audio packet size:"
+                        << packet.payload.size();
             }
         }
 
@@ -795,8 +801,8 @@ void SessionClient::updateTelemetry() {
     }
 
     // Calculate bitrate from bytes received delta (in Mbps)
-    double currentBitrate = static_cast<double>(totalBytesReceived_ - lastByteCount_) * 8.0 /
-                            (1000.0 * 1000.0); // Mbps
+    double currentBitrate =
+        static_cast<double>(totalBytesReceived_ - lastByteCount_) * 8.0 / (1000.0 * 1000.0); // Mbps
     lastByteCount_ = totalBytesReceived_;
     if (std::abs(bitrate_ - currentBitrate) > 0.01) {
         bitrate_ = currentBitrate;
@@ -821,8 +827,10 @@ void SessionClient::updateTelemetry() {
 
 // ─── Sprint 3: Auto-Reconnect Implementation ───────────────────────────
 void SessionClient::attemptReconnect() {
-    if (userInitiatedDisconnect_ || lastHost_.isEmpty()) return;
-    qInfo() << "[Client Auto-Reconnect] Executing attempt" << reconnectAttempts_ << "to" << lastHost_;
+    if (userInitiatedDisconnect_ || lastHost_.isEmpty())
+        return;
+    qInfo() << "[Client Auto-Reconnect] Executing attempt" << reconnectAttempts_ << "to"
+            << lastHost_;
     setStatus(QString("Reconnecting to %1 (Attempt %2/%3)...")
                   .arg(lastConnectedTarget_)
                   .arg(reconnectAttempts_)
@@ -865,14 +873,16 @@ void SessionClient::loadConnectionHistory() {
         // Populate default demo history if no file exists
         QVariantMap sample1;
         sample1["target"] = "Local Linux Agent (127.0.0.1:18443)";
-        sample1["timestamp"] = QDateTime::currentDateTime().addDays(-1).toString("yyyy-MM-dd HH:mm");
+        sample1["timestamp"] =
+            QDateTime::currentDateTime().addDays(-1).toString("yyyy-MM-dd HH:mm");
         sample1["duration"] = "45 mins";
         sample1["reason"] = "User Disconnect";
         sample1["status"] = "Success";
 
         QVariantMap sample2;
         sample2["target"] = "Dev Workstation (10.0.0.15:18443)";
-        sample2["timestamp"] = QDateTime::currentDateTime().addDays(-2).toString("yyyy-MM-dd HH:mm");
+        sample2["timestamp"] =
+            QDateTime::currentDateTime().addDays(-2).toString("yyyy-MM-dd HH:mm");
         sample2["duration"] = "12 mins";
         sample2["reason"] = "Network Timeout";
         sample2["status"] = "Success";
@@ -887,7 +897,8 @@ void SessionClient::loadConnectionHistory() {
     file.close();
 
     QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (!doc.isArray()) return;
+    if (!doc.isArray())
+        return;
 
     QVariantList history;
     QJsonArray array = doc.array();
@@ -918,11 +929,14 @@ void SessionClient::saveConnectionHistory() {
     }
 }
 
-void SessionClient::addHistoryRecord(const QString& target, const QString& status, qint64 durationSec, const QString& disconnectReason) {
+void SessionClient::addHistoryRecord(const QString& target,
+                                     const QString& status,
+                                     qint64 durationSec,
+                                     const QString& disconnectReason) {
     QVariantMap record;
     record["target"] = target;
     record["timestamp"] = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm");
-    
+
     if (durationSec >= 60) {
         record["duration"] = QString::number(durationSec / 60) + " mins";
     } else {
@@ -938,7 +952,8 @@ void SessionClient::addHistoryRecord(const QString& target, const QString& statu
     }
     emit connectionHistoryChanged(connectionHistory_);
     saveConnectionHistory();
-    qInfo() << "[Client History] Recorded connection to:" << target << "Duration:" << record["duration"].toString();
+    qInfo() << "[Client History] Recorded connection to:" << target
+            << "Duration:" << record["duration"].toString();
 }
 
 void SessionClient::clearConnectionHistory() {
@@ -972,7 +987,8 @@ void SessionClient::toggleSessionRecording() {
         qInfo() << "[Client Recording] Session recording STARTED.";
     } else {
         recordingTimer_.stop();
-        qInfo() << "[Client Recording] Session recording STOPPED. Duration:" << recordingDurationSec_ << "s";
+        qInfo() << "[Client Recording] Session recording STOPPED. Duration:"
+                << recordingDurationSec_ << "s";
     }
 }
 
@@ -984,7 +1000,8 @@ void SessionClient::updateRecordingTimer() {
 }
 
 void SessionClient::sendTerminalInput(const QString& command) {
-    if (command.isEmpty()) return;
+    if (command.isEmpty())
+        return;
 
     QString cleanCmd = command.trimmed();
     terminalOutput_ += cleanCmd + "\n";
@@ -994,17 +1011,25 @@ void SessionClient::sendTerminalInput(const QString& command) {
         clearTerminal();
         return;
     } else if (cleanCmd == "help") {
-        terminalOutput_ += "Available commands: help, uname -a, ps aux, free -h, uptime, whoami, clear, exit\n$ ";
+        terminalOutput_ +=
+            "Available commands: help, uname -a, ps aux, free -h, uptime, whoami, clear, exit\n$ ";
     } else if (cleanCmd == "uname -a") {
-        terminalOutput_ += "Linux rap-agent-host 6.8.0-45-generic #45-Ubuntu SMP PREEMPT_DYNAMIC x86_64 x86_64 x86_64 GNU/Linux\n$ ";
+        terminalOutput_ += "Linux rap-agent-host 6.8.0-45-generic #45-Ubuntu SMP PREEMPT_DYNAMIC "
+                           "x86_64 x86_64 x86_64 GNU/Linux\n$ ";
     } else if (cleanCmd == "whoami") {
         terminalOutput_ += "root (Host Agent Service Container)\n$ ";
     } else if (cleanCmd == "uptime") {
-        terminalOutput_ += " 20:38:12 up 4 days, 12:45,  1 user,  load average: 0.14, 0.22, 0.18\n$ ";
+        terminalOutput_ +=
+            " 20:38:12 up 4 days, 12:45,  1 user,  load average: 0.14, 0.22, 0.18\n$ ";
     } else if (cleanCmd == "free -h") {
-        terminalOutput_ += "               total        used        free      shared  buff/cache   available\nMem:           31Gi       4.2Gi        21Gi       128Mi       5.8Gi        26Gi\nSwap:         2.0Gi          0B       2.0Gi\n$ ";
+        terminalOutput_ += "               total        used        free      shared  buff/cache   "
+                           "available\nMem:           31Gi       4.2Gi        21Gi       128Mi     "
+                           "  5.8Gi        26Gi\nSwap:         2.0Gi          0B       2.0Gi\n$ ";
     } else if (cleanCmd == "ps aux") {
-        terminalOutput_ += "USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot           1  0.0  0.1 168340 11420 ?        Ss   Aug26   0:04 /sbin/init\nroot       18443  1.2  0.5 450120 42300 ?        Ssl  14:00   1:12 ./rap-agent --daemon\n$ ";
+        terminalOutput_ +=
+            "USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot      "
+            "     1  0.0  0.1 168340 11420 ?        Ss   Aug26   0:04 /sbin/init\nroot       18443 "
+            " 1.2  0.5 450120 42300 ?        Ssl  14:00   1:12 ./rap-agent --daemon\n$ ";
     } else {
         terminalOutput_ += "bash: " + cleanCmd + ": command executed on remote agent\n$ ";
     }
@@ -1021,7 +1046,8 @@ void SessionClient::clearTerminal() {
 void SessionClient::togglePipMode() {
     isPipMode_ = !isPipMode_;
     emit isPipModeChanged(isPipMode_);
-    qInfo() << "[Client PiP] Picture-in-Picture mode set to:" << (isPipMode_ ? "ENABLED" : "DISABLED");
+    qInfo() << "[Client PiP] Picture-in-Picture mode set to:"
+            << (isPipMode_ ? "ENABLED" : "DISABLED");
 }
 
 void SessionClient::setLanguage(const QString& language) {
@@ -1032,7 +1058,9 @@ void SessionClient::setLanguage(const QString& language) {
     }
 }
 
-void SessionClient::enQueueTransfer(const QString& localPath, const QString& remotePath, bool isUpload) {
+void SessionClient::enQueueTransfer(const QString& localPath,
+                                    const QString& remotePath,
+                                    bool isUpload) {
     QVariantMap item;
     item["fileName"] = QFileInfo(isUpload ? localPath : remotePath).fileName();
     item["localPath"] = localPath;
@@ -1099,6 +1127,3 @@ void SessionClient::setBandwidthCapMbps(double capMbps) {
 }
 
 } // namespace rap::client
-
-
-
