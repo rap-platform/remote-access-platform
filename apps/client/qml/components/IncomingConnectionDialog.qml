@@ -139,7 +139,9 @@ Dialog {
             spacing: Metrics.spacingSm
 
             Button {
+                id: btnProfileFull
                 Layout.fillWidth: true
+                Layout.preferredHeight: 36
                 text: "🟢 Full Access"
                 highlighted: incomingConnectionDialog.accessProfileIndex === 0
                 onClicked: {
@@ -149,12 +151,15 @@ Dialog {
                     chkFileTransfer.checked = true;
                     chkSystemControl.checked = true;
                 }
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
                 Accessible.role: Accessible.Button
                 Accessible.name: "Select Full Access Profile"
             }
 
             Button {
+                id: btnProfileStd
                 Layout.fillWidth: true
+                Layout.preferredHeight: 36
                 text: "🟡 Standard"
                 highlighted: incomingConnectionDialog.accessProfileIndex === 1
                 onClicked: {
@@ -164,12 +169,15 @@ Dialog {
                     chkFileTransfer.checked = false;
                     chkSystemControl.checked = false;
                 }
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
                 Accessible.role: Accessible.Button
                 Accessible.name: "Select Standard Access Profile"
             }
 
             Button {
+                id: btnProfileScreen
                 Layout.fillWidth: true
+                Layout.preferredHeight: 36
                 text: "🔵 Screen Only"
                 highlighted: incomingConnectionDialog.accessProfileIndex === 2
                 onClicked: {
@@ -179,6 +187,7 @@ Dialog {
                     chkFileTransfer.checked = false;
                     chkSystemControl.checked = false;
                 }
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
                 Accessible.role: Accessible.Button
                 Accessible.name: "Select Screen Share Only Profile"
             }
@@ -194,6 +203,7 @@ Dialog {
                 text: "Allow Keyboard & Mouse Control"
                 checked: true
                 onCheckedChanged: incomingConnectionDialog.accessProfileIndex = 3
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
                 Accessible.role: Accessible.CheckBox
                 Accessible.name: "Toggle Remote Input Permission"
             }
@@ -203,6 +213,7 @@ Dialog {
                 text: "Allow Shared Clipboard Sync"
                 checked: true
                 onCheckedChanged: incomingConnectionDialog.accessProfileIndex = 3
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
                 Accessible.role: Accessible.CheckBox
                 Accessible.name: "Toggle Clipboard Sync Permission"
             }
@@ -212,6 +223,7 @@ Dialog {
                 text: "Allow File Manager Access & Transfer"
                 checked: true
                 onCheckedChanged: incomingConnectionDialog.accessProfileIndex = 3
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
                 Accessible.role: Accessible.CheckBox
                 Accessible.name: "Toggle File Transfer Permission"
             }
@@ -221,6 +233,7 @@ Dialog {
                 text: "Allow System Actions (Lock Workstation, Ctrl+Alt+Del)"
                 checked: true
                 onCheckedChanged: incomingConnectionDialog.accessProfileIndex = 3
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
                 Accessible.role: Accessible.CheckBox
                 Accessible.name: "Toggle System Control Permission"
             }
@@ -236,13 +249,15 @@ Dialog {
             Button {
                 id: btnDeny
                 Layout.fillWidth: true
+                Layout.preferredHeight: 42
                 text: "❌ DENY / REJECT"
                 onClicked: {
                     incomingConnectionDialog.connectionDenied();
                     incomingConnectionDialog.close();
                 }
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
                 background: Rectangle {
-                    color: themePalette.danger
+                    color: btnDeny.hovered ? Qt.darker(themePalette.danger, 1.15) : themePalette.danger
                     radius: Metrics.radiusSm
                 }
                 contentItem: Text {
@@ -260,6 +275,7 @@ Dialog {
             Button {
                 id: btnAccept
                 Layout.fillWidth: true
+                Layout.preferredHeight: 42
                 text: "✅ ACCEPT CONNECTION"
                 onClicked: {
                     let mask = (chkInput.checked ? 1 : 0) |
@@ -269,8 +285,9 @@ Dialog {
                     incomingConnectionDialog.acceptedWithPermissions(mask);
                     incomingConnectionDialog.close();
                 }
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
                 background: Rectangle {
-                    color: themePalette.success
+                    color: btnAccept.hovered ? Qt.lighter(themePalette.success, 1.15) : themePalette.success
                     radius: Metrics.radiusSm
                 }
                 contentItem: Text {

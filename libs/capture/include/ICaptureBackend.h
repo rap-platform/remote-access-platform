@@ -22,6 +22,17 @@ struct FrameData {
     std::vector<uint8_t> pixelData;
 };
 
+/// Describes a single physical display/monitor attached to the host system.
+struct MonitorInfo {
+    uint32_t monitorId{0};
+    std::string name;
+    uint32_t width{0};
+    uint32_t height{0};
+    int32_t offsetX{0};
+    int32_t offsetY{0};
+    bool isPrimary{false};
+};
+
 using FrameCallback = std::function<void(const FrameData&)>;
 
 class ICaptureBackend {
@@ -34,6 +45,15 @@ public:
     virtual bool isCapturing() const = 0;
     virtual std::optional<FrameData> captureSingleFrame() = 0;
     virtual std::string backendName() const = 0;
+
+    /// Enumerate all physical displays connected to the host system.
+    virtual std::vector<MonitorInfo> enumerateMonitors() = 0;
+
+    /// Switch capture to the specified monitor by ID. Returns true on success.
+    virtual bool selectMonitor(uint32_t monitorId) = 0;
+
+    /// Returns the ID of the monitor currently being captured.
+    virtual uint32_t currentMonitorId() const = 0;
 };
 
 class CaptureBackendFactory {
@@ -44,3 +64,4 @@ public:
 } // namespace rap::capture
 
 #endif // RAP_CAPTURE_I_CAPTURE_BACKEND_H
+

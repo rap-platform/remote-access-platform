@@ -109,4 +109,18 @@ void LinuxDrmCapture::captureThreadLoop() {
     }
 }
 
+std::vector<MonitorInfo> LinuxDrmCapture::enumerateMonitors() {
+    // DRM/KMS: report a single framebuffer-backed display
+    return {{0, "Primary Display (DRM/KMS)", m_width, m_height, 0, 0, true}};
+}
+
+bool LinuxDrmCapture::selectMonitor(uint32_t monitorId) {
+    if (monitorId == 0) {
+        activeMonitorId_ = 0;
+        return true;
+    }
+    return false;
+}
+
 } // namespace rap::capture
+

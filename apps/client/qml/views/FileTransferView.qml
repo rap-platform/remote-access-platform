@@ -7,6 +7,25 @@ Rectangle {
     id: fileTransferView
     color: themePalette.background
 
+    // Search & filter state
+    property string localSearchText: ""
+    property string remoteSearchText: ""
+    property int localFilterType: 0  // 0: All, 1: Dirs only, 2: Files only
+    property int remoteFilterType: 0
+
+    function filterItems(items, searchText, filterType) {
+        let result = []
+        for (let i = 0; i < items.length; i++) {
+            let item = items[i]
+            let matchesSearch = searchText.length === 0 || item.name.toLowerCase().includes(searchText.toLowerCase())
+            let matchesFilter = filterType === 0 || (filterType === 1 && item.isDir) || (filterType === 2 && !item.isDir)
+            if (matchesSearch && matchesFilter) {
+                result.push(item)
+            }
+        }
+        return result
+    }
+
     Component.onCompleted: {
         sessionClient.requestLocalDirectoryListing(".")
         if (sessionClient.isConnected) {
@@ -148,7 +167,12 @@ Rectangle {
                         }
                         Item { Layout.fillWidth: true }
                         Button {
+                            id: btnLocalUp
                             text: "⬆ Parent"
+                            Layout.preferredHeight: 30
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            font.weight: Typography.weightMedium
                             Accessible.role: Accessible.Button
                             Accessible.name: "Local Up Directory"
                             onClicked: {
@@ -160,12 +184,29 @@ Rectangle {
                                     sessionClient.requestLocalDirectoryListing(newPath.length === 0 ? "." : newPath)
                                 }
                             }
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            background: Rectangle {
+                                color: btnLocalUp.hovered ? themePalette.surfaceVariant : themePalette.surface
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
                         }
                         Button {
+                            id: btnLocalRefresh
                             text: "🔄 Refresh"
+                            Layout.preferredHeight: 30
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            font.weight: Typography.weightMedium
                             Accessible.role: Accessible.Button
                             Accessible.name: "Refresh Local Directory"
                             onClicked: sessionClient.requestLocalDirectoryListing(sessionClient.currentLocalPath)
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            background: Rectangle {
+                                color: btnLocalRefresh.hovered ? themePalette.surfaceVariant : themePalette.surface
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
                         }
                     }
 
@@ -181,6 +222,45 @@ Rectangle {
                             radius: Metrics.radiusSm
                         }
                         onAccepted: sessionClient.requestLocalDirectoryListing(text)
+                    }
+
+                    // File Search & Filter Bar (Local)
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Metrics.spacingXs
+
+                        TextField {
+                            id: localSearchField
+                            Layout.fillWidth: true
+                            placeholderText: "🔍 Search files..."
+                            text: fileTransferView.localSearchText
+                            selectByMouse: true
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            color: themePalette.textPrimary
+                            onTextChanged: fileTransferView.localSearchText = text
+                            background: Rectangle {
+                                color: themePalette.surfaceVariant
+                                border.color: localSearchField.activeFocus ? themePalette.primary : themePalette.border
+                                radius: Metrics.radiusSm
+                            }
+                        }
+
+                        ComboBox {
+                            id: localFilterCombo
+                            Layout.preferredWidth: 120
+                            Layout.preferredHeight: 30
+                            model: ["All", "Dirs Only", "Files Only"]
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            currentIndex: fileTransferView.localFilterType
+                            onActivated: (index) => { fileTransferView.localFilterType = index }
+                            background: Rectangle {
+                                color: themePalette.surfaceVariant
+                                border.color: themePalette.border
+                                radius: Metrics.radiusSm
+                            }
+                        }
                     }
 
                     // Table Header Bar (SharkView pattern)
@@ -206,7 +286,7 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         clip: true
-                        model: sessionClient.localDirectoryList
+                        model: fileTransferView.filterItems(sessionClient.localDirectoryList, fileTransferView.localSearchText, fileTransferView.localFilterType)
 
                         delegate: Rectangle {
                             width: ListView.view.width
@@ -288,7 +368,55 @@ Rectangle {
                 Layout.fillHeight: true
                 color: themePalette.surface
                 radius: Metrics.radiusSm
-                border.color: themePalette.border
+                border.color: remoteDropArea.containsDrag ? themePalette.primary : themePalette.border
+                border.width: remoteDropArea.containsDrag ? 2 : 1
+
+                // Drag-and-Drop overlay for file uploads
+                DropArea {
+                    id: remoteDropArea
+                    anchors.fill: parent
+                    onDropped: (drop) => {
+                        if (drop.hasUrls) {
+                            for (let i = 0; i < drop.urls.length; i++) {
+                                let localPath = drop.urls[i].toString().replace("file:///", "")
+                                sessionClient.startFileUpload(localPath, sessionClient.currentRemotePath)
+                            }
+                            if (typeof mainWindow !== "undefined" && typeof mainWindow.showToast === "function") {
+                                mainWindow.showToast("Uploading " + drop.urls.length + " file(s)...", "info")
+                            }
+                        }
+                    }
+                }
+
+                // Drop zone visual indicator
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: Metrics.spacingMd
+                    visible: remoteDropArea.containsDrag
+                    color: Qt.rgba(themePalette.primary.r, themePalette.primary.g, themePalette.primary.b, 0.08)
+                    radius: Metrics.radiusMd
+                    border.color: themePalette.primary
+                    border.width: 2
+                    z: 50
+
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: Metrics.spacingSm
+                        Text {
+                            text: "📂"
+                            font.pixelSize: 42
+                            anchors.horizontalCenter: parent.horizontalCenter
+                        }
+                        Text {
+                            text: "Drop files here to upload"
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontBody
+                            font.weight: Typography.weightBold
+                            color: themePalette.primary
+                            anchors.horizontalCenter: parent.horizontalCenter
+                        }
+                    }
+                }
 
                 ColumnLayout {
                     anchors.fill: parent
@@ -304,7 +432,12 @@ Rectangle {
                         }
                         Item { Layout.fillWidth: true }
                         Button {
+                            id: btnRemoteUp
                             text: "⬆ Parent"
+                            Layout.preferredHeight: 30
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            font.weight: Typography.weightMedium
                             Accessible.role: Accessible.Button
                             Accessible.name: "Remote Up Directory"
                             onClicked: {
@@ -316,12 +449,29 @@ Rectangle {
                                     sessionClient.requestDirectoryListing(newPath.length === 0 ? "." : newPath)
                                 }
                             }
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            background: Rectangle {
+                                color: btnRemoteUp.hovered ? themePalette.surfaceVariant : themePalette.surface
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
                         }
                         Button {
+                            id: btnRemoteRefresh
                             text: "🔄 Refresh"
+                            Layout.preferredHeight: 30
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            font.weight: Typography.weightMedium
                             Accessible.role: Accessible.Button
                             Accessible.name: "Refresh Remote Directory"
                             onClicked: sessionClient.requestDirectoryListing(sessionClient.currentRemotePath)
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            background: Rectangle {
+                                color: btnRemoteRefresh.hovered ? themePalette.surfaceVariant : themePalette.surface
+                                radius: Metrics.radiusSm
+                                border.color: themePalette.border
+                            }
                         }
                     }
 
@@ -337,6 +487,45 @@ Rectangle {
                             radius: Metrics.radiusSm
                         }
                         onAccepted: sessionClient.requestDirectoryListing(text)
+                    }
+
+                    // File Search & Filter Bar (Remote)
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Metrics.spacingXs
+
+                        TextField {
+                            id: remoteSearchField
+                            Layout.fillWidth: true
+                            placeholderText: "🔍 Search remote files..."
+                            text: fileTransferView.remoteSearchText
+                            selectByMouse: true
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            color: themePalette.textPrimary
+                            onTextChanged: fileTransferView.remoteSearchText = text
+                            background: Rectangle {
+                                color: themePalette.surfaceVariant
+                                border.color: remoteSearchField.activeFocus ? themePalette.primary : themePalette.border
+                                radius: Metrics.radiusSm
+                            }
+                        }
+
+                        ComboBox {
+                            id: remoteFilterCombo
+                            Layout.preferredWidth: 120
+                            Layout.preferredHeight: 30
+                            model: ["All", "Dirs Only", "Files Only"]
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            currentIndex: fileTransferView.remoteFilterType
+                            onActivated: (index) => { fileTransferView.remoteFilterType = index }
+                            background: Rectangle {
+                                color: themePalette.surfaceVariant
+                                border.color: themePalette.border
+                                radius: Metrics.radiusSm
+                            }
+                        }
                     }
 
                     // Table Header Bar (SharkView pattern)
@@ -362,7 +551,7 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         clip: true
-                        model: sessionClient.directoryList
+                        model: fileTransferView.filterItems(sessionClient.directoryList, fileTransferView.remoteSearchText, fileTransferView.remoteFilterType)
 
                         delegate: Rectangle {
                             width: ListView.view.width

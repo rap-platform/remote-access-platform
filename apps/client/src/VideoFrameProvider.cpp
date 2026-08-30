@@ -34,4 +34,10 @@ void VideoFrameProvider::updateFrame(const QImage& image) {
     emit frameReady();
 }
 
+QImage VideoFrameProvider::currentFrame() const {
+    QMutexLocker locker(&mutex_);
+    return currentFrame_;
+}
+
 } // namespace rap::client
+

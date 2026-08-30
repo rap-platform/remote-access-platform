@@ -392,6 +392,160 @@ Rectangle {
                     Label { text: "Stateless Relay Endpoint: 127.0.0.1:18445 (Zero-Decryption E2E Preserved)"; color: themePalette.textSecondary }
                 }
             }
+
+            // IP Whitelist / Blacklist Access Control Card (Sprint 3)
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 220
+                color: themePalette.surface
+                radius: Metrics.radiusSm
+                border.color: themePalette.border
+
+                ListModel {
+                    id: ipRulesModel
+                    ListElement { ipAddress: "192.168.1.0/24"; ruleType: "ALLOW"; description: "Local Subnet" }
+                    ListElement { ipAddress: "10.0.0.5"; ruleType: "ALLOW"; description: "Admin Workstation" }
+                    ListElement { ipAddress: "203.0.113.42"; ruleType: "DENY"; description: "Blocked Suspicious IP" }
+                }
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: Metrics.spacingMd
+                    spacing: Metrics.spacingSm
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: "🛡️ IP Filtering & Access Control List (ACL)"
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontSubheader
+                            font.weight: Typography.weightBold
+                            color: themePalette.textPrimary
+                        }
+                        Item { Layout.fillWidth: true }
+                        ComboBox {
+                            id: ipFilterMode
+                            Layout.preferredWidth: 160
+                            model: ["Allow All (Default)", "Whitelist Only", "Blacklist Only"]
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Metrics.spacingSm
+
+                        TextField {
+                            id: newIpInput
+                            placeholderText: "Enter IP or CIDR (e.g. 192.168.1.100 or 10.0.0.0/16)"
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            color: themePalette.textPrimary
+                            Layout.fillWidth: true
+                            background: Rectangle { color: themePalette.surfaceVariant; radius: Metrics.radiusSm; border.color: themePalette.border }
+                        }
+
+                        ComboBox {
+                            id: newIpType
+                            Layout.preferredWidth: 100
+                            model: ["ALLOW", "DENY"]
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                        }
+
+                        Button {
+                            text: "➕ Add Rule"
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            font.weight: Typography.weightBold
+                            onClicked: {
+                                if (newIpInput.text.trim().length > 0) {
+                                    ipRulesModel.append({
+                                        ipAddress: newIpInput.text.trim(),
+                                        ruleType: newIpType.currentText,
+                                        description: "Custom Rule"
+                                    })
+                                    newIpInput.text = ""
+                                    if (typeof mainWindow !== "undefined" && typeof mainWindow.showToast === "function") {
+                                        mainWindow.showToast("IP Access Control rule added", "success")
+                                    }
+                                }
+                            }
+                            background: Rectangle { color: themePalette.primary; radius: Metrics.radiusSm }
+                            contentItem: Text { text: parent.text; font: parent.font; color: themePalette.textPrimary; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                        }
+                    }
+
+                    // Rule List View
+                    ListView {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        model: ipRulesModel
+                        spacing: 4
+
+                        delegate: Rectangle {
+                            width: ListView.view.width
+                            height: 32
+                            color: themePalette.surfaceVariant
+                            radius: Metrics.radiusSm
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: Metrics.spacingSm
+                                anchors.rightMargin: Metrics.spacingSm
+
+                                Rectangle {
+                                    Layout.preferredWidth: 54
+                                    Layout.preferredHeight: 20
+                                    radius: 3
+                                    color: model.ruleType === "ALLOW" ? Qt.rgba(0, 0.8, 0.4, 0.15) : Qt.rgba(0.9, 0.2, 0.2, 0.15)
+                                    border.color: model.ruleType === "ALLOW" ? themePalette.success : themePalette.error
+
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: model.ruleType
+                                        font.pixelSize: 10
+                                        font.weight: Typography.weightBold
+                                        color: parent.border.color
+                                    }
+                                }
+
+                                Label {
+                                    text: model.ipAddress
+                                    font.family: Typography.fontFamily
+                                    font.pixelSize: Typography.fontCaption
+                                    font.weight: Typography.weightBold
+                                    color: themePalette.textPrimary
+                                    Layout.preferredWidth: 160
+                                }
+
+                                Label {
+                                    text: model.description
+                                    font.family: Typography.fontFamily
+                                    font.pixelSize: Typography.fontCaption
+                                    color: themePalette.textSecondary
+                                    Layout.fillWidth: true
+                                }
+
+                                Text {
+                                    text: "✕"
+                                    font.pixelSize: 12
+                                    color: themePalette.textSecondary
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        anchors.margins: -4
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: ipRulesModel.remove(index)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
+

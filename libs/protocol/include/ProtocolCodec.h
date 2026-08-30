@@ -27,7 +27,9 @@ enum class PayloadType : uint16_t {
     DirectoryListResponse = 12,
     AuthRequest = 13,
     AuthResponse = 14,
-    SessionControl = 15
+    SessionControl = 15,
+    AudioFrame = 16,
+    TerminalData = 17
 };
 
 enum class ParseError {

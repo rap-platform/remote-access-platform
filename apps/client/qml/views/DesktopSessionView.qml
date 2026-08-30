@@ -12,6 +12,7 @@ Rectangle {
     property bool isCurrentTabConnected: sessionClient.isConnected && (activeTabIndex === activeConnectedTabIndex)
     property bool chatWindowOpen: false
     property int unreadChatCount: 0
+    property bool performanceHudVisible: false
 
     onActiveTabIndexChanged: {
         if (sessionClient && sessionClient.isConnected) {
@@ -262,6 +263,173 @@ Rectangle {
                         border.color: themePalette.border
                     }
                 }
+
+                // Multi-Monitor Display Selector ComboBox
+                ComboBox {
+                    id: monitorSelector
+                    Layout.preferredHeight: 30
+                    Layout.preferredWidth: 220
+                    visible: desktopSessionView.isCurrentTabConnected && sessionClient.availableMonitors.length > 1
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    model: sessionClient.availableMonitors
+                    currentIndex: sessionClient.currentMonitorId
+                    displayText: "🖥️ " + (currentIndex >= 0 && currentIndex < sessionClient.availableMonitors.length
+                        ? sessionClient.availableMonitors[currentIndex].name
+                            + " (" + sessionClient.availableMonitors[currentIndex].width
+                            + "x" + sessionClient.availableMonitors[currentIndex].height + ")"
+                        : "Select Monitor")
+                    delegate: ItemDelegate {
+                        width: monitorSelector.width
+                        contentItem: Text {
+                            text: (modelData.isPrimary ? "⭐ " : "🖥️ ") + modelData.name
+                                  + " (" + modelData.width + "x" + modelData.height + ")"
+                            font.family: Typography.fontFamily
+                            font.pixelSize: Typography.fontCaption
+                            color: themePalette.textPrimary
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        highlighted: monitorSelector.highlightedIndex === index
+                        background: Rectangle {
+                            color: highlighted ? themePalette.primary : themePalette.surface
+                            radius: Metrics.radiusSm
+                        }
+                    }
+                    onActivated: (index) => {
+                        sessionClient.selectMonitor(sessionClient.availableMonitors[index].monitorId)
+                    }
+                    background: Rectangle {
+                        color: themePalette.surface
+                        radius: Metrics.radiusSm
+                        border.color: themePalette.border
+                    }
+                    contentItem: Text {
+                        text: monitorSelector.displayText
+                        font: monitorSelector.font
+                        color: themePalette.textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        leftPadding: Metrics.spacingSm
+                    }
+                }
+
+                // Screenshot Capture Button
+                Button {
+                    text: "📸"
+                    Layout.preferredHeight: 30
+                    Layout.preferredWidth: 36
+                    visible: desktopSessionView.isCurrentTabConnected
+                    font.pixelSize: 16
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Capture Screenshot"
+                    onClicked: sessionClient.captureScreenshot()
+                    background: Rectangle {
+                        color: parent.hovered ? themePalette.surfaceVariant : themePalette.surface
+                        radius: Metrics.radiusSm
+                        border.color: themePalette.border
+                    }
+                }
+
+                // Privacy Screen Toggle Button (Sprint 3)
+                Button {
+                    text: sessionClient.privacyMode ? "🕶️ Privacy Active" : "🕶️ Privacy"
+                    Layout.preferredHeight: 30
+                    visible: desktopSessionView.isCurrentTabConnected
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightBold
+                    ToolTip.visible: hovered
+                    ToolTip.text: sessionClient.privacyMode ? "Disable Blank Host Screen" : "Blank Remote Host Display (Privacy Screen)"
+                    onClicked: sessionClient.togglePrivacyMode()
+                    background: Rectangle {
+                        color: sessionClient.privacyMode ? themePalette.primary : (parent.hovered ? themePalette.surfaceVariant : themePalette.surface)
+                        radius: Metrics.radiusSm
+                        border.color: sessionClient.privacyMode ? themePalette.primary : themePalette.border
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: themePalette.textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+
+                // Audio Mute Toggle Button (Sprint 4)
+                Button {
+                    text: sessionClient.audioMuted ? "🔇 Muted" : "🔊 Audio"
+                    Layout.preferredHeight: 30
+                    visible: desktopSessionView.isCurrentTabConnected
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightBold
+                    ToolTip.visible: hovered
+                    ToolTip.text: sessionClient.audioMuted ? "Unmute Session Audio" : "Mute Session Audio"
+                    onClicked: sessionClient.toggleAudioMute()
+                    background: Rectangle {
+                        color: sessionClient.audioMuted ? themePalette.error : (parent.hovered ? themePalette.surfaceVariant : themePalette.surface)
+                        radius: Metrics.radiusSm
+                        border.color: themePalette.border
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: themePalette.textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+
+                // Session Recording Button (Sprint 4)
+                Button {
+                    property int sec: sessionClient.recordingDurationSec
+                    property string durationStr: Math.floor(sec / 60).toString().padStart(2, '0') + ":" + (sec % 60).toString().padStart(2, '0')
+                    text: sessionClient.isRecording ? "🔴 REC " + durationStr : "⏺️ Record"
+                    Layout.preferredHeight: 30
+                    visible: desktopSessionView.isCurrentTabConnected
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightBold
+                    ToolTip.visible: hovered
+                    ToolTip.text: sessionClient.isRecording ? "Stop Session Recording" : "Start Session Recording (.mp4)"
+                    onClicked: sessionClient.toggleSessionRecording()
+                    background: Rectangle {
+                        color: sessionClient.isRecording ? themePalette.error : (parent.hovered ? themePalette.surfaceVariant : themePalette.surface)
+                        radius: Metrics.radiusSm
+                        border.color: sessionClient.isRecording ? themePalette.error : themePalette.border
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: themePalette.textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+
+                // Picture-in-Picture (PiP) Toggle Button (Sprint 4)
+                Button {
+                    text: sessionClient.isPipMode ? "🖼️ PiP Active" : "🖼️ PiP"
+                    Layout.preferredHeight: 30
+                    visible: desktopSessionView.isCurrentTabConnected
+                    font.family: Typography.fontFamily
+                    font.pixelSize: Typography.fontCaption
+                    font.weight: Typography.weightBold
+                    ToolTip.visible: hovered
+                    ToolTip.text: "Toggle Picture-in-Picture Floating Window"
+                    onClicked: sessionClient.togglePipMode()
+                    background: Rectangle {
+                        color: sessionClient.isPipMode ? themePalette.primary : (parent.hovered ? themePalette.surfaceVariant : themePalette.surface)
+                        radius: Metrics.radiusSm
+                        border.color: themePalette.border
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: themePalette.textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
             }
         }
 
@@ -269,6 +437,53 @@ Rectangle {
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
+
+            // Auto-Reconnect Alert Banner (Sprint 3)
+            Rectangle {
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 42
+                color: themePalette.warning
+                visible: sessionClient.isReconnecting
+                z: 200
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: Metrics.spacingLg
+                    anchors.rightMargin: Metrics.spacingLg
+                    spacing: Metrics.spacingMd
+
+                    Text {
+                        text: "⚠️ Connection Lost — " + sessionClient.statusText
+                        font.family: Typography.fontFamily
+                        font.pixelSize: Typography.fontBody
+                        font.weight: Typography.weightBold
+                        color: themePalette.textPrimary
+                        Layout.fillWidth: true
+                    }
+
+                    Button {
+                        text: "Cancel Reconnect"
+                        Layout.preferredHeight: 28
+                        font.family: Typography.fontFamily
+                        font.pixelSize: Typography.fontCaption
+                        font.weight: Typography.weightBold
+                        onClicked: sessionClient.cancelReconnect()
+                        background: Rectangle {
+                            color: themePalette.surface
+                            radius: Metrics.radiusSm
+                        }
+                        contentItem: Text {
+                            text: parent.text
+                            font: parent.font
+                            color: themePalette.textPrimary
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                }
+            }
 
             // Live Remote Viewport Container (Shown when connected and active tab selected)
             Item {
@@ -292,6 +507,180 @@ Rectangle {
                         function onFrameReady() {
                             videoSurface.source = ""
                             videoSurface.source = "image://frameprovider/current"
+                        }
+                    }
+                }
+
+                // Performance HUD Overlay (toggle with Ctrl+Shift+P)
+                Rectangle {
+                    id: performanceHud
+                    anchors.left: parent.left
+                    anchors.bottom: parent.bottom
+                    anchors.margins: Metrics.spacingMd
+                    width: 240
+                    height: hudColumn.implicitHeight + Metrics.spacingMd * 2
+                    color: Qt.rgba(0, 0, 0, 0.75)
+                    radius: Metrics.radiusMd
+                    border.color: Qt.rgba(themePalette.primary.r, themePalette.primary.g, themePalette.primary.b, 0.5)
+                    border.width: 1
+                    visible: desktopSessionView.performanceHudVisible && desktopSessionView.isCurrentTabConnected
+                    z: 100
+
+                    Behavior on opacity { NumberAnimation { duration: 200 } }
+
+                    ColumnLayout {
+                        id: hudColumn
+                        anchors.fill: parent
+                        anchors.margins: Metrics.spacingMd
+                        spacing: Metrics.spacingXs
+
+                        RowLayout {
+                            spacing: Metrics.spacingSm
+                            Text {
+                                text: "📊 Performance HUD"
+                                font.family: Typography.fontFamily
+                                font.pixelSize: Typography.fontCaption
+                                font.weight: Typography.weightBold
+                                color: themePalette.primary
+                            }
+                        }
+
+                        Rectangle { Layout.fillWidth: true; height: 1; color: Qt.rgba(1, 1, 1, 0.15) }
+
+                        // FPS
+                        RowLayout {
+                            spacing: Metrics.spacingSm
+                            Text { text: "🎞️ FPS:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: themePalette.textSecondary }
+                            Text {
+                                text: sessionClient.fps + " fps"
+                                font.family: Typography.fontFamily
+                                font.pixelSize: 11
+                                font.weight: Typography.weightBold
+                                color: sessionClient.fps >= 24 ? themePalette.success : sessionClient.fps >= 15 ? themePalette.warning : themePalette.error
+                            }
+                        }
+
+                        // Latency
+                        RowLayout {
+                            spacing: Metrics.spacingSm
+                            Text { text: "⏱️ Latency:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: themePalette.textSecondary }
+                            Text {
+                                text: sessionClient.latencyMs + " ms"
+                                font.family: Typography.fontFamily
+                                font.pixelSize: 11
+                                font.weight: Typography.weightBold
+                                color: sessionClient.latencyMs <= 30 ? themePalette.success : sessionClient.latencyMs <= 100 ? themePalette.warning : themePalette.error
+                            }
+                        }
+
+                        // Bitrate
+                        RowLayout {
+                            spacing: Metrics.spacingSm
+                            Text { text: "📡 Bitrate:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: themePalette.textSecondary }
+                            Text {
+                                text: sessionClient.bitrate.toFixed(2) + " Mbps"
+                                font.family: Typography.fontFamily
+                                font.pixelSize: 11
+                                font.weight: Typography.weightBold
+                                color: themePalette.primary
+                            }
+                        }
+
+                        // Codec
+                        RowLayout {
+                            spacing: Metrics.spacingSm
+                            Text { text: "🎬 Codec:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: themePalette.textSecondary }
+                            Text {
+                                text: sessionClient.codec
+                                font.family: Typography.fontFamily
+                                font.pixelSize: 11
+                                font.weight: Typography.weightBold
+                                color: themePalette.accent
+                            }
+                        }
+
+                        // Packet Loss
+                        RowLayout {
+                            spacing: Metrics.spacingSm
+                            Text { text: "📉 Loss:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: themePalette.textSecondary }
+                            Text {
+                                text: sessionClient.packetLoss.toFixed(1) + "%"
+                                font.family: Typography.fontFamily
+                                font.pixelSize: 11
+                                font.weight: Typography.weightBold
+                                color: sessionClient.packetLoss < 1 ? themePalette.success : themePalette.error
+                            }
+                        }
+                    }
+                }
+
+                // Keyboard Shortcut: Ctrl+Shift+P to toggle Performance HUD
+                Shortcut {
+                    sequence: "Ctrl+Shift+P"
+                    onActivated: desktopSessionView.performanceHudVisible = !desktopSessionView.performanceHudVisible
+                }
+
+                // Floating Picture-in-Picture (PiP) Window Card (Sprint 4)
+                Rectangle {
+                    id: pipWindow
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.margins: Metrics.spacingLg
+                    width: 320
+                    height: 180
+                    color: themePalette.background
+                    radius: Metrics.radiusMd
+                    border.color: themePalette.primary
+                    border.width: 2
+                    visible: sessionClient.isPipMode && sessionClient.isConnected
+                    z: 500
+
+                    // Drag Handler for moving PiP window freely around screen
+                    DragHandler {
+                        target: pipWindow
+                    }
+
+                    Image {
+                        anchors.fill: parent
+                        anchors.margins: 2
+                        fillMode: Image.PreserveAspectFit
+                        source: videoSurface.source
+                    }
+
+                    // PiP Header Overlay
+                    Rectangle {
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        height: 28
+                        color: Qt.rgba(0, 0, 0, 0.7)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: Metrics.spacingSm
+                            anchors.rightMargin: Metrics.spacingSm
+
+                            Text {
+                                text: "🖼️ PiP Stream"
+                                font.family: Typography.fontFamily
+                                font.pixelSize: 11
+                                font.weight: Font.Bold
+                                color: themePalette.textPrimary
+                                Layout.fillWidth: true
+                            }
+
+                            Text {
+                                text: "✕"
+                                font.pixelSize: 12
+                                font.weight: Font.Bold
+                                color: themePalette.textPrimary
+                                MouseArea {
+                                    anchors.fill: parent
+                                    anchors.margins: -4
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: sessionClient.togglePipMode()
+                                }
+                            }
                         }
                     }
                 }
@@ -624,7 +1013,7 @@ Rectangle {
                 // Card 1: THIS DESK (Your P2P Desk ID)
                 Rectangle {
                     Layout.preferredWidth: 360
-                    Layout.preferredHeight: 220
+                    Layout.preferredHeight: 260
                     color: themePalette.surface
                     radius: Metrics.radiusLg
                     border.color: themePalette.border
@@ -650,14 +1039,23 @@ Rectangle {
                             }
                         }
 
-                        Label {
-                            text: sessionClient.p2pId
-                            font.family: Typography.fontFamily
-                            font.pixelSize: 32
-                            font.weight: Typography.weightBold
-                            color: themePalette.primary
-                            Accessible.role: Accessible.StaticText
-                            Accessible.name: "Your AnyDesk P2P Desk ID"
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 56
+                            radius: Metrics.radiusSm
+                            color: themePalette.surfaceVariant
+                            border.color: themePalette.border
+
+                            Label {
+                                anchors.centerIn: parent
+                                text: sessionClient.p2pId
+                                font.family: Typography.fontFamily
+                                font.pixelSize: 28
+                                font.weight: Typography.weightBold
+                                color: themePalette.primary
+                                Accessible.role: Accessible.StaticText
+                                Accessible.name: "Your AnyDesk P2P Desk ID"
+                            }
                         }
 
                         Label {
@@ -672,14 +1070,29 @@ Rectangle {
                         Item { Layout.fillHeight: true }
 
                         Button {
+                            id: btnCopyId
                             text: "Copy Desk ID"
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 38
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontCaption
                             font.weight: Typography.weightMedium
                             onClicked: sessionClient.sendClipboardText(sessionClient.p2pId)
+
+                            HoverHandler {
+                                cursorShape: Qt.PointingHandCursor
+                            }
+
+                            contentItem: Text {
+                                text: btnCopyId.text
+                                font: btnCopyId.font
+                                color: themePalette.textPrimary
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
                             background: Rectangle {
-                                color: themePalette.surfaceVariant
+                                color: btnCopyId.hovered ? themePalette.surfaceVariant : themePalette.surface
                                 radius: Metrics.radiusSm
                                 border.color: themePalette.border
                             }
@@ -714,13 +1127,15 @@ Rectangle {
                             placeholderText: "Enter Remote P2P ID or IP:Port"
                             text: "115 604 669"
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 38
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontBody
                             color: themePalette.textPrimary
                             background: Rectangle {
                                 color: themePalette.surfaceVariant
                                 radius: Metrics.radiusSm
-                                border.color: themePalette.border
+                                border.color: targetIdInput.activeFocus ? themePalette.primary : themePalette.border
+                                border.width: 1
                             }
                         }
 
@@ -730,18 +1145,20 @@ Rectangle {
                             text: "admin123"
                             echoMode: TextInput.Password
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 38
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontBody
                             color: themePalette.textPrimary
                             background: Rectangle {
                                 color: themePalette.surfaceVariant
                                 radius: Metrics.radiusSm
-                                border.color: themePalette.border
+                                border.color: targetPasswordInput.activeFocus ? themePalette.primary : themePalette.border
+                                border.width: 1
                             }
                         }
 
                         Label {
-                            text: "Enter peer's Desk ID and 6-digit OTP or unattended master password."
+                            text: "Enter peer's Desk ID and 6-digit OTP or unattended password."
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontCaption
                             color: themePalette.textSecondary
@@ -752,8 +1169,10 @@ Rectangle {
                         Item { Layout.fillHeight: true }
 
                         Button {
+                            id: btnConnectRemote
                             text: "Connect to Remote Desk"
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 38
                             font.family: Typography.fontFamily
                             font.pixelSize: Typography.fontBody
                             font.weight: Typography.weightBold
@@ -794,15 +1213,20 @@ Rectangle {
                                     sessionClient.connectByP2PId(rawTarget, reqPassword)
                                 }
                             }
+
+                            HoverHandler {
+                                cursorShape: Qt.PointingHandCursor
+                            }
+
                             contentItem: Text {
-                                text: parent.text
-                                font: parent.font
+                                text: btnConnectRemote.text
+                                font: btnConnectRemote.font
                                 color: themePalette.textPrimary
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
                             background: Rectangle {
-                                color: themePalette.primary
+                                color: btnConnectRemote.hovered ? Qt.lighter(themePalette.primary, 1.1) : themePalette.primary
                                 radius: Metrics.radiusSm
                             }
                         }

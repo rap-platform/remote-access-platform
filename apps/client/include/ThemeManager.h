@@ -20,6 +20,7 @@ class ThemeManager : public QObject {
     Q_PROPERTY(QColor textPrimary READ textPrimary NOTIFY themeChanged)
     Q_PROPERTY(QColor textSecondary READ textSecondary NOTIFY themeChanged)
     Q_PROPERTY(QColor error READ error NOTIFY themeChanged)
+    Q_PROPERTY(QColor danger READ danger NOTIFY themeChanged)
     Q_PROPERTY(QColor success READ success NOTIFY themeChanged)
     Q_PROPERTY(QColor warning READ warning NOTIFY themeChanged)
     Q_PROPERTY(QColor transparent READ transparent CONSTANT)
@@ -39,6 +40,7 @@ public:
     QColor textPrimary() const { return textPrimary_; }
     QColor textSecondary() const { return textSecondary_; }
     QColor error() const { return error_; }
+    QColor danger() const { return error_; }
     QColor success() const { return success_; }
     QColor warning() const { return warning_; }
     QColor transparent() const { return QColor(0, 0, 0, 0); }

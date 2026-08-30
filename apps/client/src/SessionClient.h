@@ -8,6 +8,7 @@
 #include <QImage>
 #include <QObject>
 #include <QTcpSocket>
+#include <QTimer>
 
 #include "VideoFrameProvider.h"
 
@@ -28,6 +29,33 @@ class SessionClient : public QObject {
         QVariantList localDirectoryList READ localDirectoryList NOTIFY localDirectoryListChanged)
     Q_PROPERTY(QString currentLocalPath READ currentLocalPath NOTIFY currentLocalPathChanged)
 
+    // Multi-monitor properties
+    Q_PROPERTY(
+        QVariantList availableMonitors READ availableMonitors NOTIFY availableMonitorsChanged)
+    Q_PROPERTY(int currentMonitorId READ currentMonitorId NOTIFY currentMonitorIdChanged)
+
+    // Performance telemetry properties
+    Q_PROPERTY(int fps READ fps NOTIFY fpsChanged)
+    Q_PROPERTY(int latencyMs READ latencyMs NOTIFY latencyMsChanged)
+    Q_PROPERTY(double packetLoss READ packetLoss NOTIFY packetLossChanged)
+    Q_PROPERTY(double bitrate READ bitrate NOTIFY bitrateChanged)
+    Q_PROPERTY(QString codec READ codec NOTIFY codecChanged)
+
+    // Sprint 3: Auto-reconnect, Connection History & Privacy Screen properties
+    Q_PROPERTY(bool isReconnecting READ isReconnecting NOTIFY isReconnectingChanged)
+    Q_PROPERTY(int reconnectAttempts READ reconnectAttempts NOTIFY reconnectAttemptsChanged)
+    Q_PROPERTY(QVariantList connectionHistory READ connectionHistory NOTIFY connectionHistoryChanged)
+    Q_PROPERTY(bool privacyMode READ privacyMode NOTIFY privacyModeChanged)
+
+    // Sprint 4: Premium Features properties
+    Q_PROPERTY(bool audioMuted READ isAudioMuted NOTIFY audioMutedChanged)
+    Q_PROPERTY(double audioVolume READ audioVolume NOTIFY audioVolumeChanged)
+    Q_PROPERTY(bool isRecording READ isRecording NOTIFY isRecordingChanged)
+    Q_PROPERTY(int recordingDurationSec READ recordingDurationSec NOTIFY recordingDurationSecChanged)
+    Q_PROPERTY(QString terminalOutput READ terminalOutput NOTIFY terminalOutputChanged)
+    Q_PROPERTY(bool isPipMode READ isPipMode NOTIFY isPipModeChanged)
+    Q_PROPERTY(QString currentLanguage READ currentLanguage NOTIFY currentLanguageChanged)
+
 public:
     explicit SessionClient(VideoFrameProvider* frameProvider, QObject* parent = nullptr);
     ~SessionClient() override;
@@ -44,6 +72,32 @@ public:
     QString currentRemotePath() const { return currentRemotePath_; }
     QVariantList localDirectoryList() const { return localDirectoryList_; }
     QString currentLocalPath() const { return currentLocalPath_; }
+
+    // Multi-monitor getters
+    QVariantList availableMonitors() const { return availableMonitors_; }
+    int currentMonitorId() const { return currentMonitorId_; }
+
+    // Performance telemetry getters
+    int fps() const { return fps_; }
+    int latencyMs() const { return latencyMs_; }
+    double packetLoss() const { return packetLoss_; }
+    double bitrate() const { return bitrate_; }
+    QString codec() const { return codec_; }
+
+    // Sprint 3 getters
+    bool isReconnecting() const { return isReconnecting_; }
+    int reconnectAttempts() const { return reconnectAttempts_; }
+    QVariantList connectionHistory() const { return connectionHistory_; }
+    bool privacyMode() const { return privacyMode_; }
+
+    // Sprint 4 getters
+    bool isAudioMuted() const { return audioMuted_; }
+    double audioVolume() const { return audioVolume_; }
+    bool isRecording() const { return isRecording_; }
+    int recordingDurationSec() const { return recordingDurationSec_; }
+    QString terminalOutput() const { return terminalOutput_; }
+    bool isPipMode() const { return isPipMode_; }
+    QString currentLanguage() const { return currentLanguage_; }
 
     Q_INVOKABLE void setRenderGated(bool gated);
 
@@ -67,6 +121,22 @@ public:
     Q_INVOKABLE void pauseFileTransfer();
     Q_INVOKABLE void resumeFileTransfer();
     Q_INVOKABLE void cancelFileTransfer();
+    Q_INVOKABLE void selectMonitor(int monitorId);
+    Q_INVOKABLE void captureScreenshot();
+
+    // Sprint 3 methods
+    Q_INVOKABLE void cancelReconnect();
+    Q_INVOKABLE void clearConnectionHistory();
+    Q_INVOKABLE void togglePrivacyMode();
+
+    // Sprint 4 methods
+    Q_INVOKABLE void toggleAudioMute();
+    Q_INVOKABLE void setAudioVolume(double volume);
+    Q_INVOKABLE void toggleSessionRecording();
+    Q_INVOKABLE void sendTerminalInput(const QString& command);
+    Q_INVOKABLE void clearTerminal();
+    Q_INVOKABLE void togglePipMode();
+    Q_INVOKABLE void setLanguage(const QString& language);
 
 public slots:
     void connectToHost(const QString& host, uint16_t port, const QString& password = "");
@@ -87,12 +157,42 @@ signals:
     void localDirectoryListChanged(const QVariantList& items);
     void currentLocalPathChanged(const QString& path);
 
+    // Multi-monitor signals
+    void availableMonitorsChanged(const QVariantList& monitors);
+    void currentMonitorIdChanged(int monitorId);
+
+    // Performance telemetry signals
+    void fpsChanged(int fps);
+    void latencyMsChanged(int latencyMs);
+    void packetLossChanged(double packetLoss);
+    void bitrateChanged(double bitrate);
+    void codecChanged(const QString& codec);
+
+    // Sprint 3 signals
+    void isReconnectingChanged(bool reconnecting);
+    void reconnectAttemptsChanged(int attempts);
+    void connectionHistoryChanged(const QVariantList& history);
+    void privacyModeChanged(bool privacyMode);
+
+    // Sprint 4 signals
+    void audioMutedChanged(bool muted);
+    void audioVolumeChanged(double volume);
+    void isRecordingChanged(bool recording);
+    void recordingDurationSecChanged(int durationSec);
+    void terminalOutputChanged(const QString& output);
+    void terminalOutputReceived(const QString& text);
+    void isPipModeChanged(bool pipMode);
+    void currentLanguageChanged(const QString& language);
+
 private slots:
     void onReadyRead();
     void onConnected();
     void onDisconnected();
     void onErrorOccurred(QAbstractSocket::SocketError socketError);
     void onClipboardChanged();
+    void updateTelemetry();
+    void attemptReconnect();
+    void updateRecordingTimer();
 
 private:
     void setStatus(const QString& status);
@@ -121,8 +221,56 @@ private:
     bool isTransferPaused_{false};
     uint64_t currentTransferBytes_{0};
     uint64_t totalTransferBytes_{0};
+
+    // Multi-monitor state
+    QVariantList availableMonitors_;
+    int currentMonitorId_{0};
+
+    // Performance telemetry state
+    QTimer telemetryTimer_;
+    int fps_{0};
+    int latencyMs_{0};
+    double packetLoss_{0.0};
+    double bitrate_{0.0};
+    QString codec_{"RAW"};
+    uint64_t lastFrameCount_{0};
+    uint64_t lastByteCount_{0};
+    uint64_t heartbeatSendTimestamp_{0};
+    uint64_t totalBytesReceived_{0};
+
+    // Sprint 3: Auto-reconnect state
+    QTimer reconnectTimer_;
+    bool isReconnecting_{false};
+    int reconnectAttempts_{0};
+    const int maxReconnectAttempts_{5};
+    bool userInitiatedDisconnect_{false};
+    QString lastHost_;
+    uint16_t lastPort_{18443};
+
+    // Sprint 3: Connection history state
+    QVariantList connectionHistory_;
+    qint64 sessionStartTimeMs_{0};
+
+    // Sprint 3: Privacy screen state
+    bool privacyMode_{false};
+
+    // Sprint 4: Premium Features state
+    bool audioMuted_{false};
+    double audioVolume_{0.8};
+    bool isRecording_{false};
+    int recordingDurationSec_{0};
+    QTimer recordingTimer_;
+    QString terminalOutput_;
+    bool isPipMode_{false};
+    QString currentLanguage_{"English"};
+
+    void loadConnectionHistory();
+    void saveConnectionHistory();
+    void addHistoryRecord(const QString& target, const QString& status, qint64 durationSec, const QString& disconnectReason);
 };
 
 } // namespace rap::client
 
 #endif // RAP_CLIENT_SESSION_CLIENT_H
+
+

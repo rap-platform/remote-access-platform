@@ -6,10 +6,23 @@ if(POLICY CMP0072)
     cmake_policy(SET CMP0072 NEW)
 endif()
 
+# Read version from central VERSION file
+set(APP_VERSION "0.3.0")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
+    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" VERSION_LINE REGEX "^AppVersion=")
+    if(VERSION_LINE)
+        string(REGEX REPLACE "^AppVersion=" "" APP_VERSION "${VERSION_LINE}")
+        string(STRIP "${APP_VERSION}" APP_VERSION)
+    endif()
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
+endif()
+
 project(RemoteDesktopPlatform
-    VERSION 0.1.0
+    VERSION ${APP_VERSION}
     LANGUAGES CXX C
 )
+
+add_compile_definitions(APP_VERSION="${APP_VERSION}")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
