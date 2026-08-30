@@ -19,6 +19,11 @@ if [ -f "${PROJECT_ROOT}/VERSION" ]; then
     APP_VERSION="$(grep -E '^AppVersion=' "${PROJECT_ROOT}/VERSION" | cut -d'=' -f2 || echo "0.3.0")"
 fi
 
+if [ -f "${MOBILE_DIR}/pubspec.yaml" ]; then
+    sed -i.bak -E "s/^version: .*/version: ${APP_VERSION}+1/" "${MOBILE_DIR}/pubspec.yaml" 2>/dev/null || true
+    rm -f "${MOBILE_DIR}/pubspec.yaml.bak" 2>/dev/null || true
+fi
+
 echo -e "${CYAN}=== Remote Access Platform — Android Packaging Pipeline ===${NC}"
 echo "Target Version: ${APP_VERSION}"
 echo "Mobile Project: ${MOBILE_DIR}"

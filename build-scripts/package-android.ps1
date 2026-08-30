@@ -18,6 +18,11 @@ if (Test-Path $VersionFile) {
     if ($Match) { $AppVersion = $Matches[1].Trim() }
 }
 
+$PubspecFile = "$MobileDir\pubspec.yaml"
+if (Test-Path $PubspecFile) {
+    (Get-Content $PubspecFile) -replace '^\s*version:\s*.*', "version: $AppVersion+1" | Set-Content $PubspecFile
+}
+
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host "📱 Remote Access Platform — Android Mobile Build Pipeline"            -ForegroundColor Cyan
 Write-Host "=================================================================" -ForegroundColor Cyan

@@ -16,13 +16,17 @@
 #include "ProtocolCodec.h"
 #include "logging/JsonLogger.h"
 
+#ifndef APP_VERSION
+#define APP_VERSION "0.3.0"
+#endif
+
 int main(int argc, char* argv[]) {
     QGuiApplication app(argc, argv);
     app.setApplicationName("rap-agent");
-    app.setApplicationVersion("0.1.0");
+    app.setApplicationVersion(APP_VERSION);
 
     rap::common::logging::JsonLogger::instance().initialize();
-    qInfo() << "[Agent] Remote Desktop Headless Host Agent starting up...";
+    qInfo() << "[Agent] Remote Desktop Headless Host Agent starting up version" << APP_VERSION;
 
     // Generate Dynamic 6-digit One-Time Password (OTP) for host security
     quint32 otpNum = QRandomGenerator::global()->bounded(100000, 999999);

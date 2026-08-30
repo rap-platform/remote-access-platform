@@ -18,14 +18,19 @@
 int main(int argc, char* argv[]) {
     QQuickStyle::setStyle("Basic");
 
+#ifndef APP_VERSION
+#define APP_VERSION "0.3.0"
+#endif
+
     QGuiApplication app(argc, argv);
     app.setApplicationName("rap-client");
-    app.setApplicationVersion("0.1.0");
+    app.setApplicationVersion(APP_VERSION);
 
     rap::common::logging::JsonLogger::instance().initialize();
-    qInfo() << "[Client] Remote Access Platform Viewer launching...";
+    qInfo() << "[Client] Remote Access Platform Viewer launching version" << APP_VERSION;
 
     QQmlApplicationEngine engine;
+    engine.rootContext()->setContextProperty("appVersion", QString(APP_VERSION));
 
     auto themeManager = new rap::client::ThemeManager(&app);
     engine.rootContext()->setContextProperty("themePalette", themeManager);
