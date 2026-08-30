@@ -123,7 +123,7 @@ Rectangle {
                             contentItem: Text {
                                 text: btnConnectDevice.text
                                 font: btnConnectDevice.font
-                                color: btnConnectDevice.enabled ? "#FFFFFF" : themePalette.textSecondary
+                                color: btnConnectDevice.enabled ? themePalette.textPrimary : themePalette.textSecondary
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
@@ -249,7 +249,7 @@ Rectangle {
                                 text: modelData.reason
                                 font.family: Typography.fontFamily
                                 font.pixelSize: Typography.fontCaption
-                                color: modelData.reason.includes("Network") ? themePalette.warning || "#FFC107" : themePalette.textSecondary
+                                color: modelData.reason.includes("Network") ? themePalette.warning : themePalette.textSecondary
                                 Layout.preferredWidth: 160
                             }
 
@@ -267,7 +267,7 @@ Rectangle {
                                 contentItem: Text {
                                     text: parent.text
                                     font: parent.font
-                                    color: "#FFFFFF"
+                                    color: themePalette.textPrimary
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                 }

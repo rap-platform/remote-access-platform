@@ -348,7 +348,7 @@ Rectangle {
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
-                        color: sessionClient.privacyMode ? "#FFFFFF" : themePalette.textPrimary
+                        color: themePalette.textPrimary
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -373,7 +373,7 @@ Rectangle {
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
-                        color: sessionClient.audioMuted ? "#FFFFFF" : themePalette.textPrimary
+                        color: themePalette.textPrimary
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -393,14 +393,14 @@ Rectangle {
                     ToolTip.text: sessionClient.isRecording ? "Stop Session Recording" : "Start Session Recording (.mp4)"
                     onClicked: sessionClient.toggleSessionRecording()
                     background: Rectangle {
-                        color: sessionClient.isRecording ? "#F44336" : (parent.hovered ? themePalette.surfaceVariant : themePalette.surface)
+                        color: sessionClient.isRecording ? themePalette.error : (parent.hovered ? themePalette.surfaceVariant : themePalette.surface)
                         radius: Metrics.radiusSm
-                        border.color: sessionClient.isRecording ? "#F44336" : themePalette.border
+                        border.color: sessionClient.isRecording ? themePalette.error : themePalette.border
                     }
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
-                        color: sessionClient.isRecording ? "#FFFFFF" : themePalette.textPrimary
+                        color: themePalette.textPrimary
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -425,7 +425,7 @@ Rectangle {
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
-                        color: sessionClient.isPipMode ? "#FFFFFF" : themePalette.textPrimary
+                        color: themePalette.textPrimary
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -444,7 +444,7 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 height: 42
-                color: themePalette.warning || "#FFC107"
+                color: themePalette.warning
                 visible: sessionClient.isReconnecting
                 z: 200
 
@@ -459,7 +459,7 @@ Rectangle {
                         font.family: Typography.fontFamily
                         font.pixelSize: Typography.fontBody
                         font.weight: Typography.weightBold
-                        color: "#000000"
+                        color: themePalette.textPrimary
                         Layout.fillWidth: true
                     }
 
@@ -471,13 +471,13 @@ Rectangle {
                         font.weight: Typography.weightBold
                         onClicked: sessionClient.cancelReconnect()
                         background: Rectangle {
-                            color: "#000000"
+                            color: themePalette.surface
                             radius: Metrics.radiusSm
                         }
                         contentItem: Text {
                             text: parent.text
                             font: parent.font
-                            color: "#FFFFFF"
+                            color: themePalette.textPrimary
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
@@ -550,65 +550,65 @@ Rectangle {
                         // FPS
                         RowLayout {
                             spacing: Metrics.spacingSm
-                            Text { text: "🎞️ FPS:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: "#AAAAAA" }
+                            Text { text: "🎞️ FPS:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: themePalette.textSecondary }
                             Text {
                                 text: sessionClient.fps + " fps"
                                 font.family: Typography.fontFamily
                                 font.pixelSize: 11
                                 font.weight: Typography.weightBold
-                                color: sessionClient.fps >= 24 ? "#4CAF50" : sessionClient.fps >= 15 ? "#FFC107" : "#F44336"
+                                color: sessionClient.fps >= 24 ? themePalette.success : sessionClient.fps >= 15 ? themePalette.warning : themePalette.error
                             }
                         }
 
                         // Latency
                         RowLayout {
                             spacing: Metrics.spacingSm
-                            Text { text: "⏱️ Latency:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: "#AAAAAA" }
+                            Text { text: "⏱️ Latency:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: themePalette.textSecondary }
                             Text {
                                 text: sessionClient.latencyMs + " ms"
                                 font.family: Typography.fontFamily
                                 font.pixelSize: 11
                                 font.weight: Typography.weightBold
-                                color: sessionClient.latencyMs <= 30 ? "#4CAF50" : sessionClient.latencyMs <= 100 ? "#FFC107" : "#F44336"
+                                color: sessionClient.latencyMs <= 30 ? themePalette.success : sessionClient.latencyMs <= 100 ? themePalette.warning : themePalette.error
                             }
                         }
 
                         // Bitrate
                         RowLayout {
                             spacing: Metrics.spacingSm
-                            Text { text: "📡 Bitrate:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: "#AAAAAA" }
+                            Text { text: "📡 Bitrate:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: themePalette.textSecondary }
                             Text {
                                 text: sessionClient.bitrate.toFixed(2) + " Mbps"
                                 font.family: Typography.fontFamily
                                 font.pixelSize: 11
                                 font.weight: Typography.weightBold
-                                color: "#2196F3"
+                                color: themePalette.primary
                             }
                         }
 
                         // Codec
                         RowLayout {
                             spacing: Metrics.spacingSm
-                            Text { text: "🎬 Codec:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: "#AAAAAA" }
+                            Text { text: "🎬 Codec:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: themePalette.textSecondary }
                             Text {
                                 text: sessionClient.codec
                                 font.family: Typography.fontFamily
                                 font.pixelSize: 11
                                 font.weight: Typography.weightBold
-                                color: "#CE93D8"
+                                color: themePalette.accent
                             }
                         }
 
                         // Packet Loss
                         RowLayout {
                             spacing: Metrics.spacingSm
-                            Text { text: "📉 Loss:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: "#AAAAAA" }
+                            Text { text: "📉 Loss:"; font.family: Typography.fontFamily; font.pixelSize: 11; color: themePalette.textSecondary }
                             Text {
                                 text: sessionClient.packetLoss.toFixed(1) + "%"
                                 font.family: Typography.fontFamily
                                 font.pixelSize: 11
                                 font.weight: Typography.weightBold
-                                color: sessionClient.packetLoss < 1 ? "#4CAF50" : "#F44336"
+                                color: sessionClient.packetLoss < 1 ? themePalette.success : themePalette.error
                             }
                         }
                     }
@@ -628,7 +628,7 @@ Rectangle {
                     anchors.margins: Metrics.spacingLg
                     width: 320
                     height: 180
-                    color: "#000000"
+                    color: themePalette.background
                     radius: Metrics.radiusMd
                     border.color: themePalette.primary
                     border.width: 2
@@ -665,7 +665,7 @@ Rectangle {
                                 font.family: Typography.fontFamily
                                 font.pixelSize: 11
                                 font.weight: Font.Bold
-                                color: "#FFFFFF"
+                                color: themePalette.textPrimary
                                 Layout.fillWidth: true
                             }
 
@@ -673,7 +673,7 @@ Rectangle {
                                 text: "✕"
                                 font.pixelSize: 12
                                 font.weight: Font.Bold
-                                color: "#FFFFFF"
+                                color: themePalette.textPrimary
                                 MouseArea {
                                     anchors.fill: parent
                                     anchors.margins: -4
@@ -1221,7 +1221,7 @@ Rectangle {
                             contentItem: Text {
                                 text: btnConnectRemote.text
                                 font: btnConnectRemote.font
-                                color: "#FFFFFF"
+                                color: themePalette.textPrimary
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }

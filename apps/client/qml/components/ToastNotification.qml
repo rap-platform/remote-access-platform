@@ -24,13 +24,13 @@ Item {
 
         if (type === "success") {
             icon = "✅"
-            color = themePalette.success || "#4CAF50"
+            color = themePalette.success
         } else if (type === "error") {
             icon = "❌"
-            color = themePalette.error || "#F44336"
+            color = themePalette.error
         } else if (type === "warning") {
             icon = "⚠️"
-            color = themePalette.warning || "#FFC107"
+            color = themePalette.warning
         } else {
             icon = "ℹ️"
             color = themePalette.primary

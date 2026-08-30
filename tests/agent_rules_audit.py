@@ -26,10 +26,10 @@ def audit_rule_1_qml_entry_point(root_dir):
     line_count = len(lines)
     print(f"[Rule 1] QML Entry Shell Line Count (Main.qml): {line_count} lines (limit: <= 80)")
     if line_count <= 80:
-        print("  ✓ Rule 1 PASSED: Main.qml is a clean, lightweight entry point shell.")
+        print("  [PASS] Rule 1 PASSED: Main.qml is a clean, lightweight entry point shell.")
         return True
     else:
-        print(f"  ✗ Rule 1 FAILED: Main.qml exceeds 80 lines ({line_count} lines).")
+        print(f"  [FAIL] Rule 1 FAILED: Main.qml exceeds 80 lines ({line_count} lines).")
         return False
 
 def audit_rule_2_cpp_entry_points(root_dir):
@@ -48,9 +48,9 @@ def audit_rule_2_cpp_entry_points(root_dir):
 
         print(f"[Rule 2] C++ Entry Point ({name} main.cpp): {line_count} lines (limit: <= 200)")
         if line_count <= 200:
-            print(f"  ✓ Rule 2 PASSED: {name} main.cpp is a clean entry point.")
+            print(f"  [PASS] Rule 2 PASSED: {name} main.cpp is a clean entry point.")
         else:
-            print(f"  ✗ Rule 2 FAILED: {name} main.cpp exceeds 200 lines ({line_count} lines).")
+            print(f"  [FAIL] Rule 2 FAILED: {name} main.cpp exceeds 200 lines ({line_count} lines).")
             success = False
 
     return success
@@ -68,11 +68,11 @@ def audit_rule_3_modular_qml_structure(root_dir):
             count = len([f for f in os.listdir(d) if f.endswith(".qml")])
             print(f"[Rule 3] Modular QML Subdirectory '{name}/': {count} modules found.")
         else:
-            print(f"  ✗ Rule 3 FAILED: Required directory '{name}/' missing.")
+            print(f"  [FAIL] Rule 3 FAILED: Required directory '{name}/' missing.")
             all_exist = False
 
     if all_exist:
-        print("  ✓ Rule 3 PASSED: QML codebase adheres to modular component/view architecture.")
+        print("  [PASS] Rule 3 PASSED: QML codebase adheres to modular component/view architecture.")
     return all_exist
 
 def audit_rule_4_design_system_colors(root_dir):
@@ -92,10 +92,10 @@ def audit_rule_4_design_system_colors(root_dir):
 
     print(f"[Rule 4] Design System Enforcement: {len(violations)} hardcoded hex colors outside theme/")
     if len(violations) == 0:
-        print("  ✓ Rule 4 PASSED: Zero hardcoded hex colors outside theme/ palette.")
+        print("  [PASS] Rule 4 PASSED: Zero hardcoded hex colors outside theme/ palette.")
         return True
     else:
-        print("  ✗ Rule 4 FAILED: Hardcoded hex colors found:")
+        print("  [FAIL] Rule 4 FAILED: Hardcoded hex colors found:")
         for v in violations[:5]:
             print(f"    - {v}")
         return False
@@ -116,10 +116,10 @@ def audit_rule_5_accessibility(root_dir):
 
     print(f"[Rule 5] Accessibility Annotations: {total_roles} roles, {total_names} names across QML.")
     if total_roles >= 10 and total_names >= 10:
-        print("  ✓ Rule 5 PASSED: Full WCAG 2.1 AA accessibility tagging enforced.")
+        print("  [PASS] Rule 5 PASSED: Full WCAG 2.1 AA accessibility tagging enforced.")
         return True
     else:
-        print("  ✗ Rule 5 FAILED: Insufficient accessibility annotations.")
+        print("  [FAIL] Rule 5 FAILED: Insufficient accessibility annotations.")
         return False
 
 def audit_rule_6_protocol_parity(root_dir):
@@ -136,10 +136,10 @@ def audit_rule_6_protocol_parity(root_dir):
 
     print(f"[Rule 6] Multi-Language Protocol Codec Parity: Discovered {len(cpp_variants)} C++ PayloadType variants.")
     if len(cpp_variants) >= 12:
-        print("  ✓ Rule 6 PASSED: C++, Rust, and Protobuf schema variants synchronized.")
+        print("  [PASS] Rule 6 PASSED: C++, Rust, and Protobuf schema variants synchronized.")
         return True
     else:
-        print("  ✗ Rule 6 FAILED: Protocol enum desync detected.")
+        print("  [FAIL] Rule 6 FAILED: Protocol enum desync detected.")
         return False
 
 def main():

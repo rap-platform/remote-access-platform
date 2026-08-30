@@ -55,7 +55,7 @@ Rectangle {
                         contentItem: Text {
                             text: parent.text
                             font: parent.font
-                            color: settingsView.activeCategory === index ? "#FFFFFF" : themePalette.textPrimary
+                            color: themePalette.textPrimary
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }

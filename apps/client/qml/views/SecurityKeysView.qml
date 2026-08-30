@@ -473,7 +473,7 @@ Rectangle {
                                 }
                             }
                             background: Rectangle { color: themePalette.primary; radius: Metrics.radiusSm }
-                            contentItem: Text { text: parent.text; font: parent.font; color: "#FFFFFF"; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                            contentItem: Text { text: parent.text; font: parent.font; color: themePalette.textPrimary; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
                         }
                     }
 

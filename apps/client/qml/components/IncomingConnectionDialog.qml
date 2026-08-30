@@ -262,7 +262,7 @@ Dialog {
                 }
                 contentItem: Text {
                     text: btnDeny.text
-                    color: "#FFFFFF"
+                    color: themePalette.textPrimary
                     font.family: Typography.fontFamily
                     font.weight: Typography.weightBold
                     horizontalAlignment: Text.AlignHCenter
@@ -292,7 +292,7 @@ Dialog {
                 }
                 contentItem: Text {
                     text: btnAccept.text
-                    color: "#FFFFFF"
+                    color: themePalette.textPrimary
                     font.family: Typography.fontFamily
                     font.weight: Typography.weightBold
                     horizontalAlignment: Text.AlignHCenter
