@@ -104,8 +104,8 @@ public:
     bool isPipMode() const { return isPipMode_; }
     QString currentLanguage() const { return currentLanguage_; }
     QVariantList transferQueue() const { return transferQueue_; }
-    qint64 totalBytesSent() const { return totalBytesSent_; }
-    qint64 totalBytesReceived() const { return totalBytesReceived_; }
+    qint64 totalBytesSent() const { return static_cast<qint64>(totalBytesSent_); }
+    qint64 totalBytesReceived() const { return static_cast<qint64>(totalBytesReceived_); }
     double bandwidthCapMbps() const { return bandwidthCapMbps_; }
     bool isBandwidthLimited() const { return bandwidthCapMbps_ > 0.0; }
 
@@ -284,8 +284,7 @@ private:
     bool isPipMode_{false};
     QString currentLanguage_{"English"};
     QVariantList transferQueue_;
-    qint64 totalBytesSent_{12450000};
-    qint64 totalBytesReceived_{847000000};
+    uint64_t totalBytesSent_{12450000};
     double bandwidthCapMbps_{0.0};
 
     void loadConnectionHistory();
