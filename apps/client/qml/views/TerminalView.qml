@@ -95,7 +95,7 @@ Rectangle {
                     background: null
 
                     onTextChanged: {
-                        termScrollView.contentY = Math.max(0, termArea.implicitHeight - termScrollView.height)
+                        termArea.cursorPosition = termArea.length
                     }
                 }
             }
