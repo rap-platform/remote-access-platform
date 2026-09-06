@@ -1,4 +1,4 @@
-#ifndef RAP_CLIENT_THEME_MANAGER_H
+﻿#ifndef RAP_CLIENT_THEME_MANAGER_H
 #define RAP_CLIENT_THEME_MANAGER_H
 
 #include <QColor>
@@ -46,6 +46,7 @@ public:
     QColor transparent() const { return QColor(0, 0, 0, 0); }
 
     Q_INVOKABLE void setTheme(int mode);
+    Q_INVOKABLE void setCustomAccentColor(const QColor& color);
 
 signals:
     void themeChanged();

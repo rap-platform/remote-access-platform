@@ -1,4 +1,4 @@
-use rap_shared::protocol::{Packet, PayloadType, HEADER_SIZE, MAGIC_HEADER, PROTOCOL_VERSION};
+﻿use rap_shared::protocol::{Packet, PayloadType, HEADER_SIZE, MAGIC_HEADER, PROTOCOL_VERSION};
 
 #[test]
 fn test_cross_language_binary_framing_compatibility() {

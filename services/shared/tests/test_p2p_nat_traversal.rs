@@ -1,4 +1,4 @@
-//! Automated End-to-End P2P NAT Traversal & Hole Punching Integration Test.
+﻿//! Automated End-to-End P2P NAT Traversal & Hole Punching Integration Test.
 
 use rap_shared::nat::ice::{
     CandidateType, ConnectionMode, ConnectionStateMachine, IceCandidate, TransportProtocol,

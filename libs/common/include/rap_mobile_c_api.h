@@ -1,4 +1,4 @@
-#ifndef RAP_MOBILE_C_API_H
+﻿#ifndef RAP_MOBILE_C_API_H
 #define RAP_MOBILE_C_API_H
 
 #include <stddef.h>

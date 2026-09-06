@@ -1,4 +1,4 @@
-#ifndef RAP_CAPTURE_I_CAPTURE_BACKEND_H
+﻿#ifndef RAP_CAPTURE_I_CAPTURE_BACKEND_H
 #define RAP_CAPTURE_I_CAPTURE_BACKEND_H
 
 #include <cstdint>
@@ -64,4 +64,3 @@ public:
 } // namespace rap::capture
 
 #endif // RAP_CAPTURE_I_CAPTURE_BACKEND_H
-

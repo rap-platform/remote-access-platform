@@ -1,4 +1,4 @@
-//! High-throughput stateless UDP/QUIC data plane packet relay service crate.
+﻿//! High-throughput stateless UDP/QUIC data plane packet relay service crate.
 #![forbid(unsafe_code)]
 
 use serde::{Deserialize, Serialize};

@@ -1,4 +1,4 @@
-#include <cstddef>
+﻿#include <cstddef>
 #include <cstdint>
 
 #include "../include/ProtocolCodec.h"

@@ -24,6 +24,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         add_test(NAME test_input COMMAND test_input)
     endif()
 else()
-    add_library(rap_input INTERFACE)
-    target_include_directories(rap_input INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    add_library(rap_input STATIC
+        src/WindowsSendInputBackend.cpp
+        include/IInputBackend.h
+        include/WindowsSendInputBackend.h
+    )
+    target_include_directories(rap_input PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 endif()

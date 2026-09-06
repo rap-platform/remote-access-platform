@@ -1,4 +1,4 @@
-#ifndef RAP_COMMON_JSON_LOGGER_H
+﻿#ifndef RAP_COMMON_JSON_LOGGER_H
 #define RAP_COMMON_JSON_LOGGER_H
 
 #include <QFile>

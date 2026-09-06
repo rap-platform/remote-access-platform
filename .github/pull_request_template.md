@@ -1,4 +1,4 @@
-## 📋 Summary of Changes
+﻿## 📋 Summary of Changes
 
 <!-- Briefly describe what this PR does and why -->
 

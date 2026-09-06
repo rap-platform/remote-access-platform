@@ -1,4 +1,4 @@
-#include "DirtyRegionDetector.h"
+﻿#include "DirtyRegionDetector.h"
 
 #include <algorithm>
 #include <cstring>

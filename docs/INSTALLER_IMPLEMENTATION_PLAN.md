@@ -1,4 +1,4 @@
-# 📦 Implementation Plan: Windows & Linux Packaging & Installer System
+﻿# 📦 Implementation Plan: Windows & Linux Packaging & Installer System
 
 This plan outlines the architecture, directory structure, environment configurations, and build/packaging scripts required to create standalone Windows installers (Inno Setup / `windeployqt`) and Linux packages (`AppImage` / `linuxdeploy`) for **Remote Access Platform** (`rap-client` and `rap-agent`).
 

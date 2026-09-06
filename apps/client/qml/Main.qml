@@ -1,4 +1,4 @@
-import QtQuick
+﻿import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "theme"
@@ -58,6 +58,7 @@ ApplicationWindow {
     }
 
     ToastNotification { id: toastManager }
+    OnboardingOverlay { id: onboardingTour }
 
     function showToast(message, type) { toastManager.showToast(message, type || "info") }
 

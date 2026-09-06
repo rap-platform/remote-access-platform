@@ -1,4 +1,4 @@
-#ifndef RAP_FILE_TRANSFER_ENGINE_H
+﻿#ifndef RAP_FILE_TRANSFER_ENGINE_H
 #define RAP_FILE_TRANSFER_ENGINE_H
 
 #include <cstdint>

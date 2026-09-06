@@ -1,4 +1,4 @@
-//! Structured JSON logging initialization for Rust backend services matching the C++ log schema.
+﻿//! Structured JSON logging initialization for Rust backend services matching the C++ log schema.
 
 use serde::Serialize;
 use tracing_subscriber::fmt::format::Writer;

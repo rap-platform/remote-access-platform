@@ -1,4 +1,4 @@
-#ifndef RAP_AGENT_PACKET_HANDLER_H
+﻿#ifndef RAP_AGENT_PACKET_HANDLER_H
 #define RAP_AGENT_PACKET_HANDLER_H
 
 #include <QClipboard>

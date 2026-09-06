@@ -1,4 +1,4 @@
-#include "../include/ProtocolCodec.h"
+﻿#include "../include/ProtocolCodec.h"
 
 #include <cstring>
 

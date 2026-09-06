@@ -1,4 +1,4 @@
-# Remote Access Platform — Architecture, Standards & Security Blueprint
+﻿# Remote Access Platform — Architecture, Standards & Security Blueprint
 **Version 4.0 — Working Document to Build Against**
 
 Changelog from v1→v2: backend consolidated to **Rust only** (no Go); explicit

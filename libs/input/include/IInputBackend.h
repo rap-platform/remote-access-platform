@@ -1,4 +1,4 @@
-#ifndef RAP_INPUT_I_INPUT_BACKEND_H
+﻿#ifndef RAP_INPUT_I_INPUT_BACKEND_H
 #define RAP_INPUT_I_INPUT_BACKEND_H
 
 #include <cstdint>

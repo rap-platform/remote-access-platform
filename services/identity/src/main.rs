@@ -1,4 +1,4 @@
-//! Device Identity Service executable binary entry point.
+﻿//! Device Identity Service executable binary entry point.
 use rap_identity::IdentityService;
 
 #[tokio::main]

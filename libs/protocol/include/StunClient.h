@@ -1,4 +1,4 @@
-#ifndef RAP_PROTOCOL_STUN_CLIENT_H
+﻿#ifndef RAP_PROTOCOL_STUN_CLIENT_H
 #define RAP_PROTOCOL_STUN_CLIENT_H
 
 #include <cstdint>

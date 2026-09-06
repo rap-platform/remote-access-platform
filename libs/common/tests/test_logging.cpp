@@ -1,4 +1,4 @@
-#include <QCoreApplication>
+﻿#include <QCoreApplication>
 #include <QTest>
 
 #include "../logging/LogCategories.h"

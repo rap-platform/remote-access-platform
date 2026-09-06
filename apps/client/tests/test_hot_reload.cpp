@@ -1,4 +1,4 @@
-#include <QCoreApplication>
+﻿#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QQmlEngine>

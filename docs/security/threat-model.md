@@ -1,4 +1,4 @@
-# Remote Access Platform — Security Threat Model (STRIDE Framework)
+﻿# Remote Access Platform — Security Threat Model (STRIDE Framework)
 
 > **Document Version:** 1.0.0  
 > **Security Audit Standard:** STRIDE Threat Analysis & Vulnerability Matrix  

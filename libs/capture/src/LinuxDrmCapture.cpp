@@ -1,4 +1,4 @@
-#include "LinuxDrmCapture.h"
+﻿#include "LinuxDrmCapture.h"
 
 #include <chrono>
 #include <cstring>
@@ -123,4 +123,3 @@ bool LinuxDrmCapture::selectMonitor(uint32_t monitorId) {
 }
 
 } // namespace rap::capture
-

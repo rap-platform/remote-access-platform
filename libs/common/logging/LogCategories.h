@@ -1,4 +1,4 @@
-#ifndef RAP_COMMON_LOG_CATEGORIES_H
+﻿#ifndef RAP_COMMON_LOG_CATEGORIES_H
 #define RAP_COMMON_LOG_CATEGORIES_H
 
 #include <QLoggingCategory>

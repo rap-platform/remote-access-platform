@@ -1,4 +1,4 @@
-#include "ThemeManager.h"
+﻿#include "ThemeManager.h"
 
 namespace rap::client {
 
@@ -74,6 +74,12 @@ void ThemeManager::setTheme(int mode) {
         success_ = QColor("#a6e3a1");
         warning_ = QColor("#f9e2af");
     }
+    emit themeChanged();
+}
+
+void ThemeManager::setCustomAccentColor(const QColor& color) {
+    primary_ = color;
+    accent_ = color.lighter(120);
     emit themeChanged();
 }
 

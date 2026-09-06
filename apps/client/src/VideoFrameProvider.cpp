@@ -1,4 +1,4 @@
-#include "VideoFrameProvider.h"
+﻿#include "VideoFrameProvider.h"
 
 #include <QMutexLocker>
 
@@ -40,4 +40,3 @@ QImage VideoFrameProvider::currentFrame() const {
 }
 
 } // namespace rap::client
-

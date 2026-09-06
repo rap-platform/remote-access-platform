@@ -1,7 +1,9 @@
-//! Tamper-Evident Audit Logging Service crate for Remote Access Platform.
+﻿//! Tamper-Evident Audit Logging Service crate for Remote Access Platform.
 //! Implements a cryptographic SHA-256 hash chain (append-only ledger) for all auth, session, and file transfer events.
 
 #![forbid(unsafe_code)]
+
+pub mod notifications;
 
 use chrono::Utc;
 use serde::{Deserialize, Serialize};

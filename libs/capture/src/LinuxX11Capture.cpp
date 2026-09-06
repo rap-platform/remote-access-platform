@@ -1,4 +1,4 @@
-#include "LinuxX11Capture.h"
+﻿#include "LinuxX11Capture.h"
 
 #include <chrono>
 #include <cstdlib>
@@ -289,4 +289,3 @@ std::unique_ptr<ICaptureBackend> CaptureBackendFactory::createDefaultBackend() {
 }
 
 } // namespace rap::capture
-

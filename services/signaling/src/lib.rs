@@ -1,4 +1,4 @@
-//! Session signaling and rendezvous service crate.
+﻿//! Session signaling and rendezvous service crate.
 #![forbid(unsafe_code)]
 
 use serde::{Deserialize, Serialize};

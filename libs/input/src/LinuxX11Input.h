@@ -1,4 +1,4 @@
-#ifndef RAP_INPUT_LINUX_X11_INPUT_H
+﻿#ifndef RAP_INPUT_LINUX_X11_INPUT_H
 #define RAP_INPUT_LINUX_X11_INPUT_H
 
 #include <X11/Xlib.h>

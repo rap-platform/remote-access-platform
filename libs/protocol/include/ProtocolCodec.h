@@ -1,4 +1,4 @@
-#ifndef RAP_PROTOCOL_CODEC_H
+﻿#ifndef RAP_PROTOCOL_CODEC_H
 #define RAP_PROTOCOL_CODEC_H
 
 #include <cstdint>

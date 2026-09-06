@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote Access Platform — WebRTC Browser Viewer</title>
+    <style>
+        :root {
+            --bg: #181825;
+            --surface: #1e1e2e;
+            --surface-variant: #313244;
+            --border: #45475a;
+            --primary: #89b4fa;
+            --accent: #cba6f7;
+            --text-primary: #cdd6f4;
+            --text-secondary: #a6adc8;
+            --success: #a6e3a1;
+            --error: #f38ba8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-primary); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 18px; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .controls { display: flex; gap: 12px; align-items: center; }
+        input[type="text"] { background: var(--surface-variant); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 14px; border-radius: 6px; font-size: 14px; width: 220px; outline: none; }
+        button { background: var(--primary); color: var(--bg); border: none; padding: 8px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        button.btn-danger { background: var(--error); color: #fff; }
+        main { flex: 1; display: flex; justify-content: center; align-items: center; background: #000; position: relative; }
+        video { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .hud { position: absolute; bottom: 16px; left: 16px; background: rgba(30, 30, 46, 0.85); backdrop-filter: blur(8px); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; font-size: 12px; color: var(--text-secondary); display: flex; gap: 16px; }
+        .hud span { font-weight: bold; color: var(--primary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">🖥️ Remote Access Platform — Web Viewer</div>
+        <div class="controls">
+            <input type="text" id="targetId" placeholder="Enter Desk ID (e.g. 106 794 028)">
+            <button id="btnConnect" onclick="connectSession()">Connect Session ➔</button>
+            <button id="btnDisconnect" class="btn-danger" style="display:none;" onclick="disconnectSession()">Disconnect</button>
+        </div>
+    </header>
+    <main>
+        <video id="remoteVideo" autoplay playsinline muted></video>
+        <div class="hud" id="hud" style="display:none;">
+            <div>FPS: <span id="statFps">60</span></div>
+            <div>Latency: <span id="statLatency">18 ms</span></div>
+            <div>Codec: <span id="statCodec">H.264 / WebRTC</span></div>
+            <div>Resolution: <span id="statRes">1920x1080</span></div>
+        </div>
+    </main>
+
+    <script>
+        let pc = null;
+        let ws = null;
+
+        function connectSession() {
+            const targetId = document.getElementById('targetId').value.trim();
+            if (!targetId) return alert("Please enter a target Desk ID");
+
+            document.getElementById('btnConnect').style.display = 'none';
+            document.getElementById('btnDisconnect').style.display = 'inline-block';
+            document.getElementById('hud').style.display = 'flex';
+
+            pc = new RTCPeerConnection({
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            });
+
+            pc.ontrack = (event) => {
+                document.getElementById('remoteVideo').srcObject = event.streams[0];
+            };
+
+            console.log("Connecting WebRTC session to target:", targetId);
+        }
+
+        function disconnectSession() {
+            if (pc) { pc.close(); pc = null; }
+            document.getElementById('btnConnect').style.display = 'inline-block';
+            document.getElementById('btnDisconnect').style.display = 'none';
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('remoteVideo').srcObject = null;
+        }
+    </script>
+</body>
+</html>
