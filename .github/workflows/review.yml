@@ -31,7 +31,7 @@ jobs:
             libx11-dev libxext-dev libxtst-dev libxrandr-dev
 
       - name: Setup Qt 6
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: '6.6.2'
           arch: 'gcc_64'
